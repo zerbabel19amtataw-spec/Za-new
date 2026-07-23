@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZA Bingo V3</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#0a0a0a; background-image:radial-gradient(circle at 50% 20%, rgba(139,0,0,0.3) 0%, transparent 60%), radial-gradient(circle at 50% 80%, rgba(255,215,0,0.1) 0%, transparent 60%); min-height:100vh; color:#ffd700; font-family:'Segoe UI', Arial, sans-serif; text-align:center; }
+        .screen { display:none; padding:10px; min-height:100vh; animation:fadeIn 0.3s; }
+        .active { display:block; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+        .home-container { max-width:450px; margin:0 auto; padding:10px; }
+        .top-section { display:flex; justify-content:space-between; align-items:center; padding:10px 5px; margin-bottom:10px; }
+        .logo { font-size:28px; font-weight:900; color:#ffd700; text-shadow:0 0 15px #ff0000,0 0 30px #8b0000; letter-spacing:2px; }
+        .profile-balance { display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+        .profile-btn { background:#8b0000; border:1px solid #ffd700; border-radius:20px; color:#ffd700; padding:6px 14px; font-size:13px; font-weight:bold; cursor:pointer; box-shadow:0 0 8px #ff0000; }
+        .balance-display { background:#111; border:1px solid #b8860b; border-radius:15px; padding:5px 12px; font-size:14px; font-weight:bold; color:#ffd700; }
+        .rooms-row { display:flex; gap:8px; margin-bottom:12px; }
+        .room-btn { flex:1; padding:12px 5px; background:linear-gradient(145deg,#1a1a1a,#000); border:2px solid #b8860b; border-radius:15px; color:#ffd700; font-size:14px; font-weight:bold; cursor:pointer; box-shadow:0 0 10px rgba(255,0,0,0.4); transition:all 0.2s; }
+        .room-btn:hover { border-color:#ffd700; box-shadow:0 0 20px #ff0000; transform:translateY(-2px); }
+        .room-btn.locked { background:#222!important; border-color:#444!important; color:#666!important; cursor:not-allowed; box-shadow:none; }
+        .room-stake { font-size:11px; opacity:0.8; display:block; }
+        .action-row { display:flex; gap:8px; margin-bottom:12px; }
+        .action-btn { flex:1; padding:10px 5px; background:linear-gradient(145deg,#1a1a1a,#000); border:2px solid #b8860b; border-radius:15px; color:#ffd700; font-size:13px; font-weight:bold; cursor:pointer; box-shadow:0 0 10px rgba(255,0,0,0.4); transition:all 0.2s; }
+        .action-btn:hover { border-color:#ffd700; box-shadow:0 0 20px #ff0000; transform:translateY(-2px); }
+        .action-btn.leaderboard { border-color:#ffd700; background:linear-gradient(145deg,#1a1a1a,#111); }
+        .room-status { font-size:10px; display:block; margin-top:2px; }
+        .status-waiting { color:#00ff00; }
+        .status-countdown { color:#ffa500; }
+        .status-playing { color:#ff0000; }
+        .popup-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999; justify-content:center; align-items:center; }
+        .popup-overlay.show { display:flex; }
+        .popup-box { background:linear-gradient(145deg,#1a1a1a,#000); border:3px solid #ffd700; border-radius:25px; padding:30px; text-align:center; color:#ffd700; box-shadow:0 0 50px #ff0000; width:90%; max-width:380px; animation:popIn 0.3s; }
+        @keyframes popIn { from{transform:scale(0.7);opacity:0;} to{transform:scale(1);opacity:1;} }
+        .popup-box button { width:auto; padding:10px 25px; margin:15px auto 0; }
+        .header { font-size:28px; font-weight:900; padding:20px; text-shadow:0 0 10px #8b0000,0 0 20px #ff0000; color:#ffd700; background:linear-gradient(180deg,#1a1a1a,#000); border-bottom:2px solid #b8860b; }
+        button { width:85%; padding:12px; margin:8px; font-size:18px; font-weight:bold; border:none; border-radius:25px; background:linear-gradient(145deg,#1a1a1a,#000); color:#ffd700; border:2px solid #b8860b; box-shadow:0 0 15px rgba(255,0,0,0.4); cursor:pointer; transition:all 0.2s; }
+        button:hover { border-color:#ffd700; box-shadow:0 0 25px #ff0000; transform:translateY(-2px); }
+        .back { background:#8b0000; border:2px solid #ff0000; color:white; width:auto; padding:8px 20px; font-size:14px; border-radius:20px; }
+        .selected { background:#006400!important; color:#fff!important; box-shadow:0 0 20px #00ff00!important; }
+        .cartelaGrid { display:grid; grid-template-columns:repeat(10,1fr); gap:4px; padding:8px; }
+        .cartelaGrid button { width:100%; padding:10px 0; font-size:13px; margin:0; border-radius:10px; }
+        .waitingCard { background:rgba(20,20,20,0.98); border:2px solid #b8860b; border-radius:20px; padding:20px; margin-top:20px; box-shadow:0 0 20px #8b0000; }
+        #countdownCircle { width:60px; height:60px; border-radius:50%; margin:12px auto; display:flex; align-items:center; justify-content:center; background:#111; border:3px solid #ffd700; box-shadow:0 0 20px #ffd700; }
+        #countdown { font-size:24px; color:#ffd700; font-weight:bold; }
+        .gameLayout { display:flex; gap:8px; margin-top:15px; }
+        .calledBox { width:32%; background:rgba(0,0,0,0.8); border:1px solid #ffd700; border-radius:12px; padding:8px; }
+        .callGrid { display:grid; grid-template-columns:repeat(5,1fr); gap:2px; }
+        .callBox { height:22px; display:flex; align-items:center; justify-content:center; background:#111; border:1px solid #555; border-radius:3px; font-size:10px; color:#ccc; }
+        .callBox.called { background:#8b0000; color:white; box-shadow:0 0 6px #ff0000; }
+        .cardArea { width:55%; }
+        .singleCard { display:grid; grid-template-columns:repeat(5,1fr); gap:2px; margin-bottom:15px; background:#0a0a0a; padding:4px; border-radius:8px; border:1px solid #b8860b; }
+        .singleCard div { background:#1a1a1a; border:1px solid #444; color:white; padding:6px 1px; font-size:12px; border-radius:4px; text-align:center; }
+        .singleCard div.marked { background:#8b0000!important; color:#ffd700!important; box-shadow:0 0 10px #ff0000; }
+        .freeBox { background:gold!important; color:black!important; box-shadow:0 0 8px gold; }
+        .bingoButton { width:100%; background:#8b0000; border:2px solid #ffd700; color:#ffd700; padding:15px; font-size:22px; margin-top:8px; }
+        #currentCall { font-size:20px; width:55px; height:55px; margin:10px auto; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#111; border:3px solid #ffd700; box-shadow:0 0 15px #ff0000; }
+        .leaderboard-list { max-height:300px; overflow-y:auto; background:#111; border-radius:12px; padding:10px; }
+        .leaderboard-item { display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #333; font-size:14px; }
+        .leaderboard-item:nth-child(1) { color:gold; }
+        .leaderboard-item:nth-child(2) { color:silver; }
+        .leaderboard-item:nth-child(3) { color:#cd7f32; }
+        .cartela-preview { background:#0a0a0a; border:2px solid #ffd700; border-radius:15px; padding:12px; margin:15px auto; width:90%; display:none; }
+        .cartela-preview.active { display:block; }
+        .preview-card { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin:8px auto; max-width:220px; }
+        .preview-card div { background:#1a1a1a; border:1px solid #444; color:white; padding:8px 0; font-size:14px; border-radius:6px; text-align:center; }
+        .preview-card .free { background:gold; color:black; box-shadow:0 0 8px gold; }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div id="screen1" class="screen active">
+    <div class="home-container">
+        <div class="top-section">
+            <div class="logo">⚡ ZA BINGO</div>
+            <div class="profile-balance">
+                <button class="profile-btn" onclick="openProfile()">👤 PROFILE</button>
+                <div class="balance-display">💰 <span id="balance">0.00</span> Br</div>
+            </div>
+        </div>
+        <div class="rooms-row">
+            <button class="room-btn" id="homeRoom5" onclick="openRoom('room5')">🎯 ባለ 5<br><span class="room-stake">Stake 5 Br</span><span class="room-status" id="status5">-</span></button>
+            <button class="room-btn" id="homeRoom10" onclick="openRoom('room10')">🎯 ባለ 10<br><span class="room-stake">Stake 10 Br</span><span class="room-status" id="status10">-</span></button>
+            <button class="room-btn" id="homeRoom20" onclick="openRoom('room20')">🎯 ባለ 20<br><span class="room-stake">Stake 20 Br</span><span class="room-status" id="status20">-</span></button>
+        </div>
+        <div class="action-row">
+            <button class="action-btn" onclick="openDeposit()">💳 DEPOSIT</button>
+            <button class="action-btn" onclick="openWithdraw()">💸 WITHDRAW</button>
+            <button class="action-btn leaderboard" onclick="openLeaderboard()">🏆 LEADERBOARD</button>
+        </div>
+        <div style="background:#111;border:1px solid #b8860b;border-radius:12px;padding:10px;margin-top:8px;">
+            <h4 style="margin-bottom:8px;color:#ffd700;">🏆 Top Players</h4>
+            <div id="miniLeaderboard" style="font-size:12px;color:#ccc;">Loading...</div>
+        </div>
+    </div>
+</div>
+
+<div id="profileScreen" class="screen">
+    <div class="header">PROFILE <button class="back" onclick="backHome()" style="float:right;">⬅ BACK</button></div>
+    <div style="background:rgba(20,20,20,0.98);border:2px solid #b8860b;border-radius:20px;padding:20px;margin:20px auto;width:90%;color:#ffd700;text-align:left;box-shadow:0 0 25px #8b0000;">
+        <h2 id="profileName" style="text-align:center;"></h2>
+        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Telegram ID:</span><span id="profileTelegramID"></span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Balance:</span><span id="profileBalance"></span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Games Played:</span><span id="profileGamesPlayed">0</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Games Won:</span><span id="profileGamesWon">0</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Win Rate:</span><span id="profileWinRate">0%</span></div>
+        <h3 style="text-align:center;margin-top:15px;">📥 Deposit History</h3>
+        <div id="depositHistory" style="max-height:150px;overflow-y:auto;background:#111;border-radius:10px;padding:8px;">Loading...</div>
+        <h3 style="text-align:center;">📤 Withdrawal History</h3>
+        <div id="withdrawHistory" style="max-height:150px;overflow-y:auto;background:#111;border-radius:10px;padding:8px;">Loading...</div>
+    </div>
+</div>
+
+<div id="leaderboardScreen" class="screen">
+    <div class="header">🏆 LEADERBOARD <button class="back" onclick="backHome()" style="float:right;">⬅ BACK</button></div>
+    <div style="background:rgba(20,20,20,0.98);border:2px solid #b8860b;border-radius:20px;padding:20px;margin:20px auto;width:90%;color:#ffd700;box-shadow:0 0 25px #8b0000;">
+        <h3>Top Players by Balance</h3>
+        <div id="fullLeaderboard" class="leaderboard-list">Loading...</div>
+    </div>
+</div>
+
+<div id="depositScreen" class="screen">
+    <div style="background:rgba(20,20,20,0.98);border:2px solid #b8860b;border-radius:20px;padding:25px;margin:20px auto;width:90%;color:#ffd700;box-shadow:0 0 25px #8b0000;">
+        <h3>💳 Deposit Accounts</h3>
+        <p>📱 Telebirr: <br><span id="telebirrNumber">Loading...</span> <button onclick="copyText('telebirrNumber')" style="width:auto;padding:6px 12px;font-size:12px;">COPY</button></p>
+        <p>🏦 CBE Birr: <br><span id="cbeNumber">Loading...</span> <button onclick="copyText('cbeNumber')" style="width:auto;padding:6px 12px;font-size:12px;">COPY</button></p>
+        <button id="telebirrBtn" onclick="selectDepositMethod('Telebirr',this)">📱 Telebirr</button>
+        <button id="cbeBtn" onclick="selectDepositMethod('CBE Birr',this)">🏦 CBE Birr</button><br>
+        <input id="depositAmount" placeholder="Amount" style="width:80%;padding:12px;margin:10px;border-radius:20px;border:1px solid #b8860b;background:#111;color:white;font-size:16px;text-align:center;"><br>
+        <textarea id="depositSMS" placeholder="Paste payment SMS" style="width:80%;height:80px;background:#111;color:white;border-radius:10px;padding:10px;"></textarea><br>
+        <button onclick="submitDeposit()">VERIFY DEPOSIT</button>
+        <button class="back" onclick="backHome()">⬅ BACK</button>
+    </div>
+</div>
+
+<div id="withdrawScreen" class="screen">
+    <div style="background:rgba(20,20,20,0.98);border:2px solid #b8860b;border-radius:20px;padding:25px;margin:20px auto;width:90%;color:#ffd700;box-shadow:0 0 25px #8b0000;">
+        <h1>💸 WITHDRAW</h1>
+        <h3>Withdraw Method</h3>
+        <button id="withdrawTelebirrBtn" onclick="selectWithdrawMethod('Telebirr',this)">📱 Telebirr</button>
+        <button id="withdrawCbeBtn" onclick="selectWithdrawMethod('CBE Birr',this)">🏦 CBE Birr</button>
+        <input id="withdrawAmount" placeholder="Amount" style="width:80%;padding:12px;margin:10px;border-radius:20px;border:1px solid #b8860b;background:#111;color:white;font-size:16px;text-align:center;"><br>
+        <input id="withdrawPhone" placeholder="Phone number" style="width:80%;padding:12px;margin:10px;border-radius:20px;border:1px solid #b8860b;background:#111;color:white;font-size:16px;text-align:center;"><br>
+        <button onclick="submitWithdraw()">REQUEST WITHDRAW</button>
+        <button class="back" onclick="backHome()">⬅ BACK</button>
+    </div>
+</div>
+
+<div id="room5" class="screen"><div id="cartela5" class="cartelaGrid"></div><button onclick="startGame(5)">START GAME</button><button class="back" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview5"><h3>Preview</h3><div class="preview-card" id="previewCard5"></div></div></div>
+<div id="room10" class="screen"><div id="cartela10" class="cartelaGrid"></div><button onclick="startGame(10)">START GAME</button><button class="back" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview10"><h3>Preview</h3><div class="preview-card" id="previewCard10"></div></div></div>
+<div id="room20" class="screen"><div id="cartela20" class="cartelaGrid"></div><button onclick="startGame(20)">START GAME</button><button class="back" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview20"><h3>Preview</h3><div class="preview-card" id="previewCard20"></div></div></div>
+
+<div id="waitingScreen" class="screen">
+    <div class="waitingCard">
+        <h2>GET READY</h2>
+        <div id="countdownCircle"><span id="countdown">25</span></div>
+        <h3>👥 Players: <span id="playerCount">0</span></h3>
+        <h2>🏆 Prize: <span id="prize">0</span> Br</h2>
+        <button id="cancelBtn" onclick="cancelCountdown()" style="background:#8b0000;color:white;width:auto;padding:8px 20px;font-size:14px;">❌ cancel</button>
+    </div>
+</div>
+
+<div id="gameScreen" class="screen">
+    <div style="display:flex;justify-content:space-around;background:rgba(0,0,0,0.7);border:1px solid #ffd700;border-radius:10px;padding:5px;font-size:13px;">
+        <span>👥 <span id="gamePlayers">0</span></span>
+        <span>🏆 <span id="gamePrize">0</span> Br</span>
+        <span>📢 <span id="callCount">0</span>/75</span>
+    </div>
+    <div class="gameLayout">
+        <div class="calledBox">
+            <h4>CALLED (<span id="callCountGame">0</span>/75)</h4>
+            <div id="currentCall">-</div>
+            <div id="callGrid" class="callGrid"></div>
+            <button onclick="toggleAutoMark()" id="autoBtn" style="width:100%;font-size:12px;padding:6px;">AUTO: ON</button>
+        </div>
+        <div class="cardArea">
+            <div id="bingoCard"></div>
+            <button class="bingoButton" onclick="claimBingo()">BINGO</button>
+        </div>
+    </div>
+</div>
+
+<div id="winnerPopup" class="screen">
+    <div class="waitingCard">
+        <h1 id="winnerTitle">🏆 BINGO WINNER</h1>
+        <h2 id="winnerName"></h2>
+        <h2 id="winnerPrize"></h2>
+        <h3>🎉 Congratulations!</h3>
+    </div>
+</div>
+<div id="invalidPopup" class="screen">
+    <div style="background:#1a1a1a;border:2px solid red;border-radius:20px;padding:30px;margin:50px auto;width:80%;">
+        <h1>❌ INVALID BINGO</h1>
+        <h2>You are banned from this game</h2>
+    </div>
+</div>
+<div id="roomMessage" class="screen" style="background:#111;color:#ffd700;padding:40px;border-radius:20px;">
+    <h2>🔒 Game Already Started</h2>
+    <button onclick="backHome()">OK</button>
+</div>
+
+<div class="popup-overlay" id="customPopup">
+    <div class="popup-box">
+        <h2 id="popupTitle"></h2>
+        <p id="popupMessage"></p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
+  authDomain: "za-bingo-7ad31.firebaseapp.com",
+  databaseURL: "https://za-bingo-7ad31-default-rtdb.firebaseio.com/",
+  projectId: "za-bingo-7ad31",
+  storageBucket: "za-bingo-7ad31.firebasestorage.app",
+  messagingSenderId: "713392974772",
+  appId: "1:713392974772:web:0e14359197fd522c06a0e1",
+  measurementId: "G-40RYH7BT4C"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let selectedCartelas=[], currentStake=0, autoMarkEnabled=true, gameBanned=false, depositMethod="", withdrawMethod="", fixedCartelas={}, calledNumbers=[], callerTimer, waitingTimer, tgUser=null;
+let appSettings = { commission: 15, minWithdraw: 50, depositAccounts: { telebirr: "0985661720", cbe: "0985661720" } };
+let currentPlayerID = null;  // Firebase Auth UID
+
+// ============ CUSTOM POPUP ============
+function showPopup(t,m,c){ document.getElementById("popupTitle").textContent=t; document.getElementById("popupMessage").textContent=m; document.getElementById("customPopup").classList.add("show"); window.popupCallback=c||null; }
+function closePopup(){ document.getElementById("customPopup").classList.remove("show"); if(typeof window.popupCallback==="function")window.popupCallback(); window.popupCallback=null; }
+
+// ============ TRANSACTIONS SYSTEM ============
+function createTransaction(playerID, type, amount, balanceBefore, balanceAfter, adminID=null) {
+    const txID = "TX_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+    db.ref("transactions/" + txID).set({
+        playerID, type, amount, balanceBefore, balanceAfter,
+        time: firebase.database.ServerValue.TIMESTAMP,
+        adminID: adminID
+    });
+}
+
+// ============ SETTINGS SYSTEM ============
+function loadSettings() {
+    db.ref("settings").once("value", snap => {
+        if (snap.exists()) appSettings = snap.val();
+        else {
+            db.ref("settings").set({
+                commission: 15, minWithdraw: 50,
+                depositAccounts: { telebirr: "0985661720", cbe: "0985661720" }
+            });
+        }
+        document.getElementById("telebirrNumber").textContent = appSettings.depositAccounts.telebirr;
+        document.getElementById("cbeNumber").textContent = appSettings.depositAccounts.cbe;
+    });
+    db.ref("settings").on("value", snap => {
+        if (snap.exists()) {
+            appSettings = snap.val();
+            document.getElementById("telebirrNumber").textContent = appSettings.depositAccounts.telebirr;
+            document.getElementById("cbeNumber").textContent = appSettings.depositAccounts.cbe;
+        }
+    });
+}
+
+// ============ GAME HISTORY SYSTEM ============
+function saveGameHistory(room, winnerID, prize, playersCount) {
+    db.ref("history/GAME_" + Date.now()).set({
+        room, winnerID, prize, playersCount,
+        time: firebase.database.ServerValue.TIMESTAMP
+    });
+}
+
+// ============ AUTH & PLAYER INIT ============
+function initApp() {
+    auth.signInAnonymously().catch(err => {
+        console.error("Auth error:", err);
+        // Fallback: continue without auth (but Firebase rules will fail)
+        setupPlayerFromTelegram();
+    });
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentPlayerID = user.uid;
+            localStorage.setItem("playerID", currentPlayerID);
+            // Link Telegram if available
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.ready();
+                tgUser = Telegram.WebApp.initDataUnsafe.user;
+                if (tgUser) {
+                    // Ensure telegram_lookup points to this auth UID
+                    db.ref("telegram_lookup/" + tgUser.id).set({ playerID: currentPlayerID });
+                    // Create or load player data
+                    db.ref("players/" + currentPlayerID).once("value", snap => {
+                        if (snap.exists()) {
+                            attachBalanceListener(currentPlayerID);
+                            applyNewPlayerBonus(currentPlayerID);
+                        } else {
+                            createNewPlayer(tgUser, currentPlayerID);
+                            attachBalanceListener(currentPlayerID);
+                            applyNewPlayerBonus(currentPlayerID);
+                        }
+                        loadMiniLeaderboard();
+                        updateRoomLocks();
+                        showScreen("screen1");
+                    });
+                } else {
+                    // No Telegram – still try to load player data by stored ID
+                    let pid = localStorage.getItem("playerID");
+                    if (pid) {
+                        db.ref("players/" + pid).once("value", snap => {
+                            if (snap.exists()) {
+                                currentPlayerID = pid;
+                                attachBalanceListener(pid);
+                            } else {
+                                createBasicPlayer(pid);
+                            }
+                        });
+                    }
+                }
+            }
+        } else {
+            // Not signed in – retry
+            auth.signInAnonymously();
+        }
+    });
+}
+
+function createNewPlayer(user, uid) {
+    db.ref("players/" + uid).set({
+        telegram_id: user.id,
+        username: user.username || "",
+        first_name: user.first_name || "",
+        phone: "",
+        balance: 0,
+        gamesPlayed: 0,
+        gamesWon: 0,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+    });
+}
+
+function createBasicPlayer(uid) {
+    db.ref("players/" + uid).set({
+        telegram_id: "",
+        username: "",
+        first_name: "Player",
+        phone: "",
+        balance: 0,
+        gamesPlayed: 0,
+        gamesWon: 0,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+    });
+}
+
+function applyNewPlayerBonus(pid) {
+    const bonusKey = "bonus_" + pid;
+    if (!localStorage.getItem(bonusKey)) {
+        db.ref("players/" + pid + "/balance").transaction(b => {
+            let newBal = (b || 0) + 30;
+            createTransaction(pid, "bonus", 30, b || 0, newBal);
+            return newBal;
+        });
+        localStorage.setItem(bonusKey, "1");
+        showPopup("Welcome Bonus!", "🎉 30 Br bonus added to your balance!");
+    }
+}
+
+function attachBalanceListener(pid) {
+    db.ref("players/" + pid + "/balance").on("value", s => {
+        document.getElementById("balance").innerHTML = Number(s.val() || 0).toFixed(2);
+        updateRoomLocks();
+    });
+}
+
+// Fallback for non-Telegram environments
+function setupPlayerFromTelegram() {
+    // keep existing behavior for backward compatibility, but auth must work
+}
+
+// ============ ROOM LOCKING ============
+function updateRoomLocks() {
+    let bal = parseFloat(document.getElementById("balance").textContent) || 0;
+    ['5','10','20'].forEach(s => {
+        let btn = document.getElementById("homeRoom"+s);
+        if (btn) {
+            if (bal < parseInt(s)) {
+                btn.classList.add("locked");
+                btn.onclick = () => showPopup("Locked", "Need "+s+" Br to enter");
+            } else {
+                btn.classList.remove("locked");
+                btn.onclick = () => openRoom('room'+s);
+            }
+        }
+    });
+}
+
+// ============ FIXED CARTELAS ============
+function generateFixedCartelas() {
+    for (let c = 1; c <= 150; c++) {
+        let B=[], I=[], N=[], G=[], O=[];
+        for (let i=1; i<=15; i++) { B.push(i); I.push(i+15); N.push(i+30); G.push(i+45); O.push(i+60); }
+        function pick(a,n) {
+            let r=[], cp=[...a];
+            while (r.length<n) {
+                let x=Math.floor(Math.random()*cp.length); r.push(cp[x]); cp.splice(x,1);
+            }
+            return r.sort((a,b)=>a-b);
+        }
+        let b=pick(B,5), i=pick(I,5), n=pick(N,5), g=pick(G,5), o=pick(O,5);
+        let card=[ b[0],i[0],n[0],g[0],o[0], b[1],i[1],n[1],g[1],o[1], b[2],i[2],n[2],g[2],o[2], b[3],i[3],n[3],g[3],o[3], b[4],i[4],n[4],g[4],o[4] ];
+        card[12]="*";
+        fixedCartelas[c]=card;
+    }
+}
+function loadFixedCartelas() {
+    db.ref("ZA_Bingo_V3/cartelas").once("value", s => {
+        if (s.exists()) fixedCartelas = s.val();
+        else { generateFixedCartelas(); db.ref("ZA_Bingo_V3/cartelas").set(fixedCartelas); }
+    });
+}
+
+// ============ SCREENS ============
+function showScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+function backHome() { showScreen("screen1"); loadMiniLeaderboard(); updateRoomLocks(); }
+function openDeposit() { showScreen("depositScreen"); }
+function openWithdraw() { showScreen("withdrawScreen"); }
+function openLeaderboard() { showScreen("leaderboardScreen"); loadFullLeaderboard(); }
+function openGameRoom() { /* keep for backward compatibility */ }
+
+// ============ LEADERBOARD ============
+function loadMiniLeaderboard() {
+    db.ref("players").orderByChild("balance").limitToLast(5).once("value", s => {
+        let h="", arr=[];
+        s.forEach(p => arr.push({name:p.val().first_name||"Player", bal:p.val().balance||0}));
+        arr.sort((a,b)=>b.bal-a.bal);
+        arr.forEach((p,i)=> h+=`<div style="display:flex;justify-content:space-between;padding:4px;border-bottom:1px solid #222;"><span>${i+1}. ${p.name}</span><span>${p.bal.toFixed(2)} Br</span></div>`);
+        document.getElementById("miniLeaderboard").innerHTML = h || "No players yet.";
+    });
+}
+function loadFullLeaderboard() {
+    db.ref("players").orderByChild("balance").limitToLast(20).once("value", s => {
+        let h="", arr=[];
+        s.forEach(p => arr.push({name:p.val().first_name||"Player", bal:p.val().balance||0}));
+        arr.sort((a,b)=>b.bal-a.bal);
+        arr.forEach((p,i)=> h+=`<div class="leaderboard-item"><span>${i+1}. ${p.name}</span><span>${p.bal.toFixed(2)} Br</span></div>`);
+        document.getElementById("fullLeaderboard").innerHTML = h || "No players yet.";
+    });
+}
+
+// ============ PROFILE ============
+function openProfile() {
+    showScreen("profileScreen");
+    let pid = currentPlayerID || localStorage.getItem("playerID");
+    if (!pid) return;
+    db.ref("players/"+pid).once("value", snap => {
+        let d = snap.val() || {};
+        document.getElementById("profileName").textContent = d.first_name || "Player";
+        document.getElementById("profileTelegramID").textContent = d.telegram_id || "-";
+        document.getElementById("profileBalance").textContent = (d.balance || 0).toFixed(2) + " Br";
+        document.getElementById("profileGamesPlayed").textContent = d.gamesPlayed || 0;
+        document.getElementById("profileGamesWon").textContent = d.gamesWon || 0;
+        let wr = d.gamesPlayed ? ((d.gamesWon/d.gamesPlayed)*100).toFixed(1) : 0;
+        document.getElementById("profileWinRate").textContent = wr + "%";
+    });
+    db.ref("ZA_Bingo_V3/deposits").orderByChild("playerID").equalTo(pid).once("value", snap => {
+        let h = "";
+        snap.forEach(c => {
+            let d = c.val();
+            h += `<div style="display:flex;justify-content:space-between;padding:5px;font-size:13px;"><span>${d.amount} Br (${d.method||""})</span><span style="color:${d.status=='approved'?'#00ff00':'orange'}">${d.status||"pending"}</span></div>`;
+        });
+        document.getElementById("depositHistory").innerHTML = h || "No deposits.";
+    });
+    db.ref("ZA_Bingo_V3/withdraws").orderByChild("playerID").equalTo(pid).once("value", snap => {
+        let h = "";
+        snap.forEach(c => {
+            let w = c.val();
+            h += `<div style="display:flex;justify-content:space-between;padding:5px;font-size:13px;"><span>${w.amount} Br (${w.method||""})</span><span style="color:${w.status=='approved'?'#00ff00':'orange'}">${w.status||"pending"}</span></div>`;
+        });
+        document.getElementById("withdrawHistory").innerHTML = h || "No withdrawals.";
+    });
+}
+
+// ============ DEPOSIT (secure – pending only) ============
+function selectDepositMethod(method, btn) {
+    depositMethod = method;
+    document.getElementById("telebirrBtn").classList.remove("selected");
+    document.getElementById("cbeBtn").classList.remove("selected");
+    btn.classList.add("selected");
+}
+function submitDeposit() {
+    let playerID = currentPlayerID || localStorage.getItem("playerID");
+    if (!playerID) { showPopup("Error", "Player account not found"); return; }
+    let amount = Number(document.getElementById("depositAmount").value);
+    let sms = document.getElementById("depositSMS").value;
+    if (!amount || !sms) { showPopup("Error", "Enter amount and SMS"); return; }
+
+    // Only create pending deposit – balance change only by admin
+    const depositID = "DEP_" + Date.now();
+    db.ref("ZA_Bingo_V3/deposits/" + depositID).set({
+        playerID: playerID,
+        amount: amount,
+        method: depositMethod || "Telebirr",
+        paymentInfo: sms,
+        status: "pending",
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        approvedAt: null,
+        adminID: null
+    }).then(() => {
+        showPopup("Deposit Submitted", "Waiting for admin approval");
+        document.getElementById("depositAmount").value = "";
+        document.getElementById("depositSMS").value = "";
+    }).catch(err => {
+        showPopup("Error", "Failed to submit: " + err.message);
+    });
+}
+
+// ============ WITHDRAW ============
+function selectWithdrawMethod(method, btn) {
+    withdrawMethod = method;
+    document.getElementById("withdrawTelebirrBtn").classList.remove("selected");
+    document.getElementById("withdrawCbeBtn").classList.remove("selected");
+    btn.classList.add("selected");
+}
+function submitWithdraw() {
+    let playerID = currentPlayerID || localStorage.getItem("playerID");
+    let amount = Number(document.getElementById("withdrawAmount").value);
+    let phone = document.getElementById("withdrawPhone").value;
+    if (!playerID) { showPopup("Error", "Player not found"); return; }
+    if (!amount || !phone) { showPopup("Error", "Enter amount and phone"); return; }
+    if (amount < appSettings.minWithdraw) { showPopup("Error", "Minimum " + appSettings.minWithdraw + " Br"); return; }
+
+    db.ref("players/" + playerID + "/balance").once("value", snap => {
+        let balBefore = snap.val() || 0;
+        if (balBefore < amount) { showPopup("Error", "Insufficient balance"); return; }
+        db.ref("players/" + playerID + "/balance").transaction(current => current < amount ? current : current - amount, (err, committed) => {
+            if (err || !committed) { showPopup("Error", "Transaction failed"); return; }
+            let balAfter = balBefore - amount;
+            db.ref("ZA_Bingo_V3/withdraws/WITH_" + Date.now()).set({
+                playerID, amount, phone, method: withdrawMethod,
+                status: "pending", time: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                createTransaction(playerID, "withdraw", amount, balBefore, balAfter);
+                showPopup("Withdrawal Requested", "Pending admin approval");
+                document.getElementById("withdrawAmount").value = "";
+                document.getElementById("withdrawPhone").value = "";
+            });
+        });
+    });
+}
+
+// ============ GAME ROOMS & CARTELAS ============
+function createCartelas(id) {
+    let box = document.getElementById(id);
+    box.innerHTML = ""; selectedCartelas = [];
+    for (let i = 1; i <= 150; i++) {
+        let btn = document.createElement("button");
+        btn.innerHTML = i;
+        if (window.takenCartelas && window.takenCartelas[i]) {
+            btn.style.background = "#444"; btn.disabled = true;
+        }
+        btn.onclick = function() {
+            if (window.takenCartelas && window.takenCartelas[i]) { showPopup("Taken", "Already taken"); return; }
+            if (btn.classList.contains("selected")) {
+                btn.classList.remove("selected");
+                selectedCartelas = selectedCartelas.filter(x => x != i);
+            } else {
+                if (selectedCartelas.length < 2) { btn.classList.add("selected"); selectedCartelas.push(i); }
+                else { showPopup("Limit", "Max 2 Cartelas"); }
+            }
+            showCartelaPreview(id.replace("cartela",""), i);
+        };
+        box.appendChild(btn);
+    }
+}
+function showCartelaPreview(stake, num) {
+    let pd = document.getElementById("preview"+stake), cd = document.getElementById("previewCard"+stake);
+    if (!fixedCartelas[num]) return;
+    pd.classList.add("active");
+    let card = fixedCartelas[num], h="";
+    card.forEach(v => h += `<div class="${v=='*'?'free':''}">${v}</div>`);
+    cd.innerHTML = h;
+}
+
+function openRoom(room) {
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/status").once("value", s => {
+        if (s.val() == "playing") { showPopup("Locked", "Game already started"); return; }
+        showScreen(room);
+        db.ref("ZA_Bingo_V3/rooms/" + room).transaction(c => c || {status:"waiting", stake:parseInt(room.replace("room","")), countdown:25});
+        db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas").once("value", ts => {
+            window.takenCartelas = ts.val() || {};
+            if (room == "room5") createCartelas("cartela5");
+            if (room == "room10") createCartelas("cartela10");
+            if (room == "room20") createCartelas("cartela20");
+        });
+    });
+}
+
+// ============ GAME LOGIC ============
+function checkPlayerBalance(stake, pid) {
+    return new Promise((resolve, reject) => {
+        db.ref("players/" + pid + "/balance").once("value", s => {
+            let balBefore = s.val() || 0;
+            if (balBefore < stake) { showPopup("Insufficient Balance", "Need " + stake + " Br"); reject(); return; }
+            db.ref("players/" + pid + "/balance").transaction(c => c < stake ? c : c - stake, (e, comm) => {
+                if (e || !comm) { showPopup("Error", "Transaction failed"); reject(); }
+                else {
+                    createTransaction(pid, "game_entry", stake, balBefore, balBefore - stake);
+                    resolve();
+                }
+            });
+        });
+    });
+}
+
+async function startGame(stake) {
+    currentStake = stake; gameBanned = false;
+    let pid = currentPlayerID || localStorage.getItem("playerID");
+    if (!pid) { showPopup("Error", "Player not found"); return; }
+    if (selectedCartelas.length == 0) { showPopup("Select Cartela", "Choose at least one"); return; }
+    let room = "room" + stake;
+    let playerSnap = await db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).once("value");
+    if (playerSnap.exists()) { showPopup("Already Joined", "You are in this room"); return; }
+    try { await checkPlayerBalance(stake, pid); } catch(e) { return; }
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).set({ cartelas: selectedCartelas, status: "playing" });
+    selectedCartelas.forEach(c => db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas/" + c).set(true));
+    db.ref("players/" + pid).update({ lastSeen: firebase.database.ServerValue.TIMESTAMP });
+    db.ref("players/" + pid + "/gamesPlayed").transaction(c => (c || 0) + 1);
+    showScreen("waitingScreen");
+    attachWaitingListeners(room);
+}
+
+function attachWaitingListeners(room) {
+    if (window.roomPlayersRef) window.roomPlayersRef.off();
+    if (window.roomStatusRef) window.roomStatusRef.off();
+    if (window.roomCountdownRef) window.roomCountdownRef.off();
+    if (window.waitingTimer) clearInterval(window.waitingTimer);
+    window.roomPlayersRef = db.ref("ZA_Bingo_V3/rooms/" + room + "/players");
+    window.roomStatusRef = db.ref("ZA_Bingo_V3/rooms/" + room + "/status");
+    window.roomCountdownRef = db.ref("ZA_Bingo_V3/rooms/" + room + "/countdown");
+    window.roomPlayersRef.on("value", s => {
+        let count = s.numChildren();
+        document.getElementById("playerCount").innerHTML = count;
+        let tc = 0; s.forEach(p => tc += (p.val().cartelas || []).length);
+        let prize = (tc * currentStake * (1 - appSettings.commission / 100)).toFixed(2);
+        document.getElementById("prize").innerHTML = prize;
+        if (count >= 2) {
+            window.roomStatusRef.once("value", ss => {
+                if (ss.val() == "countdown" || ss.val() == "playing") return;
+                window.roomStatusRef.set("countdown");
+                window.roomCountdownRef.set(25);
+                document.getElementById("countdown").textContent = "25";
+                let time = 25;
+                window.waitingTimer = setInterval(() => {
+                    time--;
+                    window.roomCountdownRef.set(time);
+                    document.getElementById("countdown").textContent = time;
+                    if (time <= 0) {
+                        clearInterval(window.waitingTimer);
+                        window.roomStatusRef.set("playing");
+                        lockCartelas();
+                        openGameScreen();
+                    }
+                }, 1000);
+            });
+        } else {
+            document.getElementById("countdown").innerHTML = "Waiting...";
+        }
+    });
+}
+
+function lockCartelas() {
+    document.querySelectorAll(".cartelaGrid button").forEach(b => b.disabled = true);
+    document.getElementById("cancelBtn").style.display = "none";
+}
+function cancelCountdown() {
+    if (!currentStake) return;
+    let room = "room" + currentStake;
+    if (window.roomPlayersRef) window.roomPlayersRef.off();
+    if (window.roomStatusRef) window.roomStatusRef.off();
+    if (window.roomCountdownRef) window.roomCountdownRef.off();
+    if (window.waitingTimer) clearInterval(window.waitingTimer);
+    let pid = currentPlayerID || localStorage.getItem("playerID");
+    db.ref("players/" + pid + "/balance").once("value", s => {
+        let balBefore = s.val() || 0;
+        db.ref("players/" + pid + "/balance").transaction(b => {
+            let newBal = (b || 0) + currentStake;
+            createTransaction(pid, "refund", currentStake, balBefore, newBal);
+            return newBal;
+        });
+    });
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).once("value", s => { if (s.exists()) s.ref.remove(); });
+    selectedCartelas.forEach(c => db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas/" + c).remove());
+    selectedCartelas = [];
+    showScreen("room" + currentStake);
+    createCartelas("cartela" + currentStake);
+}
+
+function openGameScreen() {
+    showScreen("gameScreen");
+    createCallGrid();
+    document.getElementById("gamePlayers").innerHTML = document.getElementById("playerCount").innerHTML;
+    document.getElementById("gamePrize").innerHTML = document.getElementById("prize").innerHTML;
+    createBingoCards();
+    listenToCalledNumbers();
+    listenToWinner();
+    setTimeout(() => setupCaller("room" + currentStake), 1000);
+}
+
+function createBingoCards() {
+    let area = document.getElementById("bingoCard"); area.innerHTML = "";
+    selectedCartelas.forEach(num => {
+        let card = fixedCartelas[num]; if (!card) return;
+        let container = document.createElement("div");
+        container.innerHTML = `<h4>Cartela ${num}</h4><div class="bingoLetters"><span>B</span><span>I</span><span>N</span><span>G</span><span>O</span></div>`;
+        let grid = document.createElement("div"); grid.className = "singleCard";
+        card.forEach(v => {
+            let box = document.createElement("div"); box.innerHTML = v;
+            if (v == "*") box.classList.add("freeBox");
+            box.onclick = () => box.classList.toggle("marked");
+            grid.appendChild(box);
+        });
+        container.appendChild(grid);
+        area.appendChild(container);
+    });
+}
+
+function listenToCalledNumbers() {
+    db.ref("ZA_Bingo_V3/rooms/room" + currentStake + "/calledNumbers").on("value", s => {
+        calledNumbers = s.val() || [];
+        if (calledNumbers.length) {
+            let n = calledNumbers[calledNumbers.length-1],
+                l = n<=15?"B":n<=30?"I":n<=45?"N":n<=60?"G":"O";
+            document.getElementById("currentCall").className = l;
+            document.getElementById("currentCall").innerHTML = l + " " + n;
+            let box = document.getElementById("call_" + n); if (box) box.classList.add("called");
+            autoMark(n);
+        }
+    });
+}
+function autoMark(n) {
+    if (!autoMarkEnabled) return;
+    document.querySelectorAll(".singleCard div").forEach(b => { if (Number(b.innerHTML) == n) b.classList.add("marked"); });
+}
+
+function setupCaller(room) {
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/caller").transaction(current => {
+        if (current) return;
+        return { type: "server", time: firebase.database.ServerValue.TIMESTAMP };
+    }, (err, comm) => {
+        if (comm) {
+            db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").once("value", s => {
+                if (!s.exists()) db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").set([]);
+                startCaller();
+            });
+        }
+    });
+}
+function startCaller() {
+    let room = "room" + currentStake;
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").once("value", s => {
+        calledNumbers = s.val() || [];
+        callerTimer = setInterval(() => {
+            if (calledNumbers.length >= 75) { clearInterval(callerTimer); return; }
+            let n; do { n = Math.floor(Math.random() * 75) + 1; } while (calledNumbers.includes(n));
+            calledNumbers.push(n);
+            document.getElementById("callCountGame").innerHTML = calledNumbers.length;
+            db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").set(calledNumbers);
+        }, 3000);
+    });
+}
+function toggleAutoMark() {
+    autoMarkEnabled = !autoMarkEnabled;
+    document.getElementById("autoBtn").innerHTML = autoMarkEnabled ? "AUTO: ON" : "AUTO: OFF";
+}
+
+function listenToWinner() {
+    db.ref("ZA_Bingo_V3/rooms/room" + currentStake + "/winner").on("value", s => {
+        let winner = s.val(); if (!winner) return;
+        clearInterval(callerTimer);
+        let myID = currentPlayerID || localStorage.getItem("playerID");
+        if (winner.playerID == myID) {
+            document.getElementById("winnerTitle").innerHTML = "🏆 YOU WIN!";
+            document.getElementById("winnerName").innerHTML = "🎉 Congratulations!";
+        } else {
+            document.getElementById("winnerTitle").innerHTML = "❌ GAME OVER";
+            document.getElementById("winnerName").innerHTML = "YOU LOST";
+        }
+        document.getElementById("winnerPrize").innerHTML = "Prize: " + winner.prize + " Br";
+        showScreen("winnerPopup");
+        setTimeout(() => { resetRoom(currentStake); resetGame(); }, 4000);
+    });
+}
+
+function claimBingo() {
+    if (gameBanned) { showPopup("Banned", "You are banned"); return; }
+    let cards = document.querySelectorAll(".singleCard"), winner = false;
+    cards.forEach(card => {
+        let boxes = card.querySelectorAll("div"), values = [];
+        boxes.forEach(box => {
+            let v = box.innerHTML;
+            if (v == "*") values.push(true);
+            else if (box.classList.contains("marked") && calledNumbers.includes(Number(v))) values.push(true);
+            else values.push(false);
+        });
+        for (let r=0;r<5;r++) { let w=true; for (let c=0;c<5;c++) if (!values[r*5+c]) w=false; if (w) winner=true; }
+        for (let c=0;c<5;c++) { let w=true; for (let r=0;r<5;r++) if (!values[r*5+c]) w=false; if (w) winner=true; }
+        if (values[0]&&values[6]&&values[12]&&values[18]&&values[24]) winner=true;
+        if (values[4]&&values[8]&&values[12]&&values[16]&&values[20]) winner=true;
+        if (values[0]&&values[4]&&values[20]&&values[24]) winner=true;
+    });
+    if (!winner) { gameBanned = true; showScreen("invalidPopup"); setTimeout(() => { gameBanned = false; backHome(); }, 3000); return; }
+    clearInterval(callerTimer);
+    let room = "room" + currentStake, pid = currentPlayerID || localStorage.getItem("playerID");
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").transaction(c => c ? undefined : { playerID: pid, prize: 0 }, (e, comm) => {
+        if (!comm) return;
+        db.ref("ZA_Bingo_V3/rooms/" + room + "/players").once("value", s => {
+            let tc = 0, playerCount = s.numChildren();
+            s.forEach(p => tc += (p.val().cartelas || []).length);
+            let prize = tc * currentStake * (1 - appSettings.commission / 100);
+            db.ref("players/" + pid + "/balance").once("value", bs => {
+                let balBefore = bs.val() || 0;
+                db.ref("players/" + pid + "/balance").transaction(b => {
+                    let newBal = (b || 0) + prize;
+                    createTransaction(pid, "win", prize, balBefore, newBal);
+                    db.ref("players/" + pid + "/gamesWon").transaction(w => (w || 0) + 1);
+                    return newBal;
+                }, (err, c) => {
+                    if (err || !c) return;
+                    db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").update({ prize: prize.toFixed(2) });
+                    saveGameHistory(room, pid, prize.toFixed(2), playerCount);
+                    showScreen("winnerPopup");
+                    document.getElementById("winnerTitle").innerHTML = "🏆 YOU WIN!";
+                    document.getElementById("winnerPrize").innerHTML = "Prize: " + prize.toFixed(2) + " Br";
+                    setTimeout(() => { resetRoom(currentStake); resetGame(); }, 4000);
+                });
+            });
+        });
+    });
+}
+
+function resetRoom(stake) {
+    let room = "room" + stake;
+    db.ref("ZA_Bingo_V3/rooms/" + room).update({ status: "waiting", countdown: 25 });
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/players").remove();
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas").remove();
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").remove();
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").remove();
+    db.ref("ZA_Bingo_V3/rooms/" + room + "/caller").remove();
+}
+function resetGame() { selectedCartelas = []; calledNumbers = []; gameBanned = false; backHome(); }
+function copyText(id) {
+    navigator.clipboard.writeText(document.getElementById(id).innerText);
+    showPopup("Copied", "Number copied!");
+}
+
+// Room status watcher
+setInterval(() => {
+    ['room5','room10','room20'].forEach((r, i) => {
+        db.ref("ZA_Bingo_V3/rooms/" + r).on("value", s => {
+            let d = s.val();
+            let st = document.getElementById("status" + (i==0?5:i==1?10:20));
+            if (st && d) {
+                if (d.status == "playing") { st.textContent = "🔴 LIVE"; st.className = "room-status status-playing"; }
+                else if (d.status == "countdown") { st.textContent = "⏳ " + d.countdown + "s"; st.className = "room-status status-countdown"; }
+                else { st.textContent = "🟢 Open"; st.className = "room-status status-waiting"; }
+            }
+        });
+    });
+}, 2000);
+
+// Initialize
+initRooms = () => { ['room5','room10','room20'].forEach(r => db.ref("ZA_Bingo_V3/rooms/" + r).once("value", s => { if (!s.exists()) db.ref("ZA_Bingo_V3/rooms/" + r).set({ status:"waiting", stake:parseInt(r.replace("room","")), countdown:25, lastCall:"", prizepool:0, locked:false }); })); };
+initRooms();
+loadFixedCartelas();
+loadSettings();
+initApp();  // starts auth and loads player
+</script>
+</body>
+</html>
