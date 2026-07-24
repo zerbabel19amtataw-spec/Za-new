@@ -274,72 +274,97 @@ function saveGameHistory(room, winnerID, prize, playersCount) {
     });
 }
 
-// ============ AUTH & PLAYER INIT ============
+// ============ AUTH & PLAYER INIT (with migration) ============
 function initApp() {
     auth.signInAnonymously().catch(err => {
         console.error("Auth error:", err);
-        // Fallback: continue without auth (but Firebase rules will fail)
         setupPlayerFromTelegram();
     });
 
     auth.onAuthStateChanged(user => {
-        if (user) {
-            // We use Firebase Auth only for security, not for player keys.
-            // The player key is the Telegram ID.
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                tgUser = Telegram.WebApp.initDataUnsafe.user;
-                if (tgUser) {
-                    let pid = tgUser.id.toString(); // Telegram ID as string
-                    currentPlayerID = pid;
-                    localStorage.setItem("playerID", pid);
-                    // Ensure telegram_lookup points to the same ID (though it's itself)
-                    db.ref("telegram_lookup/" + tgUser.id).set({ playerID: pid });
-                    // Create or load player data under players/pid
-                    db.ref("players/" + pid).once("value", snap => {
-                        if (snap.exists()) {
-                            attachBalanceListener(pid);
-                            applyNewPlayerBonus(pid);
-                        } else {
-                            createNewPlayer(tgUser, pid);
-                            attachBalanceListener(pid);
-                            applyNewPlayerBonus(pid);
-                        }
-                        loadMiniLeaderboard();
-                        updateRoomLocks();
-                        showScreen("screen1");
+        if (!user) {
+            auth.signInAnonymously();
+            return;
+        }
+
+        if (!window.Telegram || !Telegram.WebApp) {
+            // Not in Telegram – fallback to stored ID
+            let pid = localStorage.getItem("playerID");
+            if (pid) {
+                db.ref("players/" + pid).once("value", snap => {
+                    if (snap.exists()) {
+                        currentPlayerID = pid;
+                        attachBalanceListener(pid);
+                        finishInit();
+                    } else {
+                        createBasicPlayer(pid);
+                        attachBalanceListener(pid);
+                        finishInit();
+                    }
+                });
+            }
+            return;
+        }
+
+        Telegram.WebApp.ready();
+        tgUser = Telegram.WebApp.initDataUnsafe.user;
+        if (!tgUser) return;
+
+        const tgID = tgUser.id.toString();
+        const authUID = user.uid;
+
+        // Step 1: Check if player exists under Telegram ID
+        db.ref("players/" + tgID).once("value", snap => {
+            if (snap.exists()) {
+                // Already migrated – use Telegram ID
+                currentPlayerID = tgID;
+                localStorage.setItem("playerID", tgID);
+                db.ref("telegram_lookup/" + tgID).set({ playerID: tgID });
+                attachBalanceListener(tgID);
+                applyNewPlayerBonus(tgID);
+                finishInit();
+                return;
+            }
+
+            // Step 2: Check if player exists under Auth UID (old data)
+            db.ref("players/" + authUID).once("value", oldSnap => {
+                if (oldSnap.exists()) {
+                    // Migrate: copy data to Telegram ID key
+                    const oldData = oldSnap.val();
+                    // Add telegram_id if missing
+                    oldData.telegram_id = tgUser.id;
+                    oldData.username = tgUser.username || oldData.username || "";
+                    oldData.first_name = tgUser.first_name || oldData.first_name || "Player";
+                    
+                    // Write to new key
+                    db.ref("players/" + tgID).set(oldData).then(() => {
+                        // Update lookup
+                        db.ref("telegram_lookup/" + tgID).set({ playerID: tgID });
+                        // Optional: remove old key to avoid confusion
+                        // db.ref("players/" + authUID).remove();
+                        currentPlayerID = tgID;
+                        localStorage.setItem("playerID", tgID);
+                        attachBalanceListener(tgID);
+                        applyNewPlayerBonus(tgID);
+                        finishInit();
                     });
                 } else {
-                    // No Telegram user – fallback to stored ID or auth uid
-                    let pid = localStorage.getItem("playerID");
-                    if (pid) {
-                        db.ref("players/" + pid).once("value", snap => {
-                            if (snap.exists()) {
-                                currentPlayerID = pid;
-                                attachBalanceListener(pid);
-                            } else {
-                                createBasicPlayer(pid);
-                            }
-                        });
-                    }
+                    // No data anywhere – create new player
+                    createNewPlayer(tgUser, tgID);
+                    db.ref("telegram_lookup/" + tgID).set({ playerID: tgID });
+                    currentPlayerID = tgID;
+                    localStorage.setItem("playerID", tgID);
+                    attachBalanceListener(tgID);
+                    applyNewPlayerBonus(tgID);
+                    finishInit();
                 }
-            } else {
-                // Not in Telegram environment, try stored ID
-                let pid = localStorage.getItem("playerID");
-                if (pid) {
-                    db.ref("players/" + pid).once("value", snap => {
-                        if (snap.exists()) {
-                            currentPlayerID = pid;
-                            attachBalanceListener(pid);
-                        } else {
-                            createBasicPlayer(pid);
-                        }
-                    });
-                }
-            }
-        } else {
-            // Not signed in – retry
-            auth.signInAnonymously();
+            });
+        });
+
+        function finishInit() {
+            loadMiniLeaderboard();
+            updateRoomLocks();
+            showScreen("screen1");
         }
     });
 }
