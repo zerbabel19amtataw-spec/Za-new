@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +7,7 @@
     <title>ZA Bingo V3</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* === RESET & BASE === */
+        /* ===== RESET & BASE ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: #0a0a0a;
@@ -22,7 +23,7 @@
         .screen.active { display: block; }
         @keyframes fadeIn { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
 
-        /* === HOME LAYOUT === */
+        /* ===== HOME LAYOUT ===== */
         .home-container { max-width: 450px; margin: 0 auto; }
         .top-section {
             display: flex;
@@ -90,42 +91,38 @@
             display: inline-block;
         }
 
-        /* === BUTTONS SCALED 1.3x (except deposit/withdraw screens) === */
+        /* ===== BUTTONS SCALED 1.3x (except deposit/withdraw screens) ===== */
         button:not(#depositScreen button):not(#withdrawScreen button):not(.profile-btn):not(.refresh-btn):not(.no-scale) {
             transform: scale(1.3);
             margin: 10px 8px;
         }
-        /* cartela buttons need smaller scaling to fit grid */
         .cartelaGrid button {
             transform: scale(1.1) !important;
             margin: 2px !important;
             padding: 8px 0;
         }
-        /* Back button in header – no scale */
         .header .back {
             transform: scale(1) !important;
             margin: 0 !important;
             float: right;
         }
-        /* Popup button */
         .popup-box button {
             transform: scale(1.2);
             margin: 15px auto 0;
         }
-        /* Room status text */
         .room-status { font-size: 10px; display: block; margin-top: 2px; }
         .status-waiting { color: #00ff00; }
         .status-countdown { color: #ffa500; }
         .status-playing { color: #ff0000; }
 
-        /* === POPUP OVERLAY === */
+        /* ===== POPUP ===== */
         .popup-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; }
         .popup-overlay.show { display: flex; }
         .popup-box { background: linear-gradient(145deg, #1a1a1a, #000); border: 3px solid #ffd700; border-radius: 25px; padding: 30px; text-align: center; color: #ffd700; box-shadow: 0 0 50px #ff0000; width: 90%; max-width: 380px; animation: popIn 0.3s; }
         @keyframes popIn { from{ transform:scale(0.7); opacity:0; } to{ transform:scale(1); opacity:1; } }
         .popup-box button { background: #8b0000; border: 2px solid #ffd700; color: #ffd700; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; padding: 10px 25px; }
 
-        /* === OTHER COMMON ELEMENTS === */
+        /* ===== OTHER COMMON ELEMENTS ===== */
         .header { font-size: 28px; font-weight: 900; padding: 20px; text-shadow: 0 0 10px #8b0000, 0 0 20px #ff0000; color: #ffd700; background: linear-gradient(180deg, #1a1a1a, #000); border-bottom: 2px solid #b8860b; }
         .back { background: #8b0000; border: 2px solid #ff0000; color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
         .selected { background: #006400!important; color: #fff!important; box-shadow: 0 0 20px #00ff00!important; }
@@ -159,7 +156,6 @@
         .rooms-row, .action-row { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
         .room-btn, .action-btn { flex: 1; padding: 12px 5px; background: linear-gradient(145deg, #1a1a1a, #000); border: 2px solid #b8860b; border-radius: 15px; color: #ffd700; font-size: 14px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(255,0,0,0.4); }
         .room-btn:hover, .action-btn:hover { border-color: #ffd700; box-shadow: 0 0 20px #ff0000; transform: translateY(-2px); }
-        /* deposit & withdraw screens – buttons remain normal size */
         #depositScreen button, #withdrawScreen button {
             transform: scale(1) !important;
             margin: 8px !important;
@@ -882,16 +878,25 @@ function copyText(id) {
     showPopup("Copied", "Number copied!");
 }
 
-// ========== BALANCE & REFRESH ==========
+// ========== BALANCE LISTENER – FIXED (immediate .once + listener) ==========
 function attachBalanceListener(pid) {
     if (window.balanceRef) window.balanceRef.off();
     const balanceEl = document.getElementById("balance");
+
+    // 1. IMMEDIATE one-time fetch – this always works
+    db.ref("players/" + pid + "/balance").once("value", snap => {
+        const val = snap.val();
+        balanceEl.innerHTML = (val !== null && val !== undefined) ? Number(val).toFixed(2) : "0.00";
+        updateRoomLocks();
+    });
+
+    // 2. Real-time listener for updates
     window.balanceRef = db.ref("players/" + pid + "/balance");
     window.balanceRef.on("value", snap => {
         const val = snap.val();
         balanceEl.innerHTML = (val !== null && val !== undefined) ? Number(val).toFixed(2) : "0.00";
         updateRoomLocks();
-        // Update profile if open
+        // Also update profile if it's open
         if (document.getElementById("profileScreen").classList.contains("active")) openProfile();
     }, err => {
         console.error("Balance listener error:", err);
@@ -899,13 +904,12 @@ function attachBalanceListener(pid) {
     });
 }
 
+// ========== REFRESH ==========
 function refreshData() {
     if (!currentPlayerID) {
-        // Try to re-initialize
         initApp();
         return;
     }
-    // Re-attach listener to force update
     attachBalanceListener(currentPlayerID);
     loadMiniLeaderboard();
     updateRoomLocks();
@@ -913,6 +917,7 @@ function refreshData() {
     showPopup("Refreshed", "Data updated!");
 }
 
+// ========== ROOM LOCK ==========
 function updateRoomLocks() {
     const bal = parseFloat(document.getElementById("balance").textContent) || 0;
     ['5', '10', '20'].forEach(s => {
@@ -928,20 +933,18 @@ function updateRoomLocks() {
     });
 }
 
-// ========== INIT APP ==========
+// ========== INIT ==========
 function initApp() {
     auth.signInAnonymously().catch(console.error);
     auth.onAuthStateChanged(user => {
         if (!user) { auth.signInAnonymously(); return; }
 
-        // Get Telegram user
         let tgID = null;
         if (window.Telegram && Telegram.WebApp) {
             Telegram.WebApp.ready();
             tgUser = Telegram.WebApp.initDataUnsafe.user;
             if (tgUser) tgID = tgUser.id.toString();
         }
-        // Fallback to localStorage
         if (!tgID) tgID = localStorage.getItem("playerID");
 
         if (!tgID) {
@@ -1018,7 +1021,7 @@ setInterval(() => {
     });
 }, 2000);
 
-// ========== INITIALIZE ==========
+// ========== INITIALISE ==========
 function initRooms() {
     ['room5', 'room10', 'room20'].forEach(r => db.ref("ZA_Bingo_V3/rooms/" + r).once("value", s => {
         if (!s.exists()) db.ref("ZA_Bingo_V3/rooms/" + r).set({ status: "waiting", stake: parseInt(r.replace("room", "")), countdown: 25, lastCall: "", prizepool: 0, locked: false });
@@ -1031,3 +1034,4 @@ initApp();
 </script>
 </body>
 </html>
+```
