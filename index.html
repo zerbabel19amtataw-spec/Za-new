@@ -863,12 +863,25 @@
             });
         }
 
+        // ─── FIXED: loadWalletBalance with initial read + listener ───
         function loadWalletBalance() {
             getPlayerID(function(pid) {
-                if (!pid) return;
+                console.log("loadWalletBalance: pid =", pid);
+                if (!pid) {
+                    document.getElementById("balance").innerHTML = "0.00";
+                    return;
+                }
+                // first, read once to show immediately
+                db.ref("players/" + pid + "/balance").once("value", function(snap) {
+                    const bal = snap.val() || 0;
+                    document.getElementById("balance").innerHTML = Number(bal).toFixed(2);
+                    console.log("Initial balance set to", bal);
+                });
+                // then attach listener for live updates
                 db.ref("players/" + pid + "/balance").on("value", function(snap) {
                     const bal = snap.val() || 0;
                     document.getElementById("balance").innerHTML = Number(bal).toFixed(2);
+                    console.log("Balance updated to", bal);
                 });
             });
         }
@@ -885,7 +898,6 @@
         function loadProfile() {
             getPlayerID(function(pid) {
                 if (!pid) {
-                    // show placeholder
                     document.getElementById("profileTgId").innerText = "Not found";
                     return;
                 }
