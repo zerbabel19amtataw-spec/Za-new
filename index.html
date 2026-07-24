@@ -6,7 +6,6 @@
     <title>ZA Bingo V3</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* === RESET & BASE === */
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             background: #0a0a0a;
@@ -22,7 +21,6 @@
         .screen.active { display: block; }
         @keyframes fadeIn { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
 
-        /* === HOME LAYOUT === */
         .home-container { max-width: 450px; margin: 0 auto; }
         .top-section {
             display: flex;
@@ -90,42 +88,35 @@
             display: inline-block;
         }
 
-        /* === BUTTONS SCALED 1.3x (except deposit/withdraw screens) === */
         button:not(#depositScreen button):not(#withdrawScreen button):not(.profile-btn):not(.refresh-btn):not(.no-scale) {
             transform: scale(1.3);
             margin: 10px 8px;
         }
-        /* cartela buttons need smaller scaling to fit grid */
         .cartelaGrid button {
             transform: scale(1.1) !important;
             margin: 2px !important;
             padding: 8px 0;
         }
-        /* Back button in header – no scale */
         .header .back {
             transform: scale(1) !important;
             margin: 0 !important;
             float: right;
         }
-        /* Popup button */
         .popup-box button {
             transform: scale(1.2);
             margin: 15px auto 0;
         }
-        /* Room status text */
         .room-status { font-size: 10px; display: block; margin-top: 2px; }
         .status-waiting { color: #00ff00; }
         .status-countdown { color: #ffa500; }
         .status-playing { color: #ff0000; }
 
-        /* === POPUP OVERLAY === */
         .popup-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; }
         .popup-overlay.show { display: flex; }
         .popup-box { background: linear-gradient(145deg, #1a1a1a, #000); border: 3px solid #ffd700; border-radius: 25px; padding: 30px; text-align: center; color: #ffd700; box-shadow: 0 0 50px #ff0000; width: 90%; max-width: 380px; animation: popIn 0.3s; }
         @keyframes popIn { from{ transform:scale(0.7); opacity:0; } to{ transform:scale(1); opacity:1; } }
         .popup-box button { background: #8b0000; border: 2px solid #ffd700; color: #ffd700; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; padding: 10px 25px; }
 
-        /* === OTHER COMMON ELEMENTS === */
         .header { font-size: 28px; font-weight: 900; padding: 20px; text-shadow: 0 0 10px #8b0000, 0 0 20px #ff0000; color: #ffd700; background: linear-gradient(180deg, #1a1a1a, #000); border-bottom: 2px solid #b8860b; }
         .back { background: #8b0000; border: 2px solid #ff0000; color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
         .selected { background: #006400!important; color: #fff!important; box-shadow: 0 0 20px #00ff00!important; }
@@ -154,24 +145,21 @@
         .preview-card div { background: #1a1a1a; border: 1px solid #444; color: white; padding: 8px 0; font-size: 14px; border-radius: 6px; text-align: center; }
         .preview-card .free { background: gold; color: black; }
         .room-btn, .action-btn { transition: all 0.2s; }
-        .room-btn.locked { background: #222!important; border-color: #444!important; color: #666!important; cursor: not-allowed; box-shadow: none; }
-        .room-btn.locked:hover { transform: none; }
         .rooms-row, .action-row { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
         .room-btn, .action-btn { flex: 1; padding: 12px 5px; background: linear-gradient(145deg, #1a1a1a, #000); border: 2px solid #b8860b; border-radius: 15px; color: #ffd700; font-size: 14px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(255,0,0,0.4); }
         .room-btn:hover, .action-btn:hover { border-color: #ffd700; box-shadow: 0 0 20px #ff0000; transform: translateY(-2px); }
-        /* deposit & withdraw screens – buttons remain normal size */
         #depositScreen button, #withdrawScreen button {
             transform: scale(1) !important;
             margin: 8px !important;
         }
+        .room-btn.locked { background: #222!important; border-color: #444!important; color: #666!important; cursor: not-allowed; box-shadow: none; }
+        .room-btn.locked:hover { transform: none; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
-
-<!-- ===================== SCREENS ===================== -->
 
 <!-- HOME SCREEN -->
 <div id="screen1" class="screen active">
@@ -180,7 +168,7 @@
             <div class="logo">⚡ ZA BINGO</div>
             <div class="profile-balance">
                 <div class="top-row">
-                    <button class="refresh-btn" onclick="refreshData()" title="Refresh data">⟳</button>
+                    <button class="refresh-btn" onclick="refreshData()">⟳</button>
                     <button class="profile-btn" onclick="openProfile()">👤 PROFILE</button>
                 </div>
                 <div class="balance-display">💰 <span id="balance">0.00</span> Br</div>
@@ -259,7 +247,7 @@
     </div>
 </div>
 
-<!-- ROOM SCREENS (5, 10, 20) -->
+<!-- ROOM SCREENS -->
 <div id="room5" class="screen"><div id="cartela5" class="cartelaGrid"></div><button onclick="startGame(5)">START GAME</button><button class="back no-scale" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview5"><h3>Preview</h3><div class="preview-card" id="previewCard5"></div></div></div>
 <div id="room10" class="screen"><div id="cartela10" class="cartelaGrid"></div><button onclick="startGame(10)">START GAME</button><button class="back no-scale" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview10"><h3>Preview</h3><div class="preview-card" id="previewCard10"></div></div></div>
 <div id="room20" class="screen"><div id="cartela20" class="cartelaGrid"></div><button onclick="startGame(20)">START GAME</button><button class="back no-scale" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview20"><h3>Preview</h3><div class="preview-card" id="previewCard20"></div></div></div>
@@ -316,7 +304,7 @@
     <button onclick="backHome()">OK</button>
 </div>
 
-<!-- CUSTOM POPUP -->
+<!-- POPUP -->
 <div class="popup-overlay" id="customPopup">
     <div class="popup-box">
         <h2 id="popupTitle"></h2>
@@ -325,17 +313,16 @@
     </div>
 </div>
 
-<!-- ===================== JAVASCRIPT ===================== -->
 <script>
-// ========== FIREBASE CONFIG ==========
+// ========== FIREBASE ==========
 const firebaseConfig = {
-  apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
-  authDomain: "za-bingo-7ad31.firebaseapp.com",
-  databaseURL: "https://za-bingo-7ad31-default-rtdb.firebaseio.com/",
-  projectId: "za-bingo-7ad31",
-  storageBucket: "za-bingo-7ad31.firebasestorage.app",
-  messagingSenderId: "713392974772",
-  appId: "1:713392974772:web:0e14359197fd522c06a0e1"
+    apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
+    authDomain: "za-bingo-7ad31.firebaseapp.com",
+    databaseURL: "https://za-bingo-7ad31-default-rtdb.firebaseio.com/",
+    projectId: "za-bingo-7ad31",
+    storageBucket: "za-bingo-7ad31.firebasestorage.app",
+    messagingSenderId: "713392974772",
+    appId: "1:713392974772:web:0e14359197fd522c06a0e1"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -461,7 +448,7 @@ function loadFullLeaderboard() {
 // ========== PROFILE ==========
 function openProfile() {
     showScreen("profileScreen");
-    let pid = currentPlayerID || localStorage.getItem("playerID");
+    let pid = currentPlayerID;
     if (!pid) return;
     db.ref("players/" + pid).once("value", snap => {
         let d = snap.val() || {};
@@ -499,7 +486,7 @@ function selectDepositMethod(method, btn) {
     btn.classList.add("selected");
 }
 function submitDeposit() {
-    let playerID = currentPlayerID || localStorage.getItem("playerID");
+    let playerID = currentPlayerID;
     if (!playerID) { showPopup("Error", "Player account not found"); return; }
     let amount = Number(document.getElementById("depositAmount").value);
     let sms = document.getElementById("depositSMS").value;
@@ -524,7 +511,7 @@ function selectWithdrawMethod(method, btn) {
     btn.classList.add("selected");
 }
 function submitWithdraw() {
-    let playerID = currentPlayerID || localStorage.getItem("playerID");
+    let playerID = currentPlayerID;
     let amount = Number(document.getElementById("withdrawAmount").value);
     let phone = document.getElementById("withdrawPhone").value;
     if (!playerID) { showPopup("Error", "Player not found"); return; }
@@ -584,7 +571,6 @@ function showCartelaPreview(stake, num) {
     cd.innerHTML = h;
 }
 function openRoom(room) {
-    // REMOVED BALANCE CHECK - rooms are always open
     db.ref("ZA_Bingo_V3/rooms/" + room + "/status").once("value", s => {
         if (s.val() == "playing") { showPopup("Locked", "Game already started"); return; }
         showScreen(room);
@@ -617,7 +603,7 @@ function checkPlayerBalance(stake, pid) {
 async function startGame(stake) {
     currentStake = stake;
     gameBanned = false;
-    let pid = currentPlayerID || localStorage.getItem("playerID");
+    let pid = currentPlayerID;
     if (!pid) { showPopup("Error", "Player not found"); return; }
     if (selectedCartelas.length == 0) { showPopup("Select Cartela", "Choose at least one"); return; }
     let room = "room" + stake;
@@ -681,7 +667,7 @@ function cancelCountdown() {
     if (window.roomStatusRef) window.roomStatusRef.off();
     if (window.roomCountdownRef) window.roomCountdownRef.off();
     if (window.waitingTimer) clearInterval(window.waitingTimer);
-    let pid = currentPlayerID || localStorage.getItem("playerID");
+    let pid = currentPlayerID;
     db.ref("players/" + pid + "/balance").once("value", s => {
         let balBefore = s.val() || 0;
         db.ref("players/" + pid + "/balance").transaction(b => {
@@ -792,7 +778,7 @@ function listenToWinner() {
         let winner = s.val();
         if (!winner) return;
         clearInterval(callerTimer);
-        let myID = currentPlayerID || localStorage.getItem("playerID");
+        let myID = currentPlayerID;
         if (winner.playerID == myID) {
             document.getElementById("winnerTitle").innerHTML = "🏆 YOU WIN!";
             document.getElementById("winnerName").innerHTML = "🎉 Congratulations!";
@@ -830,7 +816,7 @@ function claimBingo() {
             backHome(); }, 3000); return; }
     clearInterval(callerTimer);
     let room = "room" + currentStake,
-        pid = currentPlayerID || localStorage.getItem("playerID");
+        pid = currentPlayerID;
     db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").transaction(c => c ? undefined : { playerID: pid, prize: 0 }, (e, comm) => {
         if (!comm) return;
         db.ref("ZA_Bingo_V3/rooms/" + room + "/players").once("value", s => {
@@ -912,8 +898,7 @@ function refreshData() {
 }
 
 function updateRoomLocks() {
-    // REMOVED ALL LOCKS - rooms are always open
-    // Just make sure buttons are not locked
+    // No locks - all rooms open
     ['5', '10', '20'].forEach(s => {
         const btn = document.getElementById("homeRoom" + s);
         if (!btn) return;
@@ -922,37 +907,48 @@ function updateRoomLocks() {
     });
 }
 
+// ========== GET USER FROM URL ==========
+function getUserIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    let id = params.get('user_id');
+    
+    // Try Telegram WebApp as backup
+    if (!id && window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.ready();
+        const user = Telegram.WebApp.initDataUnsafe.user;
+        if (user) id = user.id.toString();
+    }
+    
+    // Final fallback for testing
+    if (!id) id = localStorage.getItem('playerID');
+    
+    return id;
+}
+
 // ========== INIT APP ==========
 function initApp() {
     auth.signInAnonymously().catch(console.error);
     auth.onAuthStateChanged(user => {
         if (!user) { auth.signInAnonymously(); return; }
 
-        let tgID = null;
-        if (window.Telegram && Telegram.WebApp) {
-            Telegram.WebApp.ready();
-            tgUser = Telegram.WebApp.initDataUnsafe.user;
-            if (tgUser) tgID = tgUser.id.toString();
-        }
-        if (!tgID) tgID = localStorage.getItem("playerID");
-
-        if (!tgID) {
-            showPopup("Error", "Please open the app from the ZA Bingo bot.");
+        const pid = getUserIdFromURL();
+        
+        if (!pid) {
+            document.body.innerHTML = '<h1>❌ Error</h1><p>Please open from the bot</p>';
             return;
         }
 
-        const pid = tgID;
         currentPlayerID = pid;
-        localStorage.setItem("playerID", pid);
+        localStorage.setItem('playerID', pid);
         db.ref("telegram_lookup/" + pid).set({ playerID: pid });
 
+        // Check if player exists
         db.ref("players/" + pid).once("value", snap => {
             if (!snap.exists()) {
+                // Create new player
                 const newPlayer = {
                     telegram_id: pid,
-                    username: tgUser ? tgUser.username || "" : "",
-                    first_name: tgUser ? tgUser.first_name || "Player" : "Player",
-                    phone: "",
+                    first_name: "Player",
                     balance: 30,
                     gamesPlayed: 0,
                     gamesWon: 0,
@@ -966,6 +962,7 @@ function initApp() {
                     showPopup("Welcome!", "🎉 30 Br bonus added!");
                 });
             } else {
+                // Existing player
                 const data = snap.val();
                 if (data.balance === undefined || data.balance === null) {
                     db.ref("players/" + pid + "/balance").set(30).then(() => {
@@ -986,30 +983,52 @@ function initApp() {
 }
 
 // ========== ROOM STATUS WATCHER ==========
-setInterval(() => {
+function initRoomWatchers() {
     ['room5', 'room10', 'room20'].forEach((r, i) => {
+        const stake = i == 0 ? 5 : i == 1 ? 10 : 20;
+        const statusEl = document.getElementById("status" + stake);
+        if (!statusEl) return;
+        
         db.ref("ZA_Bingo_V3/rooms/" + r).on("value", s => {
-            let d = s.val();
-            let st = document.getElementById("status" + (i == 0 ? 5 : i == 1 ? 10 : 20));
-            if (st && d) {
-                if (d.status == "playing") { st.textContent = "🔴 LIVE";
-                    st.className = "room-status status-playing"; } else if (d.status == "countdown") { st.textContent = "⏳ " + d.countdown + "s";
-                    st.className = "room-status status-countdown"; } else { st.textContent = "🟢 Open";
-                    st.className = "room-status status-waiting"; }
+            const d = s.val();
+            if (d) {
+                if (d.status == "playing") {
+                    statusEl.textContent = "🔴 LIVE";
+                    statusEl.className = "room-status status-playing";
+                } else if (d.status == "countdown") {
+                    statusEl.textContent = "⏳ " + d.countdown + "s";
+                    statusEl.className = "room-status status-countdown";
+                } else {
+                    statusEl.textContent = "🟢 Open";
+                    statusEl.className = "room-status status-waiting";
+                }
+            } else {
+                statusEl.textContent = "🟢 Open";
+                statusEl.className = "room-status status-waiting";
             }
         });
     });
-}, 2000);
+}
 
 // ========== INITIALIZE ==========
 function initRooms() {
     ['room5', 'room10', 'room20'].forEach(r => db.ref("ZA_Bingo_V3/rooms/" + r).once("value", s => {
-        if (!s.exists()) db.ref("ZA_Bingo_V3/rooms/" + r).set({ status: "waiting", stake: parseInt(r.replace("room", "")), countdown: 25, lastCall: "", prizepool: 0, locked: false });
+        if (!s.exists()) db.ref("ZA_Bingo_V3/rooms/" + r).set({ 
+            status: "waiting", 
+            stake: parseInt(r.replace("room", "")), 
+            countdown: 25, 
+            lastCall: "", 
+            prizepool: 0, 
+            locked: false 
+        });
     }));
 }
+
+// Start everything
 initRooms();
 loadFixedCartelas();
 loadSettings();
+setTimeout(initRoomWatchers, 1000);
 initApp();
 </script>
 </body>
