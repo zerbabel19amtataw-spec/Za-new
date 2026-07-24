@@ -587,7 +587,7 @@
     </div>
 
     <!-- ════════════════════════════════════════════════════ -->
-    <!-- PROFILE SCREEN                                    -->
+    <!-- PROFILE SCREEN (updated: added Phone)             -->
     <!-- ════════════════════════════════════════════════════ -->
     <div id="profileScreen" class="screen">
         <div class="profileScreen">
@@ -596,6 +596,7 @@
             <div class="field"><span class="label">Telegram ID</span><span class="value" id="profileTgId">-</span></div>
             <div class="field"><span class="label">Username</span><span class="value" id="profileUsername">-</span></div>
             <div class="field"><span class="label">First Name</span><span class="value" id="profileFirstName">-</span></div>
+            <div class="field"><span class="label">Phone</span><span class="value" id="profilePhone">-</span></div>
             <div class="field"><span class="label">Balance</span><span class="value" id="profileBalance">0 Br</span></div>
             <div class="field"><span class="label">Games Played</span><span class="value" id="profileGamesPlayed">0</span></div>
             <div class="field"><span class="label">Games Won</span><span class="value" id="profileGamesWon">0</span></div>
@@ -814,84 +815,87 @@
         let isJoiningRoom = false;
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  PLAYER / WALLET  (FIXED: use Telegram ID directly)
+        //  PLAYER ID  (now uses telegram_lookup like the bot)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function getPlayerID(callback) {
-            // first try localStorage
+            // 1) Check localStorage first
             let stored = localStorage.getItem("playerID");
             if (stored) {
                 callback(stored);
                 return;
             }
-            // if Telegram WebApp is available, use the user ID directly
+            // 2) Use Telegram WebApp
             if (window.Telegram && Telegram.WebApp) {
                 Telegram.WebApp.ready();
                 const tgUser = Telegram.WebApp.initDataUnsafe.user;
                 if (tgUser && tgUser.id) {
-                    const pid = tgUser.id.toString();
-                    localStorage.setItem("playerID", pid);
-                    callback(pid);
+                    const tgId = tgUser.id.toString();
+                    // Read telegram_lookup to get the player ID used by the bot
+                    db.ref("telegram_lookup/" + tgId).once("value", function(snap) {
+                        if (snap.exists()) {
+                            const pid = snap.val().playerID || snap.val(); // could be string or object
+                            if (pid) {
+                                localStorage.setItem("playerID", pid);
+                                callback(pid);
+                                return;
+                            }
+                        }
+                        // If no lookup, create a new player entry and set the lookup
+                        const newPid = tgId; // use Telegram ID as player ID
+                        const playerData = {
+                            telegram_id: parseInt(tgId),
+                            username: tgUser.username || "",
+                            first_name: tgUser.first_name || "",
+                            phone: "",
+                            balance: 30,
+                            gamesPlayed: 0,
+                            gamesWon: 0,
+                            createdAt: Date.now()
+                        };
+                        db.ref("players/" + newPid).set(playerData, function(err) {
+                            if (err) {
+                                console.error("Failed to create player:", err);
+                                callback(null);
+                                return;
+                            }
+                            // Write lookup
+                            db.ref("telegram_lookup/" + tgId).set({ playerID: newPid }, function(e2) {
+                                if (e2) console.error("Failed to set lookup:", e2);
+                                localStorage.setItem("playerID", newPid);
+                                callback(newPid);
+                            });
+                        });
+                    });
                     return;
                 }
             }
-            // fallback: prompt user or show error
+            // 3) Fallback
             callback(null);
         }
 
-        // We no longer need createNewPlayer because the bot already creates players.
-        // But if we want to be safe, we can keep a fallback that creates a minimal record.
-        function ensurePlayerExists(pid, callback) {
-            db.ref("players/" + pid).once("value", function(snap) {
-                if (!snap.exists()) {
-                    // create minimal profile with 30 Br
-                    const data = {
-                        telegram_id: parseInt(pid),
-                        username: "",
-                        first_name: "",
-                        phone: "",
-                        balance: 30,
-                        gamesPlayed: 0,
-                        gamesWon: 0,
-                        createdAt: Date.now()
-                    };
-                    db.ref("players/" + pid).set(data, function() {
-                        callback(pid);
-                    });
-                } else {
-                    callback(pid);
-                }
-            });
-        }
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  BALANCE & PROFILE (now using the correct player ID)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function loadWalletBalance() {
             getPlayerID(function(pid) {
-                console.log("loadWalletBalance: pid =", pid);
                 if (!pid) {
                     document.getElementById("balance").innerHTML = "0.00";
                     return;
                 }
-                // ensure player exists (just in case)
-                ensurePlayerExists(pid, function() {
-                    // read once
-                    db.ref("players/" + pid + "/balance").once("value", function(snap) {
-                        const bal = snap.val() || 0;
-                        document.getElementById("balance").innerHTML = Number(bal).toFixed(2);
-                        console.log("Initial balance set to", bal);
-                    });
-                    // attach listener
-                    db.ref("players/" + pid + "/balance").on("value", function(snap) {
-                        const bal = snap.val() || 0;
-                        document.getElementById("balance").innerHTML = Number(bal).toFixed(2);
-                        console.log("Balance updated to", bal);
-                    });
+                // Read once
+                db.ref("players/" + pid + "/balance").once("value", function(snap) {
+                    const bal = snap.val() || 0;
+                    document.getElementById("balance").innerHTML = Number(bal).toFixed(2);
+                });
+                // Listen for updates
+                db.ref("players/" + pid + "/balance").on("value", function(snap) {
+                    const bal = snap.val() || 0;
+                    document.getElementById("balance").innerHTML = Number(bal).toFixed(2);
                 });
             });
         }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  PROFILE (fixed: use same direct ID)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function openProfile() {
             showScreen("profileScreen");
@@ -904,32 +908,31 @@
                     document.getElementById("profileTgId").innerText = "Not found";
                     return;
                 }
-                ensurePlayerExists(pid, function() {
-                    db.ref("players/" + pid).once("value", function(snap) {
-                        const data = snap.val();
-                        if (!data) {
-                            document.getElementById("profileTgId").innerText = "No data";
-                            return;
-                        }
-                        document.getElementById("profileTgId").innerText = data.telegram_id || "-";
-                        document.getElementById("profileUsername").innerText = data.username || "-";
-                        document.getElementById("profileFirstName").innerText = data.first_name || "-";
-                        document.getElementById("profileBalance").innerText = (data.balance || 0).toFixed(2) + " Br";
-                        document.getElementById("profileGamesPlayed").innerText = data.gamesPlayed || 0;
-                        document.getElementById("profileGamesWon").innerText = data.gamesWon || 0;
-                        if (data.createdAt) {
-                            const d = new Date(data.createdAt);
-                            document.getElementById("profileMemberSince").innerText =
-                                d.toLocaleDateString() + " " + d.toLocaleTimeString();
-                        } else {
-                            document.getElementById("profileMemberSince").innerText = "-";
-                        }
-                    });
-                    // also listen for balance updates
-                    db.ref("players/" + pid + "/balance").on("value", function(snap) {
-                        const bal = snap.val() || 0;
-                        document.getElementById("profileBalance").innerText = bal.toFixed(2) + " Br";
-                    });
+                db.ref("players/" + pid).once("value", function(snap) {
+                    const data = snap.val();
+                    if (!data) {
+                        document.getElementById("profileTgId").innerText = "No data";
+                        return;
+                    }
+                    document.getElementById("profileTgId").innerText = data.telegram_id || "-";
+                    document.getElementById("profileUsername").innerText = data.username || "-";
+                    document.getElementById("profileFirstName").innerText = data.first_name || "-";
+                    document.getElementById("profilePhone").innerText = data.phone || "-";
+                    document.getElementById("profileBalance").innerText = (data.balance || 0).toFixed(2) + " Br";
+                    document.getElementById("profileGamesPlayed").innerText = data.gamesPlayed || 0;
+                    document.getElementById("profileGamesWon").innerText = data.gamesWon || 0;
+                    if (data.createdAt) {
+                        const d = new Date(data.createdAt);
+                        document.getElementById("profileMemberSince").innerText =
+                            d.toLocaleDateString() + " " + d.toLocaleTimeString();
+                    } else {
+                        document.getElementById("profileMemberSince").innerText = "-";
+                    }
+                });
+                // Also listen for balance updates
+                db.ref("players/" + pid + "/balance").on("value", function(snap) {
+                    const bal = snap.val() || 0;
+                    document.getElementById("profileBalance").innerText = bal.toFixed(2) + " Br";
                 });
             });
         }
@@ -983,11 +986,9 @@
             db.ref("ZA_Bingo_V3/cartelas").once("value", function(snap) {
                 if (snap.exists()) {
                     fixedCartelas = snap.val();
-                    console.log("Cartelas loaded from Firebase");
                 } else {
                     generateFixedCartelas();
                     db.ref("ZA_Bingo_V3/cartelas").set(fixedCartelas);
-                    console.log("Cartelas generated and saved");
                 }
             });
         }
@@ -1141,7 +1142,6 @@
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function openRoom(room) {
-            // remove old listeners to avoid duplicates
             countdownListeners.forEach(function(ref) { ref.off(); });
             countdownListeners = [];
 
@@ -1153,7 +1153,6 @@
                 }
                 showScreen(room);
 
-                // reset room state if it's stuck
                 db.ref("ZA_Bingo_V3/rooms/" + room).update({
                     status: "waiting",
                     stake: Number(room.replace("room", "")),
@@ -1162,7 +1161,6 @@
                     lastCall: ""
                 });
 
-                // watch taken cartelas
                 const ref = db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas");
                 ref.on("value", function(snap) {
                     window.takenCartelas = snap.val() || {};
@@ -1228,57 +1226,55 @@
                     return;
                 }
 
-                ensurePlayerExists(pid, function() {
-                    db.ref("players/" + pid + "/balance").once("value", function(balanceSnap) {
-                        const balance = balanceSnap.val() || 0;
-                        if (balance < stake) {
+                db.ref("players/" + pid + "/balance").once("value", function(balanceSnap) {
+                    const balance = balanceSnap.val() || 0;
+                    if (balance < stake) {
+                        isJoiningRoom = false;
+                        alert("Insufficient balance");
+                        return;
+                    }
+
+                    db.ref("players/" + pid + "/balance").transaction(function(cur) {
+                        if (cur < stake) return;
+                        return cur - stake;
+                    }, function(err, committed) {
+                        if (err || !committed) {
                             isJoiningRoom = false;
                             alert("Insufficient balance");
                             return;
                         }
 
-                        db.ref("players/" + pid + "/balance").transaction(function(cur) {
-                            if (cur < stake) return;
-                            return cur - stake;
-                        }, function(err, committed) {
-                            if (err || !committed) {
+                        const room = "room" + stake;
+                        const playerData = {
+                            cartelas: selectedCartelas,
+                            status: "playing",
+                            joinedAt: Date.now()
+                        };
+
+                        db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).set(playerData,
+                        function(e) {
+                            if (e) {
                                 isJoiningRoom = false;
-                                alert("Insufficient balance");
+                                alert("Failed to join: " + e.message);
+                                db.ref("players/" + pid + "/balance").transaction(function(cur) {
+                                    return (cur || 0) + stake;
+                                });
                                 return;
                             }
 
-                            const room = "room" + stake;
-                            const playerData = {
-                                cartelas: selectedCartelas,
-                                status: "playing",
-                                joinedAt: Date.now()
-                            };
-
-                            db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).set(playerData,
-                            function(e) {
-                                if (e) {
-                                    isJoiningRoom = false;
-                                    alert("Failed to join: " + e.message);
-                                    db.ref("players/" + pid + "/balance").transaction(function(cur) {
-                                        return (cur || 0) + stake;
-                                    });
-                                    return;
-                                }
-
-                                selectedCartelas.forEach(function(card) {
-                                    db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas/" + card)
-                                        .set(true);
-                                });
-
-                                db.ref("players/" + pid + "/gamesPlayed").transaction(function(count) {
-                                    return (count || 0) + 1;
-                                });
-
-                                showScreen("waitingScreen");
-                                document.getElementById("cancelBtn").style.display = "block";
-                                setupCountdown(room);
-                                isJoiningRoom = false;
+                            selectedCartelas.forEach(function(card) {
+                                db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas/" + card)
+                                    .set(true);
                             });
+
+                            db.ref("players/" + pid + "/gamesPlayed").transaction(function(count) {
+                                return (count || 0) + 1;
+                            });
+
+                            showScreen("waitingScreen");
+                            document.getElementById("cancelBtn").style.display = "block";
+                            setupCountdown(room);
+                            isJoiningRoom = false;
                         });
                     });
                 });
@@ -1740,7 +1736,7 @@
         loadWalletBalance();
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  LEGACY ADMIN FUNCTION
+        //  LEGACY ADMIN
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function approveDeposit(depositID) {
@@ -1758,7 +1754,7 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  EXPOSE GLOBALS FOR INLINE ONCLICK
+        //  EXPOSE GLOBALS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         window.openDeposit = openDeposit;
