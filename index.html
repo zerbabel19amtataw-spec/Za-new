@@ -72,6 +72,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
+<!-- HTML STRUCTURE (SAME AS BEFORE, KEEP IT) -->
 
 <div id="screen1" class="screen active">
     <div class="home-container">
@@ -228,13 +229,13 @@ const db = firebase.database();
 
 let selectedCartelas=[], currentStake=0, autoMarkEnabled=true, gameBanned=false, depositMethod="", withdrawMethod="", fixedCartelas={}, calledNumbers=[], callerTimer, waitingTimer, tgUser=null;
 let appSettings = { commission: 15, minWithdraw: 50, depositAccounts: { telebirr: "0985661720", cbe: "0985661720" } };
-let currentPlayerID = null;  // This will be the Telegram ID (string)
+let currentPlayerID = null;
 
-// ============ CUSTOM POPUP ============
+// ============ POPUP ============
 function showPopup(t,m,c){ document.getElementById("popupTitle").textContent=t; document.getElementById("popupMessage").textContent=m; document.getElementById("customPopup").classList.add("show"); window.popupCallback=c||null; }
 function closePopup(){ document.getElementById("customPopup").classList.remove("show"); if(typeof window.popupCallback==="function")window.popupCallback(); window.popupCallback=null; }
 
-// ============ TRANSACTIONS SYSTEM ============
+// ============ TRANSACTIONS ============
 function createTransaction(playerID, type, amount, balanceBefore, balanceAfter, adminID=null) {
     const txID = "TX_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
     db.ref("transactions/" + txID).set({
@@ -244,7 +245,7 @@ function createTransaction(playerID, type, amount, balanceBefore, balanceAfter, 
     });
 }
 
-// ============ SETTINGS SYSTEM ============
+// ============ SETTINGS ============
 function loadSettings() {
     db.ref("settings").once("value", snap => {
         if (snap.exists()) appSettings = snap.val();
@@ -266,174 +267,11 @@ function loadSettings() {
     });
 }
 
-// ============ GAME HISTORY SYSTEM ============
+// ============ HISTORY ============
 function saveGameHistory(room, winnerID, prize, playersCount) {
     db.ref("history/GAME_" + Date.now()).set({
         room, winnerID, prize, playersCount,
         time: firebase.database.ServerValue.TIMESTAMP
-    });
-}
-
-// ============ AUTH & PLAYER INIT (with migration) ============
-function initApp() {
-    auth.signInAnonymously().catch(err => {
-        console.error("Auth error:", err);
-        setupPlayerFromTelegram();
-    });
-
-    auth.onAuthStateChanged(user => {
-        if (!user) {
-            auth.signInAnonymously();
-            return;
-        }
-
-        if (!window.Telegram || !Telegram.WebApp) {
-            // Not in Telegram – fallback to stored ID
-            let pid = localStorage.getItem("playerID");
-            if (pid) {
-                db.ref("players/" + pid).once("value", snap => {
-                    if (snap.exists()) {
-                        currentPlayerID = pid;
-                        attachBalanceListener(pid);
-                        finishInit();
-                    } else {
-                        createBasicPlayer(pid);
-                        attachBalanceListener(pid);
-                        finishInit();
-                    }
-                });
-            }
-            return;
-        }
-
-        Telegram.WebApp.ready();
-        tgUser = Telegram.WebApp.initDataUnsafe.user;
-        if (!tgUser) return;
-
-        const tgID = tgUser.id.toString();
-        const authUID = user.uid;
-
-        // Step 1: Check if player exists under Telegram ID
-        db.ref("players/" + tgID).once("value", snap => {
-            if (snap.exists()) {
-                // Already migrated – use Telegram ID
-                currentPlayerID = tgID;
-                localStorage.setItem("playerID", tgID);
-                db.ref("telegram_lookup/" + tgID).set({ playerID: tgID });
-                attachBalanceListener(tgID);
-                applyNewPlayerBonus(tgID);
-                finishInit();
-                return;
-            }
-
-            // Step 2: Check if player exists under Auth UID (old data)
-            db.ref("players/" + authUID).once("value", oldSnap => {
-                if (oldSnap.exists()) {
-                    // Migrate: copy data to Telegram ID key
-                    const oldData = oldSnap.val();
-                    // Add telegram_id if missing
-                    oldData.telegram_id = tgUser.id;
-                    oldData.username = tgUser.username || oldData.username || "";
-                    oldData.first_name = tgUser.first_name || oldData.first_name || "Player";
-                    
-                    // Write to new key
-                    db.ref("players/" + tgID).set(oldData).then(() => {
-                        // Update lookup
-                        db.ref("telegram_lookup/" + tgID).set({ playerID: tgID });
-                        // Optional: remove old key to avoid confusion
-                        // db.ref("players/" + authUID).remove();
-                        currentPlayerID = tgID;
-                        localStorage.setItem("playerID", tgID);
-                        attachBalanceListener(tgID);
-                        applyNewPlayerBonus(tgID);
-                        finishInit();
-                    });
-                } else {
-                    // No data anywhere – create new player
-                    createNewPlayer(tgUser, tgID);
-                    db.ref("telegram_lookup/" + tgID).set({ playerID: tgID });
-                    currentPlayerID = tgID;
-                    localStorage.setItem("playerID", tgID);
-                    attachBalanceListener(tgID);
-                    applyNewPlayerBonus(tgID);
-                    finishInit();
-                }
-            });
-        });
-
-        function finishInit() {
-            loadMiniLeaderboard();
-            updateRoomLocks();
-            showScreen("screen1");
-        }
-    });
-}
-
-function createNewPlayer(user, pid) {
-    db.ref("players/" + pid).set({
-        telegram_id: user.id,
-        username: user.username || "",
-        first_name: user.first_name || "",
-        phone: "",
-        balance: 0,
-        gamesPlayed: 0,
-        gamesWon: 0,
-        createdAt: firebase.database.ServerValue.TIMESTAMP
-    });
-}
-
-function createBasicPlayer(pid) {
-    db.ref("players/" + pid).set({
-        telegram_id: "",
-        username: "",
-        first_name: "Player",
-        phone: "",
-        balance: 0,
-        gamesPlayed: 0,
-        gamesWon: 0,
-        createdAt: firebase.database.ServerValue.TIMESTAMP
-    });
-}
-
-function applyNewPlayerBonus(pid) {
-    const bonusKey = "bonus_" + pid;
-    if (!localStorage.getItem(bonusKey)) {
-        db.ref("players/" + pid + "/balance").transaction(b => {
-            let newBal = (b || 0) + 30;
-            createTransaction(pid, "bonus", 30, b || 0, newBal);
-            return newBal;
-        });
-        localStorage.setItem(bonusKey, "1");
-        showPopup("Welcome Bonus!", "🎉 30 Br bonus added to your balance!");
-    }
-}
-
-function attachBalanceListener(pid) {
-    db.ref("players/" + pid + "/balance").on("value", s => {
-        document.getElementById("balance").innerHTML = Number(s.val() || 0).toFixed(2);
-        updateRoomLocks();
-    });
-}
-
-// Fallback for non-Telegram environments
-function setupPlayerFromTelegram() {
-    // keep existing behavior for backward compatibility, but auth must work
-}
-
-// ============ ROOM LOCKING ============
-function updateRoomLocks() {
-    let bal = parseFloat(document.getElementById("balance").textContent) || 0;
-    ['5','10','20'].forEach(s => {
-        let btn = document.getElementById("homeRoom"+s);
-        if (btn) {
-            if (bal < parseInt(s)) {
-                btn.classList.add("locked");
-                btn.onclick = () => showPopup("Locked", "Need "+s+" Br to enter");
-            } else {
-                btn.classList.remove("locked");
-                btn.onclick = () => openRoom('room'+s);
-            }
-        }
     });
 }
 
@@ -471,7 +309,6 @@ function backHome() { showScreen("screen1"); loadMiniLeaderboard(); updateRoomLo
 function openDeposit() { showScreen("depositScreen"); }
 function openWithdraw() { showScreen("withdrawScreen"); }
 function openLeaderboard() { showScreen("leaderboardScreen"); loadFullLeaderboard(); }
-function openGameRoom() { /* keep for backward compatibility */ }
 
 // ============ LEADERBOARD ============
 function loadMiniLeaderboard() {
@@ -526,7 +363,7 @@ function openProfile() {
     });
 }
 
-// ============ DEPOSIT (secure – pending only) ============
+// ============ DEPOSIT ============
 function selectDepositMethod(method, btn) {
     depositMethod = method;
     document.getElementById("telebirrBtn").classList.remove("selected");
@@ -539,25 +376,16 @@ function submitDeposit() {
     let amount = Number(document.getElementById("depositAmount").value);
     let sms = document.getElementById("depositSMS").value;
     if (!amount || !sms) { showPopup("Error", "Enter amount and SMS"); return; }
-
-    // Only create pending deposit – balance change only by admin
     const depositID = "DEP_" + Date.now();
     db.ref("ZA_Bingo_V3/deposits/" + depositID).set({
-        playerID: playerID,
-        amount: amount,
-        method: depositMethod || "Telebirr",
-        paymentInfo: sms,
-        status: "pending",
-        createdAt: firebase.database.ServerValue.TIMESTAMP,
-        approvedAt: null,
-        adminID: null
+        playerID, amount, method: depositMethod || "Telebirr", paymentInfo: sms,
+        status: "pending", createdAt: firebase.database.ServerValue.TIMESTAMP,
+        approvedAt: null, adminID: null
     }).then(() => {
         showPopup("Deposit Submitted", "Waiting for admin approval");
         document.getElementById("depositAmount").value = "";
         document.getElementById("depositSMS").value = "";
-    }).catch(err => {
-        showPopup("Error", "Failed to submit: " + err.message);
-    });
+    }).catch(err => showPopup("Error", "Failed: " + err.message));
 }
 
 // ============ WITHDRAW ============
@@ -574,7 +402,6 @@ function submitWithdraw() {
     if (!playerID) { showPopup("Error", "Player not found"); return; }
     if (!amount || !phone) { showPopup("Error", "Enter amount and phone"); return; }
     if (amount < appSettings.minWithdraw) { showPopup("Error", "Minimum " + appSettings.minWithdraw + " Br"); return; }
-
     db.ref("players/" + playerID + "/balance").once("value", snap => {
         let balBefore = snap.val() || 0;
         if (balBefore < amount) { showPopup("Error", "Insufficient balance"); return; }
@@ -594,7 +421,7 @@ function submitWithdraw() {
     });
 }
 
-// ============ GAME ROOMS & CARTELAS ============
+// ============ ROOM & GAME LOGIC ============
 function createCartelas(id) {
     let box = document.getElementById(id);
     box.innerHTML = ""; selectedCartelas = [];
@@ -626,7 +453,6 @@ function showCartelaPreview(stake, num) {
     card.forEach(v => h += `<div class="${v=='*'?'free':''}">${v}</div>`);
     cd.innerHTML = h;
 }
-
 function openRoom(room) {
     db.ref("ZA_Bingo_V3/rooms/" + room + "/status").once("value", s => {
         if (s.val() == "playing") { showPopup("Locked", "Game already started"); return; }
@@ -640,8 +466,6 @@ function openRoom(room) {
         });
     });
 }
-
-// ============ GAME LOGIC ============
 function checkPlayerBalance(stake, pid) {
     return new Promise((resolve, reject) => {
         db.ref("players/" + pid + "/balance").once("value", s => {
@@ -657,7 +481,6 @@ function checkPlayerBalance(stake, pid) {
         });
     });
 }
-
 async function startGame(stake) {
     currentStake = stake; gameBanned = false;
     let pid = currentPlayerID || localStorage.getItem("playerID");
@@ -674,7 +497,6 @@ async function startGame(stake) {
     showScreen("waitingScreen");
     attachWaitingListeners(room);
 }
-
 function attachWaitingListeners(room) {
     if (window.roomPlayersRef) window.roomPlayersRef.off();
     if (window.roomStatusRef) window.roomStatusRef.off();
@@ -713,7 +535,6 @@ function attachWaitingListeners(room) {
         }
     });
 }
-
 function lockCartelas() {
     document.querySelectorAll(".cartelaGrid button").forEach(b => b.disabled = true);
     document.getElementById("cancelBtn").style.display = "none";
@@ -740,7 +561,6 @@ function cancelCountdown() {
     showScreen("room" + currentStake);
     createCartelas("cartela" + currentStake);
 }
-
 function openGameScreen() {
     showScreen("gameScreen");
     createCallGrid();
@@ -751,7 +571,14 @@ function openGameScreen() {
     listenToWinner();
     setTimeout(() => setupCaller("room" + currentStake), 1000);
 }
-
+function createCallGrid() {
+    let grid = document.getElementById("callGrid"); grid.innerHTML = "";
+    for (let i = 1; i <= 75; i++) {
+        let box = document.createElement("div"); box.className = "callBox"; box.id = "call_" + i;
+        box.innerHTML = i;
+        grid.appendChild(box);
+    }
+}
 function createBingoCards() {
     let area = document.getElementById("bingoCard"); area.innerHTML = "";
     selectedCartelas.forEach(num => {
@@ -769,7 +596,6 @@ function createBingoCards() {
         area.appendChild(container);
     });
 }
-
 function listenToCalledNumbers() {
     db.ref("ZA_Bingo_V3/rooms/room" + currentStake + "/calledNumbers").on("value", s => {
         calledNumbers = s.val() || [];
@@ -787,7 +613,6 @@ function autoMark(n) {
     if (!autoMarkEnabled) return;
     document.querySelectorAll(".singleCard div").forEach(b => { if (Number(b.innerHTML) == n) b.classList.add("marked"); });
 }
-
 function setupCaller(room) {
     db.ref("ZA_Bingo_V3/rooms/" + room + "/caller").transaction(current => {
         if (current) return;
@@ -818,7 +643,6 @@ function toggleAutoMark() {
     autoMarkEnabled = !autoMarkEnabled;
     document.getElementById("autoBtn").innerHTML = autoMarkEnabled ? "AUTO: ON" : "AUTO: OFF";
 }
-
 function listenToWinner() {
     db.ref("ZA_Bingo_V3/rooms/room" + currentStake + "/winner").on("value", s => {
         let winner = s.val(); if (!winner) return;
@@ -836,7 +660,6 @@ function listenToWinner() {
         setTimeout(() => { resetRoom(currentStake); resetGame(); }, 4000);
     });
 }
-
 function claimBingo() {
     if (gameBanned) { showPopup("Banned", "You are banned"); return; }
     let cards = document.querySelectorAll(".singleCard"), winner = false;
@@ -883,7 +706,6 @@ function claimBingo() {
         });
     });
 }
-
 function resetRoom(stake) {
     let room = "room" + stake;
     db.ref("ZA_Bingo_V3/rooms/" + room).update({ status: "waiting", countdown: 25 });
@@ -899,7 +721,149 @@ function copyText(id) {
     showPopup("Copied", "Number copied!");
 }
 
-// Room status watcher
+// ============ AUTH & PLAYER INIT (FIXED – ALWAYS MERGE) ============
+function initApp() {
+    auth.signInAnonymously().catch(err => {
+        console.error("Auth error:", err);
+        setupPlayerFromTelegram();
+    });
+
+    auth.onAuthStateChanged(user => {
+        if (!user) {
+            auth.signInAnonymously();
+            return;
+        }
+
+        if (!window.Telegram || !Telegram.WebApp) {
+            let pid = localStorage.getItem("playerID");
+            if (pid) {
+                db.ref("players/" + pid).once("value", snap => {
+                    if (snap.exists()) {
+                        currentPlayerID = pid;
+                        attachBalanceListener(pid);
+                        finishInit();
+                    } else {
+                        createBasicPlayer(pid);
+                        attachBalanceListener(pid);
+                        finishInit();
+                    }
+                });
+            }
+            return;
+        }
+
+        Telegram.WebApp.ready();
+        tgUser = Telegram.WebApp.initDataUnsafe.user;
+        if (!tgUser) return;
+
+        const tgID = tgUser.id.toString();
+        const authUID = user.uid;
+
+        // READ old data (Auth UID) and new data (Telegram ID), then merge
+        db.ref("players/" + authUID).once("value", oldSnap => {
+            const oldData = oldSnap.exists() ? oldSnap.val() : null;
+            db.ref("players/" + tgID).once("value", newSnap => {
+                let merged = {};
+
+                if (oldData) {
+                    // Copy old data, but keep telegram fields from tgUser
+                    merged = { ...oldData };
+                    merged.telegram_id = tgUser.id;
+                    merged.username = tgUser.username || oldData.username || "";
+                    merged.first_name = tgUser.first_name || oldData.first_name || "Player";
+                } else {
+                    // No old data – use new or create fresh
+                    if (newSnap.exists()) {
+                        merged = newSnap.val();
+                    } else {
+                        merged = {
+                            telegram_id: tgUser.id,
+                            username: tgUser.username || "",
+                            first_name: tgUser.first_name || "",
+                            phone: "",
+                            balance: 0,
+                            gamesPlayed: 0,
+                            gamesWon: 0,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        };
+                    }
+                }
+
+                // Write merged data to Telegram ID key
+                db.ref("players/" + tgID).set(merged).then(() => {
+                    db.ref("telegram_lookup/" + tgID).set({ playerID: tgID });
+                    // Optional: remove old node to avoid confusion
+                    // db.ref("players/" + authUID).remove();
+                    currentPlayerID = tgID;
+                    localStorage.setItem("playerID", tgID);
+                    attachBalanceListener(tgID);
+                    applyNewPlayerBonus(tgID);
+                    finishInit();
+                });
+            });
+        });
+
+        function finishInit() {
+            loadMiniLeaderboard();
+            updateRoomLocks();
+            showScreen("screen1");
+        }
+    });
+}
+
+function createNewPlayer(user, pid) { /* handled inside initApp now */ }
+function createBasicPlayer(pid) {
+    db.ref("players/" + pid).set({
+        telegram_id: "",
+        username: "",
+        first_name: "Player",
+        phone: "",
+        balance: 0,
+        gamesPlayed: 0,
+        gamesWon: 0,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+    });
+}
+function applyNewPlayerBonus(pid) {
+    const bonusKey = "bonus_" + pid;
+    if (!localStorage.getItem(bonusKey)) {
+        db.ref("players/" + pid + "/balance").transaction(b => {
+            let newBal = (b || 0) + 30;
+            createTransaction(pid, "bonus", 30, b || 0, newBal);
+            return newBal;
+        });
+        localStorage.setItem(bonusKey, "1");
+        showPopup("Welcome Bonus!", "🎉 30 Br bonus added to your balance!");
+    }
+}
+
+function attachBalanceListener(pid) {
+    db.ref("players/" + pid + "/balance").on("value", s => {
+        document.getElementById("balance").innerHTML = Number(s.val() || 0).toFixed(2);
+        updateRoomLocks();
+    });
+}
+
+function setupPlayerFromTelegram() { /* fallback */ }
+
+// ============ ROOM LOCKING ============
+function updateRoomLocks() {
+    let bal = parseFloat(document.getElementById("balance").textContent) || 0;
+    ['5','10','20'].forEach(s => {
+        let btn = document.getElementById("homeRoom"+s);
+        if (btn) {
+            if (bal < parseInt(s)) {
+                btn.classList.add("locked");
+                btn.onclick = () => showPopup("Locked", "Need "+s+" Br to enter");
+            } else {
+                btn.classList.remove("locked");
+                btn.onclick = () => openRoom('room'+s);
+            }
+        }
+    });
+}
+
+// ============ ROOM STATUS WATCHER ============
 setInterval(() => {
     ['room5','room10','room20'].forEach((r, i) => {
         db.ref("ZA_Bingo_V3/rooms/" + r).on("value", s => {
@@ -914,12 +878,12 @@ setInterval(() => {
     });
 }, 2000);
 
-// Initialize
+// ============ INIT ============
 initRooms = () => { ['room5','room10','room20'].forEach(r => db.ref("ZA_Bingo_V3/rooms/" + r).once("value", s => { if (!s.exists()) db.ref("ZA_Bingo_V3/rooms/" + r).set({ status:"waiting", stake:parseInt(r.replace("room","")), countdown:25, lastCall:"", prizepool:0, locked:false }); })); };
 initRooms();
 loadFixedCartelas();
 loadSettings();
-initApp();  // starts auth and loads player
+initApp();
 </script>
 </body>
 </html>
