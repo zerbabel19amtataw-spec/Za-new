@@ -1,1035 +1,3243 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZA Bingo V3</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background: #0a0a0a;
-            background-image: radial-gradient(circle at 50% 20%, rgba(139,0,0,0.3) 0%, transparent 60%),
-                              radial-gradient(circle at 50% 80%, rgba(255,215,0,0.1) 0%, transparent 60%);
-            min-height: 100vh;
-            color: #ffd700;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            text-align: center;
-            padding: 10px;
-        }
-        .screen { display: none; padding: 10px; min-height: 100vh; animation: fadeIn 0.3s; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
 
-        .home-container { max-width: 450px; margin: 0 auto; }
-        .top-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 5px;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        .logo { font-size: 28px; font-weight: 900; color: #ffd700; text-shadow: 0 0 15px #ff0000, 0 0 30px #8b0000; letter-spacing: 2px; }
-        .profile-balance {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 5px;
-        }
-        .profile-balance .top-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .refresh-btn {
-            background: transparent;
-            border: 1px solid #b8860b;
-            border-radius: 50%;
-            color: #ffd700;
-            font-size: 20px;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            padding: 0;
-            margin: 0;
-            box-shadow: none;
-        }
-        .refresh-btn:hover {
-            border-color: #ffd700;
-            box-shadow: 0 0 15px #ff0000;
-            transform: rotate(45deg);
-        }
-        .profile-btn {
-            background: #8b0000;
-            border: 1px solid #ffd700;
-            border-radius: 20px;
-            color: #ffd700;
-            padding: 6px 14px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 8px #ff0000;
-            margin: 0;
-        }
-        .balance-display {
-            background: #111;
-            border: 1px solid #b8860b;
-            border-radius: 15px;
-            padding: 5px 12px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #ffd700;
-            min-width: 70px;
-            display: inline-block;
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        button:not(#depositScreen button):not(#withdrawScreen button):not(.profile-btn):not(.refresh-btn):not(.no-scale) {
-            transform: scale(1.3);
-            margin: 10px 8px;
-        }
-        .cartelaGrid button {
-            transform: scale(1.1) !important;
-            margin: 2px !important;
-            padding: 8px 0;
-        }
-        .header .back {
-            transform: scale(1) !important;
-            margin: 0 !important;
-            float: right;
-        }
-        .popup-box button {
-            transform: scale(1.2);
-            margin: 15px auto 0;
-        }
-        .room-status { font-size: 10px; display: block; margin-top: 2px; }
-        .status-waiting { color: #00ff00; }
-        .status-countdown { color: #ffa500; }
-        .status-playing { color: #ff0000; }
+<title>ZA Bingo V3</title>
 
-        .popup-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; }
-        .popup-overlay.show { display: flex; }
-        .popup-box { background: linear-gradient(145deg, #1a1a1a, #000); border: 3px solid #ffd700; border-radius: 25px; padding: 30px; text-align: center; color: #ffd700; box-shadow: 0 0 50px #ff0000; width: 90%; max-width: 380px; animation: popIn 0.3s; }
-        @keyframes popIn { from{ transform:scale(0.7); opacity:0; } to{ transform:scale(1); opacity:1; } }
-        .popup-box button { background: #8b0000; border: 2px solid #ffd700; color: #ffd700; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; padding: 10px 25px; }
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-        .header { font-size: 28px; font-weight: 900; padding: 20px; text-shadow: 0 0 10px #8b0000, 0 0 20px #ff0000; color: #ffd700; background: linear-gradient(180deg, #1a1a1a, #000); border-bottom: 2px solid #b8860b; }
-        .back { background: #8b0000; border: 2px solid #ff0000; color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
-        .selected { background: #006400!important; color: #fff!important; box-shadow: 0 0 20px #00ff00!important; }
-        .cartelaGrid { display: grid; grid-template-columns: repeat(10,1fr); gap: 4px; padding: 8px; }
-        .cartelaGrid button { width: 100%; font-size: 12px; background: #1a1a1a; color: white; border: 1px solid #444; border-radius: 4px; cursor: pointer; }
-        .waitingCard { background: rgba(20,20,20,0.98); border: 2px solid #b8860b; border-radius: 20px; padding: 20px; margin-top: 20px; box-shadow: 0 0 20px #8b0000; }
-        #countdownCircle { width: 60px; height: 60px; border-radius: 50%; margin: 12px auto; display: flex; align-items: center; justify-content: center; background: #111; border: 3px solid #ffd700; }
-        #countdown { font-size: 24px; color: #ffd700; font-weight: bold; }
-        .gameLayout { display: flex; gap: 8px; margin-top: 15px; }
-        .calledBox { width: 32%; background: rgba(0,0,0,0.8); border: 1px solid #ffd700; border-radius: 12px; padding: 8px; }
-        .callGrid { display: grid; grid-template-columns: repeat(5,1fr); gap: 2px; }
-        .callBox { height: 22px; display: flex; align-items: center; justify-content: center; background: #111; border: 1px solid #555; border-radius: 3px; font-size: 10px; color: #ccc; }
-        .callBox.called { background: #8b0000; color: white; }
-        .cardArea { width: 55%; }
-        .singleCard { display: grid; grid-template-columns: repeat(5,1fr); gap: 2px; margin-bottom: 15px; background: #0a0a0a; padding: 4px; border-radius: 8px; border: 1px solid #b8860b; }
-        .singleCard div { background: #1a1a1a; border: 1px solid #444; color: white; padding: 6px 1px; font-size: 12px; border-radius: 4px; text-align: center; }
-        .singleCard div.marked { background: #8b0000!important; color: #ffd700!important; }
-        .freeBox { background: gold!important; color: black!important; }
-        .bingoButton { width: 100%; background: #8b0000; border: 2px solid #ffd700; color: #ffd700; padding: 15px; font-size: 22px; margin-top: 8px; }
-        #currentCall { font-size: 20px; width: 55px; height: 55px; margin: 10px auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #111; border: 3px solid #ffd700; }
-        .leaderboard-list { max-height: 300px; overflow-y: auto; background: #111; border-radius: 12px; padding: 10px; }
-        .leaderboard-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; font-size: 14px; }
-        .cartela-preview { background: #0a0a0a; border: 2px solid #ffd700; border-radius: 15px; padding: 12px; margin: 15px auto; width: 90%; display: none; }
-        .cartela-preview.active { display: block; }
-        .preview-card { display: grid; grid-template-columns: repeat(5,1fr); gap: 4px; margin: 8px auto; max-width: 220px; }
-        .preview-card div { background: #1a1a1a; border: 1px solid #444; color: white; padding: 8px 0; font-size: 14px; border-radius: 6px; text-align: center; }
-        .preview-card .free { background: gold; color: black; }
-        .room-btn, .action-btn { transition: all 0.2s; }
-        .rooms-row, .action-row { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
-        .room-btn, .action-btn { flex: 1; padding: 12px 5px; background: linear-gradient(145deg, #1a1a1a, #000); border: 2px solid #b8860b; border-radius: 15px; color: #ffd700; font-size: 14px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(255,0,0,0.4); }
-        .room-btn:hover, .action-btn:hover { border-color: #ffd700; box-shadow: 0 0 20px #ff0000; transform: translateY(-2px); }
-        #depositScreen button, #withdrawScreen button {
-            transform: scale(1) !important;
-            margin: 8px !important;
-        }
-        .room-btn.locked { background: #222!important; border-color: #444!important; color: #666!important; cursor: not-allowed; box-shadow: none; }
-        .room-btn.locked:hover { transform: none; }
-    </style>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+
+body{
+    margin:0;
+
+    background:
+    linear-gradient(
+        rgba(0,0,0,0.45),
+        rgba(0,0,0,0.55)
+    ),
+    url("images/background.jpg");
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    min-height:100vh;
+
+    color:white;
+    font-family:Arial;
+    text-align:center;
+}
+
+
+.header{
+font-size:30px;
+font-weight:bold;
+padding:20px;
+}
+
+
+.screen{
+display:none;
+padding:10px;
+}
+
+
+.active{
+display:block;
+}
+
+
+button{
+
+width:85%;
+padding:15px;
+margin:8px;
+
+font-size:22px;
+font-weight:bold;
+
+border:none;
+border-radius:15px;
+
+background:
+linear-gradient(145deg,#222,#000);
+
+color:#ffd700;
+
+border:2px solid #b8860b;
+
+box-shadow:
+0 0 15px #8b0000;
+
+}
+
+
+.back{
+background:#8b0000;
+}
+
+
+.selected{
+background:#008000 !important;
+color:white !important;
+box-shadow:0 0 15px #00ff00 !important;
+}
+
+/* CARTELA SELECT */
+
+.cartelaGrid{
+
+display:grid;
+grid-template-columns:repeat(10,1fr);
+gap:5px;
+padding:10px;
+
+}
+
+
+.cartelaGrid button{
+
+width:100%;
+padding:8px 0;
+
+font-size:14px;
+margin:0;
+
+}
+
+
+/* GAME AREA */
+
+.gameLayout{
+
+display:flex;
+gap:8px;
+margin-top:20px;
+align-items:flex-start;
+
+}
+
+
+.calledBox{
+
+    width:32%;
+
+    background:rgba(0,0,0,0.65);
+
+    border:1px solid #ffd700;
+
+    border-radius:10px;
+
+    padding:5px;
+
+}
+
+
+.callGrid{
+
+    display:grid;
+
+    grid-template-columns:repeat(5,1fr);
+
+    gap:2px;
+
+}
+
+
+.callBox{
+
+    height:22px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:#111;
+
+    border:1px solid #555;
+
+    border-radius:3px;
+
+    font-size:10px;
+
+    font-weight:bold;
+
+}
+
+
+.callBox.called{
+
+    background:#008000;
+
+    color:white;
+
+    box-shadow:0 0 5px #00ff00;
+
+}
+
+
+.cardArea{
+
+width:55%;
+
+}
+
+
+
+/* BINGO LETTERS */
+
+.bingoLetters{
+
+display:flex;
+justify-content:center;
+gap:8px;
+
+font-size:25px;
+font-weight:bold;
+
+}
+
+
+.bingoLetters span:nth-child(1){
+color:red;
+}
+
+.bingoLetters span:nth-child(2){
+color:orange;
+}
+
+.bingoLetters span:nth-child(3){
+color:yellow;
+}
+
+.bingoLetters span:nth-child(4){
+color:green;
+}
+
+.bingoLetters span:nth-child(5){
+color:cyan;
+}
+
+
+
+/* BINGO CARD */
+
+.singleCard{
+
+display:grid;
+
+grid-template-columns:repeat(5,1fr);
+
+gap:3px;
+
+margin-bottom:20px;
+
+}
+
+
+.singleCard div{
+
+background:#222;
+
+border:1px solid #888;
+
+color:white;
+
+padding:6px 1px;
+
+font-weight:bold;
+
+font-size:12px;
+
+border-radius:5px;
+
+}
+
+
+.bingoButton{
+
+width:100%;
+
+background:#006400;
+
+}
+
+.calledNumber{
+font-size:20px;
+font-weight:bold;
+margin:5px;
+}
+
+.B{
+color:red;
+}
+
+.I{
+color:orange;
+}
+
+.N{
+color:yellow;
+}
+
+.G{
+color:green;
+}
+
+.O{
+color:cyan;
+}
+
+#currentCall{
+font-size:25px;
+font-weight:bold;
+}
+
+.singleCard div.marked{
+
+background:green !important;
+
+color:white !important;
+
+box-shadow:0 0 8px #00ff00;
+
+}
+
+#currentCall{
+
+font-size:22px;
+font-weight:bold;
+
+width:60px;
+height:60px;
+
+margin:10px auto;
+
+border-radius:50%;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+background:#222;
+
+border:2px solid white;
+
+box-shadow:0 0 8px white;
+
+}
+
+.freeBox{
+
+background:gold;
+
+color:black;
+
+font-weight:bold;
+
+}
+
+#gameRoom{
+
+background:
+linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.8)),
+url("YOUR_GAME_ROOM_IMAGE_LINK");
+
+background-size:cover;
+background-position:center;
+
+border-radius:20px;
+
+}
+
+.waitingCard{
+
+background:rgba(20,20,20,0.95);
+
+border:1px solid #b8860b;
+
+border-radius:15px;
+
+padding:10px;
+
+margin-top:20px;
+
+box-shadow:0 0 12px #b8860b;
+
+}
+
+
+#countdownCircle{
+
+width:55px;
+
+height:55px;
+
+border-radius:50%;
+
+margin:10px auto;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+background:#111;
+
+border:2px solid #ffd700;
+
+box-shadow:0 0 10px #ffd700;
+
+}
+
+
+#countdown{
+
+font-size:25px;
+
+color:#ffd700;
+
+font-weight:bold;
+
+}
+
+
+.cancelBtn{
+
+background:#8b0000;
+
+color:white;
+
+border:1px solid red;
+
+padding:8px;
+
+font-size:16px;
+
+}
+
+#gameRoomBtn{
+    position:absolute;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+
+    width:60%;
+    padding:14px;
+
+    background:linear-gradient(145deg,#222,#111);
+    color:#ffd700;
+
+    font-size:20px;
+    font-weight:bold;
+
+    border:2px solid #ffd700;
+    border-radius:12px;
+
+    box-shadow:0 0 15px rgba(255,215,0,0.5);
+
+    letter-spacing:1px;
+}
+
+.gameTop{
+
+display:flex;
+
+justify-content:space-around;
+
+align-items:center;
+
+background:rgba(0,0,0,0.7);
+
+border:1px solid #ffd700;
+
+border-radius:10px;
+
+padding:5px;
+
+font-size:14px;
+
+}
+
+.gameTop h3{
+
+margin:5px;
+
+}
+
+.autoBox{
+
+display:flex;
+
+justify-content:center;
+
+margin:10px 0;
+
+}
+
+
+#autoBtn{
+
+width:70%;
+
+padding:8px;
+
+font-size:14px;
+
+}
+
+#winnerPopup .waitingCard{
+
+text-align:center;
+
+background:rgba(20,20,20,0.95);
+
+border:2px solid #ffd700;
+
+border-radius:20px;
+
+padding:20px;
+
+margin-top:80px;
+
+box-shadow:0 0 20px #ffd700;
+
+}
+
+
+#winnerPopup h1{
+
+color:#ffd700;
+
+}
+
+.walletBox{
+
+background:
+linear-gradient(
+145deg,
+#222,
+#000
+);
+
+border:2px solid #b8860b;
+
+border-radius:15px;
+
+padding:8px;
+
+margin:10px auto;
+
+width:65%;
+
+color:#ffd700;
+
+font-size:16px;
+
+font-weight:bold;
+
+text-align:center;
+
+box-shadow:
+0 0 10px #8b0000;
+
+position:relative;
+top:200px;
+
+}
+
+
+.walletBox button{
+
+width:38%;
+
+padding:8px;
+
+margin:5px 3px;
+
+font-size:13px;
+
+font-weight:bold;
+
+border-radius:10px;
+
+background:
+linear-gradient(
+145deg,
+#222,
+#000
+);
+
+color:#ffd700;
+
+border:2px solid #b8860b;
+
+box-shadow:
+0 0 6px #8b0000;
+
+}
+
+.depositScreen,
+.withdrawScreen{
+
+background:
+linear-gradient(
+145deg,
+rgba(30,30,30,0.95),
+rgba(0,0,0,0.95)
+);
+
+border:2px solid #b8860b;
+
+border-radius:15px;
+
+padding:20px;
+
+margin:20px auto;
+
+width:85%;
+
+color:#ffd700;
+
+box-shadow:
+0 0 15px #8b0000;
+position:relative;
+}
+
+
+.depositScreen input,
+.withdrawScreen input{
+
+width:80%;
+
+padding:12px;
+
+margin:10px;
+
+border-radius:10px;
+
+border:1px solid #b8860b;
+
+background:#111;
+
+color:white;
+
+font-size:18px;
+
+text-align:center;
+
+}
+
+
+.depositScreen button,
+.withdrawScreen button{
+
+width:35%;
+
+padding:7px;
+
+margin:5px;
+
+font-size:13px;
+
+font-weight:bold;
+
+border-radius:8px;
+
+background:
+linear-gradient(
+145deg,
+#222,
+#000
+);
+
+color:#ffd700;
+
+border:2px solid #b8860b;
+
+box-shadow:
+0 0 8px #8b0000;
+
+}
+
+#profileBtn{
+    margin-top:-20px;
+}
+
+.paymentInfo{
+
+background:
+linear-gradient(
+145deg,
+#222,
+#000
+);
+
+border:2px solid #b8860b;
+
+border-radius:15px;
+
+padding:15px;
+
+margin:15px auto;
+
+width:85%;
+
+color:#ffd700;
+
+box-shadow:0 0 10px #8b0000;
+
+}
+
+
+.paymentInfo button{
+
+width:40%;
+
+padding:8px;
+
+font-size:16px;
+
+margin:5px;
+
+}
+
+.depositScreen .back,
+.withdrawScreen .back{
+
+    position:absolute;
+
+    top:20px;
+
+    left:15px;
+
+    width:80px;
+
+    padding:8px;
+
+    font-size:14px;
+
+    margin:0;
+
+    background:#8b0000;
+
+    color:white;
+
+}
+
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 </head>
+
 <body>
 
+
 <!-- HOME SCREEN -->
+
 <div id="screen1" class="screen active">
-    <div class="home-container">
-        <div class="top-section">
-            <div class="logo">⚡ ZA BINGO</div>
-            <div class="profile-balance">
-                <div class="top-row">
-                    <button class="refresh-btn" onclick="refreshData()">⟳</button>
-                    <button class="profile-btn" onclick="openProfile()">👤 PROFILE</button>
-                </div>
-                <div class="balance-display">💰 <span id="balance">0.00</span> Br</div>
-            </div>
-        </div>
-        <div class="rooms-row">
-            <button class="room-btn" id="homeRoom5" onclick="openRoom('room5')">🎯 ባለ 5<br><span class="room-status" id="status5">-</span></button>
-            <button class="room-btn" id="homeRoom10" onclick="openRoom('room10')">🎯 ባለ 10<br><span class="room-status" id="status10">-</span></button>
-            <button class="room-btn" id="homeRoom20" onclick="openRoom('room20')">🎯 ባለ 20<br><span class="room-status" id="status20">-</span></button>
-        </div>
-        <div class="action-row">
-            <button class="action-btn" onclick="openDeposit()">💳 DEPOSIT</button>
-            <button class="action-btn" onclick="openWithdraw()">💸 WITHDRAW</button>
-            <button class="action-btn leaderboard" onclick="openLeaderboard()">🏆 LEADERBOARD</button>
-        </div>
-        <div style="background:#111;border:1px solid #b8860b;border-radius:12px;padding:10px;margin-top:8px;">
-            <h4 style="margin-bottom:8px;color:#ffd700;">🏆 Top Players</h4>
-            <div id="miniLeaderboard" style="font-size:12px;color:#ccc;">Loading...</div>
-        </div>
-    </div>
+
+
+<p id="contactStatus"></p>
+
+<div class="walletBox">
+
+💰 BALANCE:
+<span id="balance">
+0
+</span>
+Br
+
+<br><br>
+
+<button onclick="openDeposit()">
+💳 DEPOSIT
+</button>
+
+<button onclick="openWithdraw()">
+💸 WITHDRAW
+</button>
+
 </div>
 
-<!-- PROFILE SCREEN -->
-<div id="profileScreen" class="screen">
-    <div class="header">PROFILE <button class="back no-scale" onclick="backHome()">⬅ BACK</button></div>
-    <div style="background:rgba(20,20,20,0.98);border:2px solid #b8860b;border-radius:20px;padding:20px;margin:20px auto;width:90%;color:#ffd700;text-align:left;box-shadow:0 0 25px #8b0000;">
-        <h2 id="profileName" style="text-align:center;"></h2>
-        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Telegram ID:</span><span id="profileTelegramID"></span></div>
-        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Balance:</span><span id="profileBalance"></span></div>
-        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Games Played:</span><span id="profileGamesPlayed">0</span></div>
-        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Games Won:</span><span id="profileGamesWon">0</span></div>
-        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #333;"><span>Win Rate:</span><span id="profileWinRate">0%</span></div>
-        <h3 style="text-align:center;margin-top:15px;">📥 Deposit History</h3>
-        <div id="depositHistory" style="max-height:150px;overflow-y:auto;background:#111;border-radius:10px;padding:8px;">Loading...</div>
-        <h3 style="text-align:center;">📤 Withdrawal History</h3>
-        <div id="withdrawHistory" style="max-height:150px;overflow-y:auto;background:#111;border-radius:10px;padding:8px;">Loading...</div>
-    </div>
+<button id="gameRoomBtn" onclick="openGameRoom()">
+🎮 GAME ROOM
+</button>
+
+
 </div>
 
-<!-- LEADERBOARD SCREEN -->
-<div id="leaderboardScreen" class="screen">
-    <div class="header">🏆 LEADERBOARD <button class="back no-scale" onclick="backHome()">⬅ BACK</button></div>
-    <div style="background:rgba(20,20,20,0.98);border:2px solid #b8860b;border-radius:20px;padding:20px;margin:20px auto;width:90%;color:#ffd700;box-shadow:0 0 25px #8b0000;">
-        <h3>Top Players by Balance</h3>
-        <div id="fullLeaderboard" class="leaderboard-list">Loading...</div>
-    </div>
-</div>
 
 <!-- DEPOSIT SCREEN -->
+
 <div id="depositScreen" class="screen">
-    <div class="header">💳 DEPOSIT <button class="back no-scale" onclick="backHome()">⬅ BACK</button></div>
-    <div style="background:rgba(20,20,20,0.98);border:2px solid #b8860b;border-radius:20px;padding:25px;margin:20px auto;width:90%;color:#ffd700;box-shadow:0 0 25px #8b0000;">
-        <h3>Deposit Accounts</h3>
-        <p>📱 Telebirr: <br><span id="telebirrNumber">Loading...</span> <button onclick="copyText('telebirrNumber')" style="width:auto;padding:6px 12px;font-size:12px;display:inline-block;">COPY</button></p>
-        <p>🏦 CBE Birr: <br><span id="cbeNumber">Loading...</span> <button onclick="copyText('cbeNumber')" style="width:auto;padding:6px 12px;font-size:12px;display:inline-block;">COPY</button></p>
-        <button id="telebirrBtn" onclick="selectDepositMethod('Telebirr',this)">📱 Telebirr</button>
-        <button id="cbeBtn" onclick="selectDepositMethod('CBE Birr',this)">🏦 CBE Birr</button><br>
-        <input id="depositAmount" placeholder="Amount" style="width:80%;padding:12px;margin:10px;border-radius:20px;border:1px solid #b8860b;background:#111;color:white;font-size:16px;text-align:center;"><br>
-        <textarea id="depositSMS" placeholder="Paste payment SMS" style="width:80%;height:80px;background:#111;color:white;border-radius:10px;padding:10px;"></textarea><br>
-        <button onclick="submitDeposit()">VERIFY DEPOSIT</button>
-        <button class="back" onclick="backHome()" style="display:inline-block;width:auto;">⬅ BACK</button>
-    </div>
+
+<div class="depositScreen">
+
+
+
+<h3>
+💳 Deposit Accounts
+</h3>
+
+<p>
+📱 Telebirr:
+<br>
+<span id="telebirrNumber">0985661720</span>
+
+<button onclick="copyText('telebirrNumber')">
+COPY
+</button>
+</p>
+
+
+<p>
+🏦 CBE Birr:
+<br>
+<span id="cbeNumber">0985661720</span>
+
+<button onclick="copyText('cbeNumber')">
+COPY
+</button>
+</p>
+
+<button id="telebirrBtn" onclick="selectDepositMethod('Telebirr', this)">
+📱 Telebirr
+</button>
+
+<button id="cbeBtn" onclick="selectDepositMethod('CBE Birr', this)">
+🏦 CBE Birr
+</button>
+
+<br>
+
+<input id="depositAmount" placeholder="Amount">
+
+<br>
+
+<textarea id="depositSMS" 
+placeholder="Paste payment SMS"
+style="width:80%;height:100px;background:#111;color:white;border-radius:10px;padding:10px;">
+</textarea>
+
+<br>
+
+<button onclick="submitDeposit()">
+VERIFY DEPOSIT
+</button>
+
+
+<button class="back" onclick="backHome()">
+⬅ BACK
+</button>
+
+
 </div>
+
+</div>
+
+
 
 <!-- WITHDRAW SCREEN -->
+
 <div id="withdrawScreen" class="screen">
-    <div class="header">💸 WITHDRAW <button class="back no-scale" onclick="backHome()">⬅ BACK</button></div>
-    <div style="background:rgba(20,20,20,0.98);border:2px solid #b8860b;border-radius:20px;padding:25px;margin:20px auto;width:90%;color:#ffd700;box-shadow:0 0 25px #8b0000;">
-        <h3>Withdraw Method</h3>
-        <button id="withdrawTelebirrBtn" onclick="selectWithdrawMethod('Telebirr',this)">📱 Telebirr</button>
-        <button id="withdrawCbeBtn" onclick="selectWithdrawMethod('CBE Birr',this)">🏦 CBE Birr</button>
-        <input id="withdrawAmount" placeholder="Amount" style="width:80%;padding:12px;margin:10px;border-radius:20px;border:1px solid #b8860b;background:#111;color:white;font-size:16px;text-align:center;"><br>
-        <input id="withdrawPhone" placeholder="Phone number" style="width:80%;padding:12px;margin:10px;border-radius:20px;border:1px solid #b8860b;background:#111;color:white;font-size:16px;text-align:center;"><br>
-        <button onclick="submitWithdraw()">REQUEST WITHDRAW</button>
-        <button class="back" onclick="backHome()" style="display:inline-block;width:auto;">⬅ BACK</button>
-    </div>
+
+<div class="withdrawScreen">
+
+<h1>
+💸 WITHDRAW
+</h1>
+
+<h3>
+Withdraw Method
+</h3>
+
+<button id="withdrawTelebirrBtn" onclick="selectWithdrawMethod('Telebirr', this)">
+📱 Telebirr
+</button>
+
+<button id="withdrawCbeBtn" onclick="selectWithdrawMethod('CBE Birr', this)">
+🏦 CBE Birr
+</button>
+
+<input id="withdrawAmount" placeholder="Amount">
+
+<br>
+
+<input id="withdrawPhone" placeholder="Telebirr phone number">
+
+
+<br>
+
+<button onclick="submitWithdraw()">
+REQUEST WITHDRAW
+</button>
+
+
+<button class="back" onclick="backHome()">
+⬅ BACK
+</button>
+
+
 </div>
 
-<!-- ROOM SCREENS -->
-<div id="room5" class="screen"><div id="cartela5" class="cartelaGrid"></div><button onclick="startGame(5)">START GAME</button><button class="back no-scale" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview5"><h3>Preview</h3><div class="preview-card" id="previewCard5"></div></div></div>
-<div id="room10" class="screen"><div id="cartela10" class="cartelaGrid"></div><button onclick="startGame(10)">START GAME</button><button class="back no-scale" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview10"><h3>Preview</h3><div class="preview-card" id="previewCard10"></div></div></div>
-<div id="room20" class="screen"><div id="cartela20" class="cartelaGrid"></div><button onclick="startGame(20)">START GAME</button><button class="back no-scale" onclick="backHome()">⬅ BACK</button><div class="cartela-preview" id="preview20"><h3>Preview</h3><div class="preview-card" id="previewCard20"></div></div></div>
+</div>
+
+<!-- GAME ROOM -->
+
+<div id="gameRoom" class="screen">
+
+<div class="header">
+GAME ROOM
+</div>
+
+
+<button id="room5Btn" onclick="openRoom('room5')">
+ባለ 5<br>
+Stake 5 Br
+</button>
+
+
+<button id="room10Btn" onclick="openRoom('room10')">
+ባለ 10<br>
+Stake 10 Br
+</button>
+
+
+<button id="room20Btn" onclick="openRoom('room20')">
+ባለ 20<br>
+Stake 20 Br
+</button>
+
+
+<button class="back" onclick="backHome()">
+⬅ BACK
+</button>
+
+
+</div>
+
+
+
+
+
+<!-- ROOM 5 -->
+
+<div id="room5" class="screen">
+
+
+<div id="cartela5" class="cartelaGrid"></div>
+
+
+<button onclick="startGame(5)">
+START GAME
+</button>
+
+
+<button class="back" onclick="backGameRoom()">
+⬅ BACK
+</button>
+
+
+</div>
+
+
+
+
+
+<!-- ROOM 10 -->
+
+<div id="room10" class="screen">
+
+
+
+
+<div id="cartela10" class="cartelaGrid"></div>
+
+
+<button onclick="startGame(10)">
+START GAME
+</button>
+
+
+<button class="back" onclick="backGameRoom()">
+⬅ BACK
+</button>
+
+
+</div>
+
+
+
+
+
+<!-- ROOM 20 -->
+
+<div id="room20" class="screen">
+
+
+
+<div id="cartela20" class="cartelaGrid"></div>
+
+
+<button onclick="startGame(20)">
+START GAME
+</button>
+
+
+<button class="back" onclick="backGameRoom()">
+⬅ BACK
+</button>
+
+
+</div>
 
 <!-- WAITING SCREEN -->
+
 <div id="waitingScreen" class="screen">
-    <div class="waitingCard">
-        <h2>GET READY</h2>
-        <div id="countdownCircle"><span id="countdown">25</span></div>
-        <h3>👥 Players: <span id="playerCount">0</span></h3>
-        <h2>🏆 Prize: <span id="prize">0</span> Br</h2>
-        <button id="cancelBtn" onclick="cancelCountdown()" style="background:#8b0000;color:white;width:auto;padding:8px 20px;font-size:14px;">❌ cancel</button>
-    </div>
+
+<div class="waitingCard">
+
+
+<h2>
+GET READY
+</h2>
+
+
+<div id="countdownCircle">
+
+<span id="countdown">
+25
+</span>
+
 </div>
+
+
+<h3>
+👥 Players:
+<span id="playerCount">
+0/150
+</span>
+</h3>
+
+
+<h2>
+🏆 ደራሽ:
+<span id="prize">
+0
+</span>
+Br
+</h2>
+
+
+<button id="cancelBtn" onclick="cancelCountdown()" class="cancelBtn">
+❌  cancel
+</button>
+
+
+</div>
+
+</div>
+
+
+
+
+
 
 <!-- GAME SCREEN -->
+
 <div id="gameScreen" class="screen">
-    <div style="display:flex;justify-content:space-around;background:rgba(0,0,0,0.7);border:1px solid #ffd700;border-radius:10px;padding:5px;font-size:13px;">
-        <span>👥 <span id="gamePlayers">0</span></span>
-        <span>🏆 <span id="gamePrize">0</span> Br</span>
-        <span>📢 <span id="callCount">0</span>/75</span>
-    </div>
-    <div class="gameLayout">
-        <div class="calledBox">
-            <h4>CALLED (<span id="callCountGame">0</span>/75)</h4>
-            <div id="currentCall">-</div>
-            <div id="callGrid" class="callGrid"></div>
-            <button onclick="toggleAutoMark()" id="autoBtn" style="width:100%;font-size:12px;padding:6px;">AUTO: ON</button>
-        </div>
-        <div class="cardArea">
-            <div id="bingoCard"></div>
-            <button class="bingoButton" onclick="claimBingo()">BINGO</button>
-        </div>
-    </div>
+
+
+
+<div class="gameTop">
+
+<h3>
+👥 <span id="gamePlayers">0/150</span>
+</h3>
+
+<h3>
+🏆 ደራሽ:
+<span id="gamePrize">0</span>
+Br
+</h3>
+
+<h3>
+📢 Calls:
+<span id="callCount">0/75</span>
+</h3>
+
 </div>
 
-<!-- WINNER POPUP -->
-<div id="winnerPopup" class="screen">
-    <div class="waitingCard">
-        <h1 id="winnerTitle">🏆 BINGO WINNER</h1>
-        <h2 id="winnerName"></h2>
-        <h2 id="winnerPrize"></h2>
-        <h3>🎉 Congratulations!</h3>
-    </div>
-</div>
-<div id="invalidPopup" class="screen">
-    <div style="background:#1a1a1a;border:2px solid red;border-radius:20px;padding:30px;margin:50px auto;width:80%;">
-        <h1>❌ INVALID BINGO</h1>
-        <h2>You are banned from this game</h2>
-    </div>
-</div>
-<div id="roomMessage" class="screen" style="background:#111;color:#ffd700;padding:40px;border-radius:20px;">
-    <h2>🔒 Game Already Started</h2>
-    <button onclick="backHome()">OK</button>
+
+
+
+
+<div class="gameLayout">
+
+
+
+<div class="calledBox">
+
+<h3>CALLED</h3>
+
+<h4>
+Calls:
+<span id="callCountGame">0</span>/75
+</h4>
+
+<h2 id="currentCall">
+-
+</h2>
+
+<div id="callGrid" class="callGrid"></div>
+
+<div class="autoBox">
+
+<button onclick="toggleAutoMark()" id="autoBtn">
+AUTO MARK: ON
+</button>
+
 </div>
 
-<!-- POPUP -->
-<div class="popup-overlay" id="customPopup">
-    <div class="popup-box">
-        <h2 id="popupTitle"></h2>
-        <p id="popupMessage"></p>
-        <button onclick="closePopup()">OK</button>
-    </div>
+</div>
+
+
+<div class="cardArea">
+
+
+
+
+<div id="bingoCard">
+
+</div>
+
+<button class="bingoButton" onclick="claimBingo()">
+BINGO
+</button>
+
+
+
+
+
+</div>
+
+
+</div>
+
+
 </div>
 
 <script>
-// ========== FIREBASE ==========
+  
 const firebaseConfig = {
-    apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
-    authDomain: "za-bingo-7ad31.firebaseapp.com",
-    databaseURL: "https://za-bingo-7ad31-default-rtdb.firebaseio.com/",
-    projectId: "za-bingo-7ad31",
-    storageBucket: "za-bingo-7ad31.firebasestorage.app",
-    messagingSenderId: "713392974772",
-    appId: "1:713392974772:web:0e14359197fd522c06a0e1"
+  apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
+  authDomain: "za-bingo-7ad31.firebaseapp.com",
+  databaseURL: "https://za-bingo-7ad31-default-rtdb.firebaseio.com/",
+  projectId: "za-bingo-7ad31",
+  storageBucket: "za-bingo-7ad31.firebasestorage.app",
+  messagingSenderId: "713392974772",
+  appId: "1:713392974772:web:0e14359197fd522c06a0e1",
+  measurementId: "G-40RYH7BT4C"
 };
+
+
+
+
+var db; 
+ 
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
 
-// ========== GLOBALS ==========
-let currentPlayerID = null;
-let tgUser = null;
-let appSettings = { commission: 15, minWithdraw: 50, depositAccounts: { telebirr: "0985661720", cbe: "0985661720" } };
-let fixedCartelas = {};
-let selectedCartelas = [], currentStake = 0, autoMarkEnabled = true, gameBanned = false;
-let depositMethod = "", withdrawMethod = "";
-let calledNumbers = [], callerTimer, waitingTimer;
+db = firebase.database();  
 
-// ========== POPUP ==========
-function showPopup(t, m, cb) {
-    document.getElementById("popupTitle").textContent = t;
-    document.getElementById("popupMessage").textContent = m;
-    document.getElementById("customPopup").classList.add("show");
-    window.popupCallback = cb || null;
-}
-function closePopup() {
-    document.getElementById("customPopup").classList.remove("show");
-    if (typeof window.popupCallback === "function") {
-        window.popupCallback();
-        window.popupCallback = null;
-    }
-}
+function createNewPlayer(tgUser){
 
-// ========== TRANSACTIONS ==========
-function createTransaction(playerID, type, amount, balanceBefore, balanceAfter, adminID = null) {
-    const txID = "TX_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
-    db.ref("transactions/" + txID).set({
-        playerID, type, amount, balanceBefore, balanceAfter,
-        time: firebase.database.ServerValue.TIMESTAMP,
-        adminID: adminID
-    });
-}
+    let playerID = tgUser.id.toString();
 
-// ========== SETTINGS ==========
-function loadSettings() {
-    db.ref("settings").once("value", snap => {
-        if (snap.exists()) appSettings = snap.val();
-        else {
-            appSettings = { commission: 15, minWithdraw: 50, depositAccounts: { telebirr: "0985661720", cbe: "0985661720" } };
-            db.ref("settings").set(appSettings);
-        }
-        document.getElementById("telebirrNumber").textContent = appSettings.depositAccounts.telebirr;
-        document.getElementById("cbeNumber").textContent = appSettings.depositAccounts.cbe;
-    });
-    db.ref("settings").on("value", snap => {
-        if (snap.exists()) {
-            appSettings = snap.val();
-            document.getElementById("telebirrNumber").textContent = appSettings.depositAccounts.telebirr;
-            document.getElementById("cbeNumber").textContent = appSettings.depositAccounts.cbe;
-        }
-    });
+    let playerData = {
+
+        telegram_id: tgUser.id,
+
+        username: tgUser.username || "",
+
+        first_name: tgUser.first_name || "",
+
+        phone: "",
+
+        balance: 30,
+
+        gamesPlayed: 0,
+
+        gamesWon: 0,
+
+        createdAt: Date.now()
+
+    };
+
+
+    db.ref("players/" + playerID).set(playerData);
+
+
+    localStorage.setItem("playerID", playerID);
+
+
+    console.log("New player created:", playerID);
+
 }
 
-// ========== CARTELAS ==========
-function generateFixedCartelas() {
-    for (let c = 1; c <= 150; c++) {
-        let B = [], I = [], N = [], G = [], O = [];
-        for (let i = 1; i <= 15; i++) { B.push(i); I.push(i + 15); N.push(i + 30); G.push(i + 45); O.push(i + 60); }
-        function pick(a, n) {
-            let r = [], cp = [...a];
-            while (r.length < n) {
-                let x = Math.floor(Math.random() * cp.length);
-                r.push(cp[x]);
-                cp.splice(x, 1);
-            }
-            return r.sort((a, b) => a - b);
-        }
-        let b = pick(B, 5), i = pick(I, 5), n = pick(N, 5), g = pick(G, 5), o = pick(O, 5);
-        let card = [b[0], i[0], n[0], g[0], o[0], b[1], i[1], n[1], g[1], o[1],
-                    b[2], i[2], n[2], g[2], o[2], b[3], i[3], n[3], g[3], o[3],
-                    b[4], i[4], n[4], g[4], o[4]];
-        card[12] = "*";
-        fixedCartelas[c] = card;
-    }
-}
-function loadFixedCartelas() {
-    db.ref("ZA_Bingo_V3/cartelas").once("value", s => {
-        if (s.exists()) fixedCartelas = s.val();
-        else { generateFixedCartelas(); db.ref("ZA_Bingo_V3/cartelas").set(fixedCartelas); }
-    });
-}
+loadFixedCartelas();
+watchRoomButtons();
 
-// ========== SCREENS ==========
-function showScreen(id) {
-    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-}
-function backHome() {
-    showScreen("screen1");
-    loadMiniLeaderboard();
-    updateRoomLocks();
-}
-function openDeposit() { showScreen("depositScreen"); }
-function openWithdraw() { showScreen("withdrawScreen"); }
-function openLeaderboard() { showScreen("leaderboardScreen"); loadFullLeaderboard(); }
+loadWalletBalance();
+let selectedCartelas = [];
 
-// ========== LEADERBOARD ==========
-function loadMiniLeaderboard() {
-    db.ref("players").orderByChild("balance").limitToLast(5).once("value", s => {
-        let h = "", arr = [];
-        s.forEach(p => arr.push({ name: p.val().first_name || "Player", bal: p.val().balance || 0 }));
-        arr.sort((a, b) => b.bal - a.bal);
-        arr.forEach((p, i) => h += `<div style="display:flex;justify-content:space-between;padding:4px;border-bottom:1px solid #222;"><span>${i+1}. ${p.name}</span><span>${p.bal.toFixed(2)} Br</span></div>`);
-        document.getElementById("miniLeaderboard").innerHTML = h || "No players yet.";
-    });
-}
-function loadFullLeaderboard() {
-    db.ref("players").orderByChild("balance").limitToLast(20).once("value", s => {
-        let h = "", arr = [];
-        s.forEach(p => arr.push({ name: p.val().first_name || "Player", bal: p.val().balance || 0 }));
-        arr.sort((a, b) => b.bal - a.bal);
-        arr.forEach((p, i) => h += `<div class="leaderboard-item"><span>${i+1}. ${p.name}</span><span>${p.bal.toFixed(2)} Br</span></div>`);
-        document.getElementById("fullLeaderboard").innerHTML = h || "No players yet.";
-    });
-}
+let currentStake = 0;
 
-// ========== PROFILE ==========
-function openProfile() {
-    showScreen("profileScreen");
-    let pid = currentPlayerID;
-    if (!pid) return;
-    db.ref("players/" + pid).once("value", snap => {
-        let d = snap.val() || {};
-        document.getElementById("profileName").textContent = d.first_name || "Player";
-        document.getElementById("profileTelegramID").textContent = d.telegram_id || "-";
-        document.getElementById("profileBalance").textContent = (d.balance || 0).toFixed(2) + " Br";
-        document.getElementById("profileGamesPlayed").textContent = d.gamesPlayed || 0;
-        document.getElementById("profileGamesWon").textContent = d.gamesWon || 0;
-        let wr = d.gamesPlayed ? ((d.gamesWon / d.gamesPlayed) * 100).toFixed(1) : 0;
-        document.getElementById("profileWinRate").textContent = wr + "%";
-    });
-    db.ref("ZA_Bingo_V3/deposits").orderByChild("playerID").equalTo(pid).once("value", snap => {
-        let h = "";
-        snap.forEach(c => {
-            let d = c.val();
-            h += `<div style="display:flex;justify-content:space-between;padding:5px;font-size:13px;"><span>${d.amount} Br (${d.method||""})</span><span style="color:${d.status=='approved'?'#00ff00':'orange'}">${d.status||"pending"}</span></div>`;
-        });
-        document.getElementById("depositHistory").innerHTML = h || "No deposits.";
-    });
-    db.ref("ZA_Bingo_V3/withdraws").orderByChild("playerID").equalTo(pid).once("value", snap => {
-        let h = "";
-        snap.forEach(c => {
-            let w = c.val();
-            h += `<div style="display:flex;justify-content:space-between;padding:5px;font-size:13px;"><span>${w.amount} Br (${w.method||""})</span><span style="color:${w.status=='approved'?'#00ff00':'orange'}">${w.status||"pending"}</span></div>`;
-        });
-        document.getElementById("withdrawHistory").innerHTML = h || "No withdrawals.";
-    });
-}
+let autoMarkEnabled = true;
 
-// ========== DEPOSIT ==========
-function selectDepositMethod(method, btn) {
-    depositMethod = method;
-    document.getElementById("telebirrBtn").classList.remove("selected");
-    document.getElementById("cbeBtn").classList.remove("selected");
-    btn.classList.add("selected");
-}
-function submitDeposit() {
-    let playerID = currentPlayerID;
-    if (!playerID) { showPopup("Error", "Player account not found"); return; }
-    let amount = Number(document.getElementById("depositAmount").value);
-    let sms = document.getElementById("depositSMS").value;
-    if (!amount || !sms) { showPopup("Error", "Enter amount and SMS"); return; }
-    const depositID = "DEP_" + Date.now();
-    db.ref("ZA_Bingo_V3/deposits/" + depositID).set({
-        playerID, amount, method: depositMethod || "Telebirr", paymentInfo: sms,
-        status: "pending", createdAt: firebase.database.ServerValue.TIMESTAMP,
-        approvedAt: null, adminID: null
-    }).then(() => {
-        showPopup("Deposit Submitted", "Waiting for admin approval");
-        document.getElementById("depositAmount").value = "";
-        document.getElementById("depositSMS").value = "";
-    }).catch(err => showPopup("Error", "Failed: " + err.message));
-}
+let gameBanned = false;
 
-// ========== WITHDRAW ==========
-function selectWithdrawMethod(method, btn) {
+let depositMethod = "";
+
+let withdrawMethod = "";
+
+function selectWithdrawMethod(method, btn){
+
     withdrawMethod = method;
+
     document.getElementById("withdrawTelebirrBtn").classList.remove("selected");
     document.getElementById("withdrawCbeBtn").classList.remove("selected");
+
     btn.classList.add("selected");
-}
-function submitWithdraw() {
-    let playerID = currentPlayerID;
-    let amount = Number(document.getElementById("withdrawAmount").value);
-    let phone = document.getElementById("withdrawPhone").value;
-    if (!playerID) { showPopup("Error", "Player not found"); return; }
-    if (!amount || !phone) { showPopup("Error", "Enter amount and phone"); return; }
-    if (amount < appSettings.minWithdraw) { showPopup("Error", "Minimum " + appSettings.minWithdraw + " Br"); return; }
-    db.ref("players/" + playerID + "/balance").once("value", snap => {
-        let balBefore = snap.val() || 0;
-        if (balBefore < amount) { showPopup("Error", "Insufficient balance"); return; }
-        db.ref("players/" + playerID + "/balance").transaction(current => current < amount ? current : current - amount, (err, committed) => {
-            if (err || !committed) { showPopup("Error", "Transaction failed"); return; }
-            let balAfter = balBefore - amount;
-            db.ref("ZA_Bingo_V3/withdraws/WITH_" + Date.now()).set({
-                playerID, amount, phone, method: withdrawMethod,
-                status: "pending", time: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                createTransaction(playerID, "withdraw", amount, balBefore, balAfter);
-                showPopup("Withdrawal Requested", "Pending admin approval");
-                document.getElementById("withdrawAmount").value = "";
-                document.getElementById("withdrawPhone").value = "";
-            });
-        });
-    });
+
 }
 
-// ========== GAME ROOMS ==========
-function createCartelas(id) {
-    let box = document.getElementById(id);
-    box.innerHTML = "";
-    selectedCartelas = [];
-    for (let i = 1; i <= 150; i++) {
-        let btn = document.createElement("button");
-        btn.innerHTML = i;
-        if (window.takenCartelas && window.takenCartelas[i]) {
-            btn.style.background = "#444";
-            btn.disabled = true;
-        }
-        btn.onclick = function() {
-            if (window.takenCartelas && window.takenCartelas[i]) { showPopup("Taken", "Already taken"); return; }
-            if (btn.classList.contains("selected")) {
-                btn.classList.remove("selected");
-                selectedCartelas = selectedCartelas.filter(x => x != i);
-            } else {
-                if (selectedCartelas.length < 2) { btn.classList.add("selected"); selectedCartelas.push(i); }
-                else { showPopup("Limit", "Max 2 Cartelas"); }
+// Fixed Cartelas (we keep these forever)
+
+let fixedCartelas = {};
+
+
+// CREATE 150 FIXED CARTELAS
+
+function generateFixedCartelas(){
+
+for(let c=1;c<=150;c++){
+
+
+let B=[];
+let I=[];
+let N=[];
+let G=[];
+let O=[];
+
+
+
+for(let i=1;i<=15;i++){
+B.push(i);
+I.push(i+15);
+N.push(i+30);
+G.push(i+45);
+O.push(i+60);
+}
+
+
+
+function pick(arr,count){
+
+let result=[];
+
+let copy=[...arr];
+
+
+while(result.length<count){
+
+let index=Math.floor(Math.random()*copy.length);
+
+result.push(copy[index]);
+
+copy.splice(index,1);
+
+}
+
+return result;
+
+}
+
+
+
+let b = pick(B,5);
+let i = pick(I,5);
+let n = pick(N,5);
+let g = pick(G,5);
+let o = pick(O,5);
+
+
+let card = [
+
+b[0], i[0], n[0], g[0], o[0],
+b[1], i[1], n[1], g[1], o[1],
+b[2], i[2], n[2], g[2], o[2],
+b[3], i[3], n[3], g[3], o[3],
+b[4], i[4], n[4], g[4], o[4]
+
+];
+
+
+card[12]="*";
+
+
+// Put FREE center
+
+card[12]="*";
+
+
+fixedCartelas[c]=card;
+
+
+}
+
+
+}
+
+
+// LOAD FIXED CARTELAS FROM FIREBASE
+
+function loadFixedCartelas(){
+
+db.ref("ZA_Bingo_V3/cartelas").once("value",function(snapshot){
+
+if(snapshot.exists()){
+
+fixedCartelas = snapshot.val();
+
+console.log("Cartelas loaded");
+
+}
+
+else{
+
+generateFixedCartelas();
+
+db.ref("ZA_Bingo_V3/cartelas").set(fixedCartelas);
+
+console.log("New cartelas saved");
+
+}
+
+});
+
+}
+
+function watchRoomButtons(){
+
+let rooms = [
+{room:"room5", btn:"room5Btn", name:"ባለ 5"},
+{room:"room10", btn:"room10Btn", name:"ባለ 10"},
+{room:"room20", btn:"room20Btn", name:"ባለ 20"}
+];
+
+
+rooms.forEach(function(item){
+
+
+db.ref("ZA_Bingo_V3/rooms/"+item.room).on("value",function(snapshot){
+
+
+let data = snapshot.val();
+
+let button = document.getElementById(item.btn);
+
+
+if(!button || !data){
+return;
+}
+
+
+
+if(data.status=="countdown"){
+
+button.innerHTML =
+"⏳ "+item.name+
+"<br>Starts in: "+
+(data.countdown || 0)+"s";
+
+
+}
+
+
+else if(data.status=="playing"){
+
+
+button.innerHTML =
+"🔒 "+item.name+
+"<br>GAME RUNNING";
+
+
+}
+
+
+else{
+
+
+button.innerHTML =
+item.name+
+"<br>Stake "+item.room.replace("room","")+" Br";
+
+
+}
+
+
+});
+
+
+});
+
+
+}
+
+
+// Screen control
+
+function loadWalletBalance(){
+
+if(window.Telegram && Telegram.WebApp){
+
+Telegram.WebApp.ready();
+
+let tgUser = Telegram.WebApp.initDataUnsafe.user;
+
+
+if(tgUser){
+
+db.ref("telegram_lookup/" + tgUser.id).once("value", function(snapshot){
+
+    if(snapshot.exists()){
+
+        let playerID = snapshot.val().playerID;
+
+        localStorage.setItem("playerID", playerID);
+
+        console.log("Linked player:", playerID);
+
+        loadProfile();
+
+    }
+    else{
+
+        console.log("No linked account found");
+
+    }
+
+});
+
+let telegramID = tgUser.id;
+
+
+// Find player using telegramID inside players
+
+db.ref("players").once("value", function(snapshot){
+
+let foundID = null;
+
+snapshot.forEach(function(player){
+
+let data = player.val();
+
+if(data.telegram_id == telegramID){
+
+foundID = player.key;
+
+}
+
+});
+
+
+if(!foundID){
+
+createNewPlayer(tgUser);
+
+return;
+
+}
+
+
+let phone = foundID;
+localStorage.setItem("playerID", foundID);
+
+// Save player ID for game use
+
+localStorage.setItem("playerID", phone);
+
+
+// Load balance
+
+db.ref("players/" + phone + "/balance")
+.on("value",function(balanceSnap){
+
+
+let balance = balanceSnap.val();
+
+
+if(balance == null){
+
+balance = 0;
+
+}
+
+
+document.getElementById("balance").innerHTML =
+Number(balance).toFixed(2);
+
+
+});
+
+
+});
+
+
+}
+
+}
+
+}
+
+function showScreen(id){
+
+document.querySelectorAll(".screen").forEach(function(screen){
+
+screen.classList.remove("active");
+
+});
+
+
+document.getElementById(id).classList.add("active");
+
+}
+
+function showRoomMessage(){
+
+showScreen("roomMessage");
+
+}
+
+function submitDeposit(){
+
+let playerID = localStorage.getItem("playerID");
+
+if(!playerID){
+    let tgUser = Telegram.WebApp.initDataUnsafe.user;
+
+    if(tgUser){
+        playerID = tgUser.id.toString();
+        localStorage.setItem("playerID", playerID);
+    }
+}
+
+if(!playerID){
+    alert("Player account not found");
+    return;
+}
+
+if(!playerID && Telegram.WebApp.initDataUnsafe.user){
+
+playerID = Telegram.WebApp.initDataUnsafe.user.id.toString();
+
+localStorage.setItem("playerID", playerID);
+
+}
+
+if(!playerID){
+
+alert("Player account not found");
+
+return;
+
+}
+
+let amount = Number(
+document.getElementById("depositAmount").value
+);
+
+let sms = document.getElementById("depositSMS").value;
+
+
+if(!amount || !sms){
+
+alert("Enter amount and SMS");
+
+return;
+
+}
+
+
+let depositID = "DEP_" + Date.now();
+
+
+let txId = "";
+
+db.ref("ZA_Bingo_V3/deposits/" + depositID).set({
+
+playerID: playerID,
+
+amount: amount,
+
+method: depositMethod,
+
+sms: sms,
+
+txId: txId,
+
+status:"pending",
+
+time: Date.now()
+
+});
+
+
+alert("Deposit submitted. Waiting approval");
+
+
+document.getElementById("depositAmount").value="";
+document.getElementById("depositSMS").value="";
+
+
+}
+
+function openDeposit(){
+
+showScreen("depositScreen");
+
+}
+function selectDepositMethod(method, btn){
+
+depositMethod = method;
+
+document.getElementById("telebirrBtn").classList.remove("selected");
+document.getElementById("cbeBtn").classList.remove("selected");
+
+btn.classList.add("selected");
+
+}
+
+function approveDeposit(depositID){
+
+db.ref("ZA_Bingo_V3/deposits/" + depositID).once("value",function(snapshot){
+
+let deposit = snapshot.val();
+
+if(!deposit){
+alert("Deposit not found");
+return;
+}
+
+
+let playerID = deposit.playerID;
+let amount = deposit.amount;
+
+
+// Update deposit status
+
+db.ref("ZA_Bingo_V3/deposits/" + depositID).update({
+
+status:"approved"
+
+});
+
+
+// Add balance
+
+db.ref("players/" + playerID + "/balance")
+.transaction(function(balance){
+
+return (balance || 0) + amount;
+
+});
+// Add win count
+
+
+
+
+alert("Deposit approved");
+
+});
+
+
+}
+
+function openWithdraw(){
+
+showScreen("withdrawScreen");
+
+}
+
+function submitWithdraw(){
+
+let playerID = localStorage.getItem("playerID");
+
+let amount = Number(
+document.getElementById("withdrawAmount").value
+);
+
+let phone =
+document.getElementById("withdrawPhone").value;
+
+
+if(!playerID){
+
+alert("Player account not found");
+
+return;
+
+}
+
+
+if(!amount || !phone){
+
+alert("Enter amount and phone number");
+
+return;
+
+}
+
+
+if(amount < 50){
+
+alert("Minimum withdrawal amount is 50 Br");
+
+return;
+
+}
+
+
+// Check balance
+
+db.ref("players/" + playerID + "/balance")
+.once("value", function(snapshot){
+
+
+let balance = snapshot.val() || 0;
+
+
+if(balance < amount){
+
+alert("Insufficient balance");
+
+return;
+
+}
+
+
+// Deduct balance immediately
+
+db.ref("players/" + playerID + "/balance")
+.transaction(function(currentBalance){
+
+
+if(currentBalance < amount){
+
+return;
+
+}
+
+
+return currentBalance - amount;
+
+
+}, function(error, committed){
+
+
+if(error || !committed){
+
+alert("Withdraw failed");
+
+return;
+
+}
+
+
+
+// Create withdraw request after deduction
+
+let withdrawID = "WITH_" + Date.now();
+
+console.log("Sending withdraw request", withdrawID);
+
+db.ref("ZA_Bingo_V3/withdraws/" + withdrawID).set({
+
+playerID: playerID,
+
+amount: amount,
+
+phone: phone,
+
+status:"pending",
+
+time: Date.now()
+
+});
+
+
+
+alert("Withdraw request sent");
+
+
+document.getElementById("withdrawAmount").value="";
+
+document.getElementById("withdrawPhone").value="";
+
+
+});
+
+
+});
+
+
+}
+
+function openGameRoom(){
+
+showScreen("gameRoom");
+
+}
+
+
+
+function backHome(){
+
+showScreen("screen1");
+
+}
+
+
+
+function backGameRoom(){
+
+showScreen("gameRoom");
+
+}
+
+
+
+
+
+// Open room and show 150 cartelas
+
+function openRoom(room){
+
+db.ref("ZA_Bingo_V3/rooms/"+room+"/status").once("value",function(snapshot){
+
+let status = snapshot.val();
+
+
+if(status=="playing"){
+
+showRoomMessage();
+return;
+
+}
+
+
+showScreen(room);
+
+
+if(db){
+
+db.ref("ZA_Bingo_V3/rooms/"+room).update({
+
+status:"waiting",
+
+stake: Number(room.replace("room","")),
+
+prizepool:0,
+
+countdown:25,
+
+lastCall:""
+
+});
+
+}
+
+if(db){
+
+db.ref("ZA_Bingo_V3/rooms/"+room+"/takenCartelas").on("value",function(snapshot){
+
+window.takenCartelas = snapshot.val() || {};
+
+});
+
+}
+
+
+if(room=="room5"){
+
+createCartelas("cartela5");
+
+}
+
+
+if(room=="room10"){
+
+createCartelas("cartela10");
+
+}
+
+
+if(room=="room20"){
+
+createCartelas("cartela20");
+
+}
+
+if(db){
+
+db.ref("ZA_Bingo_V3/rooms/"+room+"/countdown").on("value",function(snapshot){
+  
+  db.ref("ZA_Bingo_V3/rooms/"+room+"/status").on("value",function(snapshot){
+
+let status = snapshot.val();
+
+
+if(status=="playing"){
+
+lockCartelas();
+
+document.getElementById("cancelBtn").style.display="none";
+
+}
+
+});
+
+let time = snapshot.val();
+
+if(time !== null){
+
+document.getElementById("countdown").innerHTML = time;
+
+}
+
+});
+
+}
+
+});
+}
+
+
+
+
+
+function createCartelas(id){
+
+
+let box=document.getElementById(id);
+
+
+box.innerHTML="";
+
+
+selectedCartelas=[];
+
+
+
+for(let i=1;i<=150;i++){
+
+
+let btn=document.createElement("button");
+
+
+btn.innerHTML=i;
+
+
+
+btn.onclick=function(){
+
+if(window.takenCartelas && window.takenCartelas[i]){
+
+alert("Cartela already taken");
+
+return;
+
+}
+
+if(btn.classList.contains("selected")){
+
+
+btn.classList.remove("selected");
+
+
+selectedCartelas =
+selectedCartelas.filter(x=>x!=i);
+
+
+}
+
+
+else{
+
+
+if(selectedCartelas.length < 2){
+
+
+btn.classList.add("selected");
+
+
+selectedCartelas.push(i);
+
+
+}
+
+else{
+
+
+alert("Maximum 2 Cartelas");
+
+
+}
+
+
+}
+
+
+};
+
+
+
+box.appendChild(btn);
+
+
+
+}
+
+
+}
+
+
+
+
+
+
+// Start game
+
+function lockCartelas(){
+
+let buttons = document.querySelectorAll(".cartelaGrid button");
+
+buttons.forEach(function(btn){
+
+btn.disabled = true;
+
+});
+
+}
+
+function startGame(stake){
+
+currentStake = stake;
+
+gameBanned = false;
+
+
+
+let playerID = localStorage.getItem("playerID");
+
+
+if(window.Telegram && Telegram.WebApp){
+
+    Telegram.WebApp.ready();
+
+    let tgUser = Telegram.WebApp.initDataUnsafe.user;
+
+    if(tgUser){
+
+        db.ref("telegram_lookup/" + tgUser.id).once("value", function(snapshot){
+
+            if(snapshot.exists()){
+
+                playerID = snapshot.val().playerID;
+
+                localStorage.setItem("playerID", playerID);
+
+                checkPlayerBalance(stake, playerID);
+
             }
-            showCartelaPreview(id.replace("cartela", ""), i);
-        };
-        box.appendChild(btn);
+            else{
+
+                alert("Player account not found");
+
+            }
+
+        });
+
+        return;
+
     }
-}
-function showCartelaPreview(stake, num) {
-    let pd = document.getElementById("preview" + stake), cd = document.getElementById("previewCard" + stake);
-    if (!fixedCartelas[num]) return;
-    pd.classList.add("active");
-    let card = fixedCartelas[num], h = "";
-    card.forEach(v => h += `<div class="${v == '*' ? 'free' : ''}">${v}</div>`);
-    cd.innerHTML = h;
-}
-function openRoom(room) {
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/status").once("value", s => {
-        if (s.val() == "playing") { showPopup("Locked", "Game already started"); return; }
-        showScreen(room);
-        db.ref("ZA_Bingo_V3/rooms/" + room).transaction(c => c || { status: "waiting", stake: parseInt(room.replace("room", "")), countdown: 25 });
-        db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas").once("value", ts => {
-            window.takenCartelas = ts.val() || {};
-            if (room == "room5") createCartelas("cartela5");
-            if (room == "room10") createCartelas("cartela10");
-            if (room == "room20") createCartelas("cartela20");
-        });
-    });
+
 }
 
-// ========== GAME LOGIC ==========
-function checkPlayerBalance(stake, pid) {
-    return new Promise((resolve, reject) => {
-        db.ref("players/" + pid + "/balance").once("value", s => {
-            let balBefore = s.val() || 0;
-            if (balBefore < stake) { showPopup("Insufficient Balance", "Need " + stake + " Br"); reject(); return; }
-            db.ref("players/" + pid + "/balance").transaction(c => c < stake ? c : c - stake, (e, comm) => {
-                if (e || !comm) { showPopup("Error", "Transaction failed"); reject(); }
-                else {
-                    createTransaction(pid, "game_entry", stake, balBefore, balBefore - stake);
-                    resolve();
-                }
-            });
-        });
-    });
-}
-async function startGame(stake) {
-    currentStake = stake;
-    gameBanned = false;
-    let pid = currentPlayerID;
-    if (!pid) { showPopup("Error", "Player not found"); return; }
-    if (selectedCartelas.length == 0) { showPopup("Select Cartela", "Choose at least one"); return; }
-    let room = "room" + stake;
-    let playerSnap = await db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).once("value");
-    if (playerSnap.exists()) { showPopup("Already Joined", "You are in this room"); return; }
-    try { await checkPlayerBalance(stake, pid); } catch (e) { return; }
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).set({ cartelas: selectedCartelas, status: "playing" });
-    selectedCartelas.forEach(c => db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas/" + c).set(true));
-    db.ref("players/" + pid).update({ lastSeen: firebase.database.ServerValue.TIMESTAMP });
-    db.ref("players/" + pid + "/gamesPlayed").transaction(c => (c || 0) + 1);
-    showScreen("waitingScreen");
-    attachWaitingListeners(room);
-}
-function attachWaitingListeners(room) {
-    if (window.roomPlayersRef) window.roomPlayersRef.off();
-    if (window.roomStatusRef) window.roomStatusRef.off();
-    if (window.roomCountdownRef) window.roomCountdownRef.off();
-    if (window.waitingTimer) clearInterval(window.waitingTimer);
-    window.roomPlayersRef = db.ref("ZA_Bingo_V3/rooms/" + room + "/players");
-    window.roomStatusRef = db.ref("ZA_Bingo_V3/rooms/" + room + "/status");
-    window.roomCountdownRef = db.ref("ZA_Bingo_V3/rooms/" + room + "/countdown");
-    window.roomPlayersRef.on("value", s => {
-        let count = s.numChildren();
-        document.getElementById("playerCount").innerHTML = count;
-        let tc = 0;
-        s.forEach(p => tc += (p.val().cartelas || []).length);
-        let prize = (tc * currentStake * (1 - appSettings.commission / 100)).toFixed(2);
-        document.getElementById("prize").innerHTML = prize;
-        if (count >= 2) {
-            window.roomStatusRef.once("value", ss => {
-                if (ss.val() == "countdown" || ss.val() == "playing") return;
-                window.roomStatusRef.set("countdown");
-                window.roomCountdownRef.set(25);
-                document.getElementById("countdown").textContent = "25";
-                let time = 25;
-                window.waitingTimer = setInterval(() => {
-                    time--;
-                    window.roomCountdownRef.set(time);
-                    document.getElementById("countdown").textContent = time;
-                    if (time <= 0) {
-                        clearInterval(window.waitingTimer);
-                        window.roomStatusRef.set("playing");
-                        lockCartelas();
-                        openGameScreen();
-                    }
-                }, 1000);
-            });
-        } else {
-            document.getElementById("countdown").innerHTML = "Waiting...";
-        }
-    });
-}
-function lockCartelas() {
-    document.querySelectorAll(".cartelaGrid button").forEach(b => b.disabled = true);
-    document.getElementById("cancelBtn").style.display = "none";
-}
-function cancelCountdown() {
-    if (!currentStake) return;
-    let room = "room" + currentStake;
-    if (window.roomPlayersRef) window.roomPlayersRef.off();
-    if (window.roomStatusRef) window.roomStatusRef.off();
-    if (window.roomCountdownRef) window.roomCountdownRef.off();
-    if (window.waitingTimer) clearInterval(window.waitingTimer);
-    let pid = currentPlayerID;
-    db.ref("players/" + pid + "/balance").once("value", s => {
-        let balBefore = s.val() || 0;
-        db.ref("players/" + pid + "/balance").transaction(b => {
-            let newBal = (b || 0) + currentStake;
-            createTransaction(pid, "refund", currentStake, balBefore, newBal);
-            return newBal;
-        });
-    });
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).once("value", s => { if (s.exists()) s.ref.remove(); });
-    selectedCartelas.forEach(c => db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas/" + c).remove());
-    selectedCartelas = [];
-    showScreen("room" + currentStake);
-    createCartelas("cartela" + currentStake);
-}
-function openGameScreen() {
-    showScreen("gameScreen");
-    createCallGrid();
-    document.getElementById("gamePlayers").innerHTML = document.getElementById("playerCount").innerHTML;
-    document.getElementById("gamePrize").innerHTML = document.getElementById("prize").innerHTML;
-    createBingoCards();
-    listenToCalledNumbers();
-    listenToWinner();
-    setTimeout(() => setupCaller("room" + currentStake), 1000);
-}
-function createCallGrid() {
-    let grid = document.getElementById("callGrid");
-    grid.innerHTML = "";
-    for (let i = 1; i <= 75; i++) {
-        let box = document.createElement("div");
-        box.className = "callBox";
-        box.id = "call_" + i;
-        box.innerHTML = i;
-        grid.appendChild(box);
-    }
-}
-function createBingoCards() {
-    let area = document.getElementById("bingoCard");
-    area.innerHTML = "";
-    selectedCartelas.forEach(num => {
-        let card = fixedCartelas[num];
-        if (!card) return;
-        let container = document.createElement("div");
-        container.innerHTML = `<h4>Cartela ${num}</h4><div class="bingoLetters"><span>B</span><span>I</span><span>N</span><span>G</span><span>O</span></div>`;
-        let grid = document.createElement("div");
-        grid.className = "singleCard";
-        card.forEach(v => {
-            let box = document.createElement("div");
-            box.innerHTML = v;
-            if (v == "*") box.classList.add("freeBox");
-            box.onclick = () => box.classList.toggle("marked");
-            grid.appendChild(box);
-        });
-        container.appendChild(grid);
-        area.appendChild(container);
-    });
-}
-function listenToCalledNumbers() {
-    db.ref("ZA_Bingo_V3/rooms/room" + currentStake + "/calledNumbers").on("value", s => {
-        calledNumbers = s.val() || [];
-        if (calledNumbers.length) {
-            let n = calledNumbers[calledNumbers.length - 1],
-                l = n <= 15 ? "B" : n <= 30 ? "I" : n <= 45 ? "N" : n <= 60 ? "G" : "O";
-            document.getElementById("currentCall").className = l;
-            document.getElementById("currentCall").innerHTML = l + " " + n;
-            let box = document.getElementById("call_" + n);
-            if (box) box.classList.add("called");
-            autoMark(n);
-        }
-    });
-}
-function autoMark(n) {
-    if (!autoMarkEnabled) return;
-    document.querySelectorAll(".singleCard div").forEach(b => { if (Number(b.innerHTML) == n) b.classList.add("marked"); });
-}
-function setupCaller(room) {
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/caller").transaction(current => {
-        if (current) return;
-        return { type: "server", time: firebase.database.ServerValue.TIMESTAMP };
-    }, (err, comm) => {
-        if (comm) {
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").once("value", s => {
-                if (!s.exists()) db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").set([]);
-                startCaller();
-            });
-        }
-    });
-}
-function startCaller() {
-    let room = "room" + currentStake;
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").once("value", s => {
-        calledNumbers = s.val() || [];
-        callerTimer = setInterval(() => {
-            if (calledNumbers.length >= 75) { clearInterval(callerTimer); return; }
-            let n;
-            do { n = Math.floor(Math.random() * 75) + 1; } while (calledNumbers.includes(n));
-            calledNumbers.push(n);
-            document.getElementById("callCountGame").innerHTML = calledNumbers.length;
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").set(calledNumbers);
-        }, 3000);
-    });
-}
-function toggleAutoMark() {
-    autoMarkEnabled = !autoMarkEnabled;
-    document.getElementById("autoBtn").innerHTML = autoMarkEnabled ? "AUTO: ON" : "AUTO: OFF";
-}
-function listenToWinner() {
-    db.ref("ZA_Bingo_V3/rooms/room" + currentStake + "/winner").on("value", s => {
-        let winner = s.val();
-        if (!winner) return;
-        clearInterval(callerTimer);
-        let myID = currentPlayerID;
-        if (winner.playerID == myID) {
-            document.getElementById("winnerTitle").innerHTML = "🏆 YOU WIN!";
-            document.getElementById("winnerName").innerHTML = "🎉 Congratulations!";
-        } else {
-            document.getElementById("winnerTitle").innerHTML = "❌ GAME OVER";
-            document.getElementById("winnerName").innerHTML = "YOU LOST";
-        }
-        document.getElementById("winnerPrize").innerHTML = "Prize: " + winner.prize + " Br";
-        showScreen("winnerPopup");
-        setTimeout(() => { resetRoom(currentStake); resetGame(); }, 4000);
-    });
-}
-function claimBingo() {
-    if (gameBanned) { showPopup("Banned", "You are banned"); return; }
-    let cards = document.querySelectorAll(".singleCard"),
-        winner = false;
-    cards.forEach(card => {
-        let boxes = card.querySelectorAll("div"),
-            values = [];
-        boxes.forEach(box => {
-            let v = box.innerHTML;
-            if (v == "*") values.push(true);
-            else if (box.classList.contains("marked") && calledNumbers.includes(Number(v))) values.push(true);
-            else values.push(false);
-        });
-        for (let r = 0; r < 5; r++) { let w = true; for (let c = 0; c < 5; c++) if (!values[r * 5 + c]) w = false; if (w) winner = true; }
-        for (let c = 0; c < 5; c++) { let w = true; for (let r = 0; r < 5; r++) if (!values[r * 5 + c]) w = false; if (w) winner = true; }
-        if (values[0] && values[6] && values[12] && values[18] && values[24]) winner = true;
-        if (values[4] && values[8] && values[12] && values[16] && values[20]) winner = true;
-        if (values[0] && values[4] && values[20] && values[24]) winner = true;
-    });
-    if (!winner) { gameBanned = true;
-        showScreen("invalidPopup");
-        setTimeout(() => { gameBanned = false;
-            backHome(); }, 3000); return; }
-    clearInterval(callerTimer);
-    let room = "room" + currentStake,
-        pid = currentPlayerID;
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").transaction(c => c ? undefined : { playerID: pid, prize: 0 }, (e, comm) => {
-        if (!comm) return;
-        db.ref("ZA_Bingo_V3/rooms/" + room + "/players").once("value", s => {
-            let tc = 0,
-                playerCount = s.numChildren();
-            s.forEach(p => tc += (p.val().cartelas || []).length);
-            let prize = tc * currentStake * (1 - appSettings.commission / 100);
-            db.ref("players/" + pid + "/balance").once("value", bs => {
-                let balBefore = bs.val() || 0;
-                db.ref("players/" + pid + "/balance").transaction(b => {
-                    let newBal = (b || 0) + prize;
-                    createTransaction(pid, "win", prize, balBefore, newBal);
-                    db.ref("players/" + pid + "/gamesWon").transaction(w => (w || 0) + 1);
-                    return newBal;
-                }, (err, c) => {
-                    if (err || !c) return;
-                    db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").update({ prize: prize.toFixed(2) });
-                    saveGameHistory(room, pid, prize.toFixed(2), playerCount);
-                    showScreen("winnerPopup");
-                    document.getElementById("winnerTitle").innerHTML = "🏆 YOU WIN!";
-                    document.getElementById("winnerPrize").innerHTML = "Prize: " + prize.toFixed(2) + " Br";
-                    setTimeout(() => { resetRoom(currentStake);
-                        resetGame(); }, 4000);
-                });
-            });
-        });
-    });
-}
-function resetRoom(stake) {
-    let room = "room" + stake;
-    db.ref("ZA_Bingo_V3/rooms/" + room).update({ status: "waiting", countdown: 25 });
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/players").remove();
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas").remove();
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").remove();
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").remove();
-    db.ref("ZA_Bingo_V3/rooms/" + room + "/caller").remove();
-}
-function resetGame() { selectedCartelas = [];
-    calledNumbers = [];
-    gameBanned = false;
-    backHome(); }
-function saveGameHistory(room, winnerID, prize, playersCount) {
-    db.ref("history/GAME_" + Date.now()).set({
-        room, winnerID, prize, playersCount,
-        time: firebase.database.ServerValue.TIMESTAMP
-    });
-}
-function copyText(id) {
-    navigator.clipboard.writeText(document.getElementById(id).innerText);
-    showPopup("Copied", "Number copied!");
+checkPlayerBalance(stake, playerID);
+
+
+
+// Save player account
+
+db.ref("players/" + playerID).update({
+
+lastSeen: Date.now()
+
+});
+
+
+// Add game played count
+
+db.ref("players/" + playerID + "/gamesPlayed")
+.transaction(function(count){
+
+return (count || 0) + 1;
+
+});
+
+if(selectedCartelas.length==0){
+
+alert("Choose Cartela first");
+
+return;
+
 }
 
-// ========== BALANCE & REFRESH ==========
-function attachBalanceListener(pid) {
-    if (window.balanceRef) window.balanceRef.off();
-    const balanceEl = document.getElementById("balance");
-    window.balanceRef = db.ref("players/" + pid + "/balance");
-    window.balanceRef.on("value", snap => {
-        const val = snap.val();
-        balanceEl.innerHTML = (val !== null && val !== undefined) ? Number(val).toFixed(2) : "0.00";
-        updateRoomLocks();
-        if (document.getElementById("profileScreen").classList.contains("active")) openProfile();
-    }, err => {
-        console.error("Balance listener error:", err);
-        balanceEl.innerHTML = "0.00";
-    });
+
+
+
+
+
+
+
+
+
+showScreen("waitingScreen");
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/players").on("value",function(snapshot){
+
+let count = snapshot.numChildren();
+
+document.getElementById("playerCount").innerHTML = count+"/150";
+
+
+if(count >= 2){
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/status")
+.once("value",function(statusSnap){
+
+if(statusSnap.val()=="countdown" || statusSnap.val()=="playing"){
+return;
 }
 
-function refreshData() {
-    if (!currentPlayerID) {
-        initApp();
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake).update({
+
+status:"countdown",
+countdown:25
+
+});
+
+
+let time = 25;
+
+
+let timer=setInterval(function(){
+
+time--;
+
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/countdown")
+.set(time);
+
+
+if(time <= 0){
+
+clearInterval(timer);
+
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake).update({
+
+status:"playing",
+locked:true,
+countdown:0
+
+});
+
+document.getElementById("cancelBtn").style.display="none";
+
+lockCartelas();
+
+openGameScreen();
+
+}
+
+
+},1000);
+
+
+});
+}
+
+else{
+
+document.getElementById("countdown").innerHTML = "Waiting for player...";
+
+}
+
+});
+
+
+
+if(db){
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/players").on("value",function(snapshot){
+
+let count = snapshot.numChildren();
+
+let totalCartelas = 0;
+
+
+snapshot.forEach(function(player){
+
+let data = player.val();
+
+
+if(data.cartelas){
+
+totalCartelas += data.cartelas.length;
+
+}
+
+});
+
+
+let totalMoney = totalCartelas * stake;
+
+
+let prize = totalMoney - (totalMoney * 0.15);
+
+
+
+document.getElementById("playerCount").innerHTML =
+count+"/150";
+
+
+document.getElementById("gamePlayers").innerHTML =
+count+"/150";
+
+
+document.getElementById("prize").innerHTML =
+prize.toFixed(2);
+
+
+document.getElementById("gamePrize").innerHTML =
+prize.toFixed(2);
+
+
+});
+
+}
+
+
+
+if(db){
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/winner").set("");
+
+}
+
+if(db){
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/countdown").set(25);
+
+}
+
+
+
+}
+function checkPlayerBalance(stake, playerID){
+
+db.ref("players/" + playerID + "/balance").once("value", function(balanceSnap){
+
+let balance = balanceSnap.val() || 0;
+
+
+if(balance < stake){
+
+alert("Insufficient balance");
+
+return;
+
+}
+// Deduct stake
+db.ref("players/" + playerID + "/balance").transaction(function(currentBalance){
+
+    if(currentBalance < stake){
         return;
     }
-    attachBalanceListener(currentPlayerID);
-    loadMiniLeaderboard();
-    updateRoomLocks();
-    if (document.getElementById("profileScreen").classList.contains("active")) openProfile();
-    showPopup("Refreshed", "Data updated!");
-}
 
-function updateRoomLocks() {
-    // No locks - all rooms open
-    ['5', '10', '20'].forEach(s => {
-        const btn = document.getElementById("homeRoom" + s);
-        if (!btn) return;
-        btn.classList.remove("locked");
-        btn.onclick = () => openRoom('room' + s);
-    });
-}
+    return currentBalance - stake;
 
-// ========== GET USER FROM URL ==========
-function getUserIdFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    let id = params.get('user_id');
-    
-    // Try Telegram WebApp as backup
-    if (!id && window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.ready();
-        const user = Telegram.WebApp.initDataUnsafe.user;
-        if (user) id = user.id.toString();
+}, function(error, committed){
+
+    if(error || !committed){
+
+        alert("Insufficient balance");
+
+        return;
+
     }
-    
-    // Final fallback for testing
-    if (!id) id = localStorage.getItem('playerID');
-    
-    return id;
+
+
+    // Continue joining after payment
+
+    db.ref("ZA_Bingo_V3/rooms/room" + stake + "/players/" + playerID).set({
+
+        cartelas: selectedCartelas,
+
+        status:"playing"
+
+    });
+
+
+    selectedCartelas.forEach(function(card){
+
+        db.ref("ZA_Bingo_V3/rooms/room" + stake + "/takenCartelas/" + card)
+        .set(true);
+
+    });
+
+
+    showScreen("waitingScreen");
+
+
+});
+
+return;
+
+// Continue joining room
+
+db.ref("ZA_Bingo_V3/rooms/room" + stake + "/players/" + playerID).set({
+
+    cartelas: selectedCartelas,
+
+    status:"playing"
+
+});
+
+
+selectedCartelas.forEach(function(card){
+
+db.ref("ZA_Bingo_V3/rooms/room" + stake + "/takenCartelas/" + card)
+.set(true);
+
+});
+
+
+showScreen("waitingScreen");
+
+
+});
+
+
+}
+function cancelCountdown(){
+
+if(currentStake==0){
+return;
 }
 
-// ========== INIT APP ==========
-function initApp() {
-    auth.signInAnonymously().catch(console.error);
-    auth.onAuthStateChanged(user => {
-        if (!user) { auth.signInAnonymously(); return; }
 
-        const pid = getUserIdFromURL();
-        
-        if (!pid) {
-            document.body.innerHTML = '<h1>❌ Error</h1><p>Please open from the bot</p>';
+db.ref("ZA_Bingo_V3/rooms/room"+currentStake+"/players")
+.once("value",function(snapshot){
+
+
+let players = snapshot.val();
+
+
+for(let id in players){
+
+if(players[id].cartelas.join(",")==selectedCartelas.join(",")){
+
+
+let refund = currentStake;
+
+
+// give stake back
+
+db.ref("players/"+id+"/balance")
+.transaction(function(balance){
+
+return (balance || 0) + refund;
+
+});
+
+
+// remove player from room
+
+db.ref("ZA_Bingo_V3/rooms/room"+currentStake+"/players/"+id)
+.remove();
+
+
+}
+
+}
+
+
+});
+
+
+selectedCartelas.forEach(function(card){
+
+db.ref("ZA_Bingo_V3/rooms/room"+currentStake+"/takenCartelas/"+card)
+.remove();
+
+});
+
+
+selectedCartelas=[];
+
+
+showScreen("room"+currentStake);
+
+
+createCartelas("cartela"+currentStake);
+
+
+}
+
+
+function createCallGrid(){
+
+let grid = document.getElementById("callGrid");
+
+grid.innerHTML = "";
+
+
+let columns = [
+["B",1],
+["I",16],
+["N",31],
+["G",46],
+["O",61]
+];
+
+
+// headers
+
+columns.forEach(function(col){
+
+let head=document.createElement("div");
+
+head.className="callBox";
+
+head.innerHTML=col[0];
+
+grid.appendChild(head);
+
+});
+
+
+// numbers
+
+for(let row=0; row<15; row++){
+
+columns.forEach(function(col){
+
+let number = col[1] + row;
+
+
+let box=document.createElement("div");
+
+box.className="callBox";
+
+box.id="call_"+number;
+
+box.innerHTML=number;
+
+
+grid.appendChild(box);
+
+});
+
+}
+
+}
+
+
+function openGameScreen(){
+
+showScreen("gameScreen");
+
+createCallGrid();
+
+
+
+document.getElementById("gamePlayers").innerHTML =
+document.getElementById("playerCount").innerHTML;
+
+
+
+document.getElementById("gamePrize").innerHTML =
+document.getElementById("prize").innerHTML;
+
+
+
+createBingoCards();
+
+listenToCalledNumbers();
+
+listenToWinner();
+
+setTimeout(function(){
+startRoomCaller();
+},1000);
+
+}
+
+
+let calledNumbers = [];
+
+let callerTimer;
+
+function listenToCalledNumbers(){
+
+let room = "room" + currentStake;
+
+
+db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers")
+.on("value",function(snapshot){
+
+calledNumbers = snapshot.val() || [];
+
+
+if(calledNumbers.length > 0){
+
+let number = calledNumbers[calledNumbers.length-1];
+
+
+let letter;
+
+
+if(number<=15){
+letter="B";
+}
+else if(number<=30){
+letter="I";
+}
+else if(number<=45){
+letter="N";
+}
+else if(number<=60){
+letter="G";
+}
+else{
+letter="O";
+}
+
+
+document.getElementById("currentCall").className = letter;
+
+document.getElementById("currentCall").innerHTML =
+letter+" "+number;
+
+
+let box=document.getElementById("call_"+number);
+
+if(box){
+box.classList.add("called");
+}
+
+
+}
+
+});
+
+}
+
+function startRoomCaller(){
+
+let room = "room" + currentStake;
+
+
+db.ref("ZA_Bingo_V3/rooms/" + room + "/caller")
+.transaction(function(current){
+
+if(current){
+    return;
+}
+
+return {
+    player: localStorage.getItem("playerID"),
+    time: Date.now()
+};
+
+}, function(error, committed){
+
+
+if(committed){
+
+db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers")
+.once("value",function(snapshot){
+
+if(!snapshot.exists()){
+
+db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers")
+.set([]);
+
+}
+
+
+startCaller();
+
+
+});
+
+
+}
+
+
+});
+
+
+}
+
+function startCaller(){
+
+let room = "room" + currentStake;
+
+
+db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers")
+.once("value",function(snapshot){
+
+
+calledNumbers = snapshot.val() || [];
+
+
+callerTimer=setInterval(function(){
+
+
+if(calledNumbers.length >= 75){
+
+clearInterval(callerTimer);
+
+return;
+
+}
+
+
+
+let number;
+
+
+do{
+
+number = Math.floor(Math.random()*75)+1;
+
+
+}while(calledNumbers.includes(number));
+
+
+
+calledNumbers.push(number);
+document.getElementById("callCountGame").innerHTML = calledNumbers.length;
+
+
+db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers")
+.set(calledNumbers);
+
+
+
+let letter;
+
+
+if(number<=15){
+letter="B";
+}
+else if(number<=30){
+letter="I";
+}
+else if(number<=45){
+letter="N";
+}
+else if(number<=60){
+letter="G";
+}
+else{
+letter="O";
+}
+
+
+
+document.getElementById("currentCall").className = letter;
+
+document.getElementById("currentCall").innerHTML =
+letter + " " + number;
+
+
+autoMark(number);
+
+
+
+},3000);
+
+
+
+});
+
+
+}
+
+
+
+function createBingoCards(){
+
+let area=document.getElementById("bingoCard");
+
+area.innerHTML="";
+
+
+selectedCartelas.forEach(function(number){
+
+
+let card=fixedCartelas[number];
+
+
+if(card){
+
+
+let container=document.createElement("div");
+
+container.className="cardContainer";
+
+
+
+let title=document.createElement("h3");
+
+title.innerHTML="Cartela "+number;
+
+container.appendChild(title);
+
+
+
+let letters=document.createElement("div");
+
+letters.className="bingoLetters";
+
+letters.innerHTML=
+"<span>B</span>"+
+"<span>I</span>"+
+"<span>N</span>"+
+"<span>G</span>"+
+"<span>O</span>";
+
+container.appendChild(letters);
+
+
+
+
+let grid=document.createElement("div");
+
+grid.className="singleCard";
+
+
+
+card.forEach(function(value){
+
+
+let box=document.createElement("div");
+
+box.innerHTML=value;
+
+
+if(value=="*"){
+
+box.classList.add("freeBox");
+
+}
+
+box.onclick=function(){
+
+box.classList.toggle("marked");
+
+};
+
+
+grid.appendChild(box);
+
+
+});
+
+
+
+container.appendChild(grid);
+
+
+area.appendChild(container);
+
+
+
+}
+
+
+});
+
+
+}
+
+function autoMark(number){
+
+if(!autoMarkEnabled){
+return;
+}
+
+
+let boxes=document.querySelectorAll(".singleCard div");
+
+
+boxes.forEach(function(box){
+
+let value = box.innerHTML;
+
+if(Number(value) == number){
+
+box.classList.add("marked");
+
+}
+
+});
+
+}
+
+function listenToWinner(){
+
+let room = "room" + currentStake;
+
+db.ref("ZA_Bingo_V3/rooms/" + room + "/winner")
+.on("value", function(snapshot){
+
+let winner = snapshot.val();
+
+if(!winner){
+    return;
+}
+
+clearInterval(callerTimer);
+
+let myID = localStorage.getItem("playerID");
+
+
+if(winner.playerID == myID){
+
+document.getElementById("winnerTitle").innerHTML =
+"🏆 YOU WIN!";
+
+document.getElementById("winnerName").innerHTML =
+"🎉 Congratulations!";
+
+}
+else{
+
+document.getElementById("winnerTitle").innerHTML =
+"❌ GAME OVER";
+
+document.getElementById("winnerName").innerHTML =
+"YOU LOST";
+
+}
+
+
+document.getElementById("winnerPrize").innerHTML =
+"Prize: " + winner.prize + " Br";
+
+
+showScreen("winnerPopup");
+
+
+setTimeout(function(){
+
+resetRoom(currentStake);
+resetGame();
+
+},4000);
+
+
+});
+
+}
+
+function toggleAutoMark(){
+
+autoMarkEnabled = !autoMarkEnabled;
+
+
+if(autoMarkEnabled){
+
+document.getElementById("autoBtn").innerHTML =
+"AUTO MARK: ON";
+
+}
+
+else{
+
+document.getElementById("autoBtn").innerHTML =
+"AUTO MARK: OFF";
+
+}
+
+}
+
+function claimBingo(){
+  
+if(gameBanned){
+
+alert("You are banned from this game");
+
+return;
+
+}  
+
+let cards=document.querySelectorAll(".singleCard");
+
+
+let winner=false;
+
+
+cards.forEach(function(card){
+
+let boxes=card.querySelectorAll("div");
+
+
+let values=[];
+
+
+boxes.forEach(function(box){
+
+let value = box.innerHTML;
+
+
+if(value=="*"){
+
+values.push(true);
+
+}
+
+else if(
+box.classList.contains("marked") &&
+calledNumbers.includes(Number(value))
+){
+
+values.push(true);
+
+}
+
+else{
+
+values.push(false);
+
+}
+
+});
+
+
+// Check rows
+
+for(let r=0;r<5;r++){
+
+let win=true;
+
+for(let c=0;c<5;c++){
+
+if(!values[r*5+c]){
+
+win=false;
+
+}
+
+}
+
+if(win){
+
+winner=true;
+
+}
+
+}
+
+
+// Check columns
+
+for(let c=0;c<5;c++){
+
+let win=true;
+
+for(let r=0;r<5;r++){
+
+if(!values[r*5+c]){
+
+win=false;
+
+}
+
+}
+
+if(win){
+
+winner=true;
+
+}
+
+}
+
+
+// Diagonal 1
+
+if(values[0]&&values[6]&&values[12]&&values[18]&&values[24]){
+
+winner=true;
+
+}
+
+
+// Diagonal 2
+
+if(values[4]&&values[8]&&values[12]&&values[16]&&values[20]){
+
+winner=true;
+
+}
+
+
+// Corners
+
+if(values[0]&&values[4]&&values[20]&&values[24]){
+
+winner=true;
+
+}
+
+
+});
+
+
+if(winner){
+
+clearInterval(callerTimer);
+
+
+// CHECK WINNER IN FIREBASE
+
+let room = "room" + currentStake;
+
+let playerID = localStorage.getItem("playerID");
+
+
+db.ref("ZA_Bingo_V3/rooms/"+room+"/winner")
+.transaction(function(currentWinner){
+
+if(currentWinner){
+
+return;
+
+}
+
+return {
+    playerID: playerID,
+    prize: 0
+};
+
+
+}, function(error, committed){
+
+
+if(committed){
+
+
+// Calculate prize directly from Firebase
+
+db.ref("ZA_Bingo_V3/rooms/" + room + "/players").once("value", function(snapshot){
+
+    let totalCartelas = 0;
+
+    snapshot.forEach(function(player){
+
+        let data = player.val();
+
+        if(data.cartelas){
+            totalCartelas += data.cartelas.length;
+        }
+
+    });
+
+    let totalMoney = totalCartelas * currentStake;
+    let prize = totalMoney - (totalMoney * 0.15);
+
+    db.ref("players/" + playerID + "/balance").transaction(function(balance){
+
+        return (balance || 0) + prize;
+
+    }, function(error, committed){
+
+        if(error || !committed){
+            alert("Failed to pay winner.");
             return;
         }
 
-        currentPlayerID = pid;
-        localStorage.setItem('playerID', pid);
-        db.ref("telegram_lookup/" + pid).set({ playerID: pid });
+db.ref("ZA_Bingo_V3/rooms/"+room+"/winner").update({
 
-        // Check if player exists
-        db.ref("players/" + pid).once("value", snap => {
-            if (!snap.exists()) {
-                // Create new player
-                const newPlayer = {
-                    telegram_id: pid,
-                    first_name: "Player",
-                    balance: 30,
-                    gamesPlayed: 0,
-                    gamesWon: 0,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP
-                };
-                db.ref("players/" + pid).set(newPlayer).then(() => {
-                    attachBalanceListener(pid);
-                    loadMiniLeaderboard();
-                    updateRoomLocks();
-                    showScreen("screen1");
-                    showPopup("Welcome!", "🎉 30 Br bonus added!");
-                });
-            } else {
-                // Existing player
-                const data = snap.val();
-                if (data.balance === undefined || data.balance === null) {
-                    db.ref("players/" + pid + "/balance").set(30).then(() => {
-                        attachBalanceListener(pid);
-                        loadMiniLeaderboard();
-                        updateRoomLocks();
-                        showScreen("screen1");
-                    });
-                } else {
-                    attachBalanceListener(pid);
-                    loadMiniLeaderboard();
-                    updateRoomLocks();
-                    showScreen("screen1");
-                }
-            }
-        });
+    playerID: playerID,
+    prize: prize.toFixed(2)
+
+});
+
+        setTimeout(function(){
+
+            resetRoom(currentStake);
+            resetGame();
+
+        }, 4000);
+
     });
+
+});
+
+
 }
 
-// ========== ROOM STATUS WATCHER ==========
-function initRoomWatchers() {
-    ['room5', 'room10', 'room20'].forEach((r, i) => {
-        const stake = i == 0 ? 5 : i == 1 ? 10 : 20;
-        const statusEl = document.getElementById("status" + stake);
-        if (!statusEl) return;
-        
-        db.ref("ZA_Bingo_V3/rooms/" + r).on("value", s => {
-            const d = s.val();
-            if (d) {
-                if (d.status == "playing") {
-                    statusEl.textContent = "🔴 LIVE";
-                    statusEl.className = "room-status status-playing";
-                } else if (d.status == "countdown") {
-                    statusEl.textContent = "⏳ " + d.countdown + "s";
-                    statusEl.className = "room-status status-countdown";
-                } else {
-                    statusEl.textContent = "🟢 Open";
-                    statusEl.className = "room-status status-waiting";
-                }
-            } else {
-                statusEl.textContent = "🟢 Open";
-                statusEl.className = "room-status status-waiting";
-            }
-        });
-    });
+
+});
+
+
+
+
 }
 
-// ========== INITIALIZE ==========
-function initRooms() {
-    ['room5', 'room10', 'room20'].forEach(r => db.ref("ZA_Bingo_V3/rooms/" + r).once("value", s => {
-        if (!s.exists()) db.ref("ZA_Bingo_V3/rooms/" + r).set({ 
-            status: "waiting", 
-            stake: parseInt(r.replace("room", "")), 
-            countdown: 25, 
-            lastCall: "", 
-            prizepool: 0, 
-            locked: false 
-        });
-    }));
+else{
+
+gameBanned = true;
+
+showScreen("invalidPopup");
+
+
+setTimeout(function(){
+
+gameBanned = false;
+
+showScreen("screen1");
+
+},3000);
+
+
 }
 
-// Start everything
-initRooms();
-loadFixedCartelas();
-loadSettings();
-setTimeout(initRoomWatchers, 1000);
-initApp();
+
+}
+
+function resetRoom(stake){
+
+if(db){
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake).update({
+
+status:"waiting",
+countdown:25,
+lastCall:"",
+locked:false
+
+});
+
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/players").remove();
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/takenCartelas").remove();
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/calledNumbers").remove();
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/winner").remove();
+
+db.ref("ZA_Bingo_V3/rooms/room"+stake+"/caller").remove();
+
+}
+
+}
+
+function resetGame(){
+
+selectedCartelas=[];
+
+calledNumbers=[];
+
+gameBanned=false;
+
+showScreen("screen1");
+
+}
+
+function copyText(id){
+
+let text = document.getElementById(id).innerText;
+
+navigator.clipboard.writeText(text);
+
+alert("Copied: " + text);
+
+}
+
+
 </script>
+
+<div id="winnerPopup" class="screen">
+
+<div class="waitingCard">
+
+<h1 id="winnerTitle">🏆 BINGO WINNER</h1>
+
+<h2 id="winnerName"></h2>
+
+<h2 id="winnerCartela"></h2>
+
+<h2 id="winnerPrize"></h2>
+
+<h3>🎉 Congratulations!</h3>
+
+</div>
+
+</div>
+
+<div id="invalidPopup" class="screen">
+
+<h1>❌ INVALID BINGO</h1>
+
+<h2>
+You are banned from this game
+</h2>
+
+</div>
+
+<div id="roomMessage" class="screen" style="background:#111;color:#ffd700;padding:40px;border-radius:20px;">
+
+<h2>
+🔒 ጨዋታው ተጀምሯል
+</h2>
+
+<button onclick="backHome()">
+OK
+</button>
+
+</div>
+
+
+
 </body>
 </html>
