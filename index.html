@@ -228,7 +228,7 @@ const db = firebase.database();
 
 let selectedCartelas=[], currentStake=0, autoMarkEnabled=true, gameBanned=false, depositMethod="", withdrawMethod="", fixedCartelas={}, calledNumbers=[], callerTimer, waitingTimer, tgUser=null;
 let appSettings = { commission: 15, minWithdraw: 50, depositAccounts: { telebirr: "0985661720", cbe: "0985661720" } };
-let currentPlayerID = null;  // Firebase Auth UID
+let currentPlayerID = null;  // This will be the Telegram ID (string)
 
 // ============ CUSTOM POPUP ============
 function showPopup(t,m,c){ document.getElementById("popupTitle").textContent=t; document.getElementById("popupMessage").textContent=m; document.getElementById("customPopup").classList.add("show"); window.popupCallback=c||null; }
@@ -284,31 +284,33 @@ function initApp() {
 
     auth.onAuthStateChanged(user => {
         if (user) {
-            currentPlayerID = user.uid;
-            localStorage.setItem("playerID", currentPlayerID);
-            // Link Telegram if available
+            // We use Firebase Auth only for security, not for player keys.
+            // The player key is the Telegram ID.
             if (window.Telegram && Telegram.WebApp) {
                 Telegram.WebApp.ready();
                 tgUser = Telegram.WebApp.initDataUnsafe.user;
                 if (tgUser) {
-                    // Ensure telegram_lookup points to this auth UID
-                    db.ref("telegram_lookup/" + tgUser.id).set({ playerID: currentPlayerID });
-                    // Create or load player data
-                    db.ref("players/" + currentPlayerID).once("value", snap => {
+                    let pid = tgUser.id.toString(); // Telegram ID as string
+                    currentPlayerID = pid;
+                    localStorage.setItem("playerID", pid);
+                    // Ensure telegram_lookup points to the same ID (though it's itself)
+                    db.ref("telegram_lookup/" + tgUser.id).set({ playerID: pid });
+                    // Create or load player data under players/pid
+                    db.ref("players/" + pid).once("value", snap => {
                         if (snap.exists()) {
-                            attachBalanceListener(currentPlayerID);
-                            applyNewPlayerBonus(currentPlayerID);
+                            attachBalanceListener(pid);
+                            applyNewPlayerBonus(pid);
                         } else {
-                            createNewPlayer(tgUser, currentPlayerID);
-                            attachBalanceListener(currentPlayerID);
-                            applyNewPlayerBonus(currentPlayerID);
+                            createNewPlayer(tgUser, pid);
+                            attachBalanceListener(pid);
+                            applyNewPlayerBonus(pid);
                         }
                         loadMiniLeaderboard();
                         updateRoomLocks();
                         showScreen("screen1");
                     });
                 } else {
-                    // No Telegram – still try to load player data by stored ID
+                    // No Telegram user – fallback to stored ID or auth uid
                     let pid = localStorage.getItem("playerID");
                     if (pid) {
                         db.ref("players/" + pid).once("value", snap => {
@@ -321,6 +323,19 @@ function initApp() {
                         });
                     }
                 }
+            } else {
+                // Not in Telegram environment, try stored ID
+                let pid = localStorage.getItem("playerID");
+                if (pid) {
+                    db.ref("players/" + pid).once("value", snap => {
+                        if (snap.exists()) {
+                            currentPlayerID = pid;
+                            attachBalanceListener(pid);
+                        } else {
+                            createBasicPlayer(pid);
+                        }
+                    });
+                }
             }
         } else {
             // Not signed in – retry
@@ -329,8 +344,8 @@ function initApp() {
     });
 }
 
-function createNewPlayer(user, uid) {
-    db.ref("players/" + uid).set({
+function createNewPlayer(user, pid) {
+    db.ref("players/" + pid).set({
         telegram_id: user.id,
         username: user.username || "",
         first_name: user.first_name || "",
@@ -342,8 +357,8 @@ function createNewPlayer(user, uid) {
     });
 }
 
-function createBasicPlayer(uid) {
-    db.ref("players/" + uid).set({
+function createBasicPlayer(pid) {
+    db.ref("players/" + pid).set({
         telegram_id: "",
         username: "",
         first_name: "Player",
