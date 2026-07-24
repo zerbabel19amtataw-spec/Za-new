@@ -5,6 +5,7 @@
     <title>ZA Bingo V3</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* (same styles as before – keep unchanged) */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { background:#0a0a0a; background-image:radial-gradient(circle at 50% 20%, rgba(139,0,0,0.3) 0%, transparent 60%), radial-gradient(circle at 50% 80%, rgba(255,215,0,0.1) 0%, transparent 60%); min-height:100vh; color:#ffd700; font-family:'Segoe UI', Arial, sans-serif; text-align:center; }
         .screen { display:none; padding:10px; min-height:100vh; animation:fadeIn 0.3s; }
@@ -72,8 +73,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
-<!-- HTML STRUCTURE (SAME AS BEFORE, KEEP IT) -->
 
+<!-- All screens – same as before, no changes needed -->
 <div id="screen1" class="screen active">
     <div class="home-container">
         <div class="top-section">
@@ -721,7 +722,7 @@ function copyText(id) {
     showPopup("Copied", "Number copied!");
 }
 
-// ============ AUTH & PLAYER INIT (FIXED – ALWAYS MERGE) ============
+// ============ FIXED: ALWAYS USE CURRENT TELEGRAM ID, ENSURE BALANCE EXISTS ============
 function initApp() {
     auth.signInAnonymously().catch(err => {
         console.error("Auth error:", err);
@@ -756,51 +757,29 @@ function initApp() {
         tgUser = Telegram.WebApp.initDataUnsafe.user;
         if (!tgUser) return;
 
-        const tgID = tgUser.id.toString();
-        const authUID = user.uid;
+        const pid = tgUser.id.toString();
+        currentPlayerID = pid;
+        localStorage.setItem("playerID", pid);
+        db.ref("telegram_lookup/" + pid).set({ playerID: pid });
 
-        // READ old data (Auth UID) and new data (Telegram ID), then merge
-        db.ref("players/" + authUID).once("value", oldSnap => {
-            const oldData = oldSnap.exists() ? oldSnap.val() : null;
-            db.ref("players/" + tgID).once("value", newSnap => {
-                let merged = {};
-
-                if (oldData) {
-                    // Copy old data, but keep telegram fields from tgUser
-                    merged = { ...oldData };
-                    merged.telegram_id = tgUser.id;
-                    merged.username = tgUser.username || oldData.username || "";
-                    merged.first_name = tgUser.first_name || oldData.first_name || "Player";
-                } else {
-                    // No old data – use new or create fresh
-                    if (newSnap.exists()) {
-                        merged = newSnap.val();
-                    } else {
-                        merged = {
-                            telegram_id: tgUser.id,
-                            username: tgUser.username || "",
-                            first_name: tgUser.first_name || "",
-                            phone: "",
-                            balance: 0,
-                            gamesPlayed: 0,
-                            gamesWon: 0,
-                            createdAt: firebase.database.ServerValue.TIMESTAMP
-                        };
-                    }
+        // Ensure player exists and has a balance field
+        db.ref("players/" + pid).once("value", snap => {
+            if (!snap.exists()) {
+                createNewPlayer(tgUser, pid);
+            } else {
+                const data = snap.val();
+                if (!data.hasOwnProperty('balance') || data.balance === undefined) {
+                    db.ref("players/" + pid + "/balance").set(0);
                 }
-
-                // Write merged data to Telegram ID key
-                db.ref("players/" + tgID).set(merged).then(() => {
-                    db.ref("telegram_lookup/" + tgID).set({ playerID: tgID });
-                    // Optional: remove old node to avoid confusion
-                    // db.ref("players/" + authUID).remove();
-                    currentPlayerID = tgID;
-                    localStorage.setItem("playerID", tgID);
-                    attachBalanceListener(tgID);
-                    applyNewPlayerBonus(tgID);
-                    finishInit();
-                });
-            });
+                // Also ensure other fields exist if needed
+                if (!data.hasOwnProperty('gamesPlayed')) db.ref("players/" + pid + "/gamesPlayed").set(0);
+                if (!data.hasOwnProperty('gamesWon')) db.ref("players/" + pid + "/gamesWon").set(0);
+            }
+            attachBalanceListener(pid);
+            applyNewPlayerBonus(pid);
+            loadMiniLeaderboard();
+            updateRoomLocks();
+            showScreen("screen1");
         });
 
         function finishInit() {
@@ -811,7 +790,19 @@ function initApp() {
     });
 }
 
-function createNewPlayer(user, pid) { /* handled inside initApp now */ }
+function createNewPlayer(user, pid) {
+    db.ref("players/" + pid).set({
+        telegram_id: user.id,
+        username: user.username || "",
+        first_name: user.first_name || "",
+        phone: "",
+        balance: 0,
+        gamesPlayed: 0,
+        gamesWon: 0,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+    });
+}
+
 function createBasicPlayer(pid) {
     db.ref("players/" + pid).set({
         telegram_id: "",
@@ -824,6 +815,7 @@ function createBasicPlayer(pid) {
         createdAt: firebase.database.ServerValue.TIMESTAMP
     });
 }
+
 function applyNewPlayerBonus(pid) {
     const bonusKey = "bonus_" + pid;
     if (!localStorage.getItem(bonusKey)) {
@@ -838,8 +830,12 @@ function applyNewPlayerBonus(pid) {
 }
 
 function attachBalanceListener(pid) {
-    db.ref("players/" + pid + "/balance").on("value", s => {
-        document.getElementById("balance").innerHTML = Number(s.val() || 0).toFixed(2);
+    // Remove old listener to avoid duplicates
+    if (window.balanceRef) window.balanceRef.off();
+    window.balanceRef = db.ref("players/" + pid + "/balance");
+    window.balanceRef.on("value", s => {
+        const val = s.val();
+        document.getElementById("balance").innerHTML = (val !== null && val !== undefined) ? Number(val).toFixed(2) : "0.00";
         updateRoomLocks();
     });
 }
