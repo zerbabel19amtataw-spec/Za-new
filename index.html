@@ -584,6 +584,7 @@ function showCartelaPreview(stake, num) {
     cd.innerHTML = h;
 }
 function openRoom(room) {
+    // REMOVED BALANCE CHECK - rooms are always open
     db.ref("ZA_Bingo_V3/rooms/" + room + "/status").once("value", s => {
         if (s.val() == "playing") { showPopup("Locked", "Game already started"); return; }
         showScreen(room);
@@ -891,7 +892,6 @@ function attachBalanceListener(pid) {
         const val = snap.val();
         balanceEl.innerHTML = (val !== null && val !== undefined) ? Number(val).toFixed(2) : "0.00";
         updateRoomLocks();
-        // Update profile if open
         if (document.getElementById("profileScreen").classList.contains("active")) openProfile();
     }, err => {
         console.error("Balance listener error:", err);
@@ -901,11 +901,9 @@ function attachBalanceListener(pid) {
 
 function refreshData() {
     if (!currentPlayerID) {
-        // Try to re-initialize
         initApp();
         return;
     }
-    // Re-attach listener to force update
     attachBalanceListener(currentPlayerID);
     loadMiniLeaderboard();
     updateRoomLocks();
@@ -914,17 +912,13 @@ function refreshData() {
 }
 
 function updateRoomLocks() {
-    const bal = parseFloat(document.getElementById("balance").textContent) || 0;
+    // REMOVED ALL LOCKS - rooms are always open
+    // Just make sure buttons are not locked
     ['5', '10', '20'].forEach(s => {
         const btn = document.getElementById("homeRoom" + s);
         if (!btn) return;
-        if (bal < parseInt(s)) {
-            btn.classList.add("locked");
-            btn.onclick = () => showPopup("Locked", "Need " + s + " Br to enter");
-        } else {
-            btn.classList.remove("locked");
-            btn.onclick = () => openRoom('room' + s);
-        }
+        btn.classList.remove("locked");
+        btn.onclick = () => openRoom('room' + s);
     });
 }
 
@@ -934,14 +928,12 @@ function initApp() {
     auth.onAuthStateChanged(user => {
         if (!user) { auth.signInAnonymously(); return; }
 
-        // Get Telegram user
         let tgID = null;
         if (window.Telegram && Telegram.WebApp) {
             Telegram.WebApp.ready();
             tgUser = Telegram.WebApp.initDataUnsafe.user;
             if (tgUser) tgID = tgUser.id.toString();
         }
-        // Fallback to localStorage
         if (!tgID) tgID = localStorage.getItem("playerID");
 
         if (!tgID) {
@@ -961,44 +953,35 @@ function initApp() {
                     username: tgUser ? tgUser.username || "" : "",
                     first_name: tgUser ? tgUser.first_name || "Player" : "Player",
                     phone: "",
-                    balance: 0,
+                    balance: 30,
                     gamesPlayed: 0,
                     gamesWon: 0,
                     createdAt: firebase.database.ServerValue.TIMESTAMP
                 };
                 db.ref("players/" + pid).set(newPlayer).then(() => {
                     attachBalanceListener(pid);
-                    applyNewPlayerBonus(pid);
                     loadMiniLeaderboard();
                     updateRoomLocks();
                     showScreen("screen1");
+                    showPopup("Welcome!", "🎉 30 Br bonus added!");
                 });
             } else {
                 const data = snap.val();
-                if (data.balance === undefined) db.ref("players/" + pid + "/balance").set(0);
-                attachBalanceListener(pid);
-                applyNewPlayerBonus(pid);
-                loadMiniLeaderboard();
-                updateRoomLocks();
-                showScreen("screen1");
+                if (data.balance === undefined || data.balance === null) {
+                    db.ref("players/" + pid + "/balance").set(30).then(() => {
+                        attachBalanceListener(pid);
+                        loadMiniLeaderboard();
+                        updateRoomLocks();
+                        showScreen("screen1");
+                    });
+                } else {
+                    attachBalanceListener(pid);
+                    loadMiniLeaderboard();
+                    updateRoomLocks();
+                    showScreen("screen1");
+                }
             }
         });
-    });
-}
-
-function applyNewPlayerBonus(pid) {
-    const bonusKey = "bonus_" + pid;
-    if (localStorage.getItem(bonusKey)) return;
-    db.ref("players/" + pid + "/balance").transaction(current => {
-        const newBal = (current || 0) + 30;
-        createTransaction(pid, "bonus", 30, current || 0, newBal);
-        return newBal;
-    }, (err, committed) => {
-        if (err) console.error("Bonus error:", err);
-        if (committed) {
-            localStorage.setItem(bonusKey, "1");
-            showPopup("Welcome Bonus!", "🎉 30 Br added to your balance!");
-        }
     });
 }
 
