@@ -1,788 +1,1166 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ZA Bingo V3</title>
-    <script src="https://telegram.org/js/telegram-web-app.js">
-    </script>
     <style>
-        /* ─── RESET & BASE ─── */
+        /* ===== RESET AND BASE ===== */
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #5A52D5;
+            --secondary: #FF6B6B;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --info: #2196F3;
+            --dark: #2D2D2D;
+            --light: #F5F5F5;
+            --white: #FFFFFF;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --radius: 16px;
+            --transition: all 0.3s ease;
         }
 
         body {
-            margin: 0;
-            background:
-                linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)),
-                url("images/background.jpg");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background: var(--light);
+            color: var(--dark);
             min-height: 100vh;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
+            overflow-x: hidden;
         }
 
-        /* ─── SCREENS ─── */
+        #app {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--white);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ===== SCREENS ===== */
         .screen {
             display: none;
-            padding: 10px;
+            width: 100%;
+            min-height: 100vh;
+            padding: 16px;
+            animation: fadeIn 0.3s ease;
         }
+
         .screen.active {
             display: block;
         }
 
-        /* ─── HEADER ─── */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== HEADERS ===== */
         .header {
-            font-size: 30px;
-            font-weight: bold;
-            padding: 20px;
-        }
-
-        /* ─── BUTTONS ─── */
-        button {
-            width: 85%;
-            padding: 15px;
-            margin: 8px;
-            font-size: 22px;
-            font-weight: bold;
-            border: none;
-            border-radius: 15px;
-            background: linear-gradient(145deg, #222, #000);
-            color: #ffd700;
-            border: 2px solid #b8860b;
-            box-shadow: 0 0 15px #8b0000;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        button:active {
-            transform: scale(0.96);
-        }
-        button:disabled {
-            opacity: 0.5;
-            transform: none;
-        }
-
-        .back {
-            background: #8b0000;
-        }
-        .selected {
-            background: #008000 !important;
-            color: white !important;
-            box-shadow: 0 0 15px #00ff00 !important;
-        }
-
-        /* ─── CARTELA GRID ─── */
-        .cartelaGrid {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 5px;
-            padding: 10px;
-        }
-        .cartelaGrid button {
-            width: 100%;
-            padding: 8px 0;
-            font-size: 14px;
-            margin: 0;
-        }
-
-        /* ─── GAME LAYOUT ─── */
-        .gameLayout {
-            display: flex;
-            gap: 8px;
-            margin-top: 20px;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .calledBox {
-            width: 32%;
-            min-width: 180px;
-            background: rgba(0, 0, 0, 0.65);
-            border: 1px solid #ffd700;
-            border-radius: 10px;
-            padding: 5px;
-        }
-
-        .callGrid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 2px;
-        }
-
-        .callBox {
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #111;
-            border: 1px solid #555;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        .callBox.called {
-            background: #008000;
-            color: white;
-            box-shadow: 0 0 5px #00ff00;
-        }
-
-        .cardArea {
-            width: 55%;
-            min-width: 260px;
-            flex: 1;
-        }
-
-        /* ─── BINGO LETTERS ─── */
-        .bingoLetters {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            font-size: 25px;
-            font-weight: bold;
-        }
-        .bingoLetters span:nth-child(1) {
-            color: red;
-        }
-        .bingoLetters span:nth-child(2) {
-            color: orange;
-        }
-        .bingoLetters span:nth-child(3) {
-            color: yellow;
-        }
-        .bingoLetters span:nth-child(4) {
-            color: green;
-        }
-        .bingoLetters span:nth-child(5) {
-            color: cyan;
-        }
-
-        /* ─── SINGLE CARD ─── */
-        .singleCard {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 3px;
-            margin-bottom: 20px;
-        }
-        .singleCard div {
-            background: #222;
-            border: 1px solid #888;
-            color: white;
-            padding: 6px 1px;
-            font-weight: bold;
-            font-size: 12px;
-            border-radius: 5px;
-        }
-        .singleCard div.marked {
-            background: green !important;
-            color: white !important;
-            box-shadow: 0 0 8px #00ff00;
-        }
-        .singleCard div.freeBox {
-            background: gold;
-            color: black;
-            font-weight: bold;
-        }
-
-        .bingoButton {
-            width: 100%;
-            background: #006400;
-        }
-
-        .calledNumber {
-            font-size: 20px;
-            font-weight: bold;
-            margin: 5px;
-        }
-
-        .B {
-            color: red;
-        }
-        .I {
-            color: orange;
-        }
-        .N {
-            color: yellow;
-        }
-        .G {
-            color: green;
-        }
-        .O {
-            color: cyan;
-        }
-
-        #currentCall {
-            font-size: 22px;
-            font-weight: bold;
-            width: 60px;
-            height: 60px;
-            margin: 10px auto;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #222;
-            border: 2px solid white;
-            box-shadow: 0 0 8px white;
-        }
-
-        #gameRoom {
-            background:
-                linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)),
-                url("YOUR_GAME_ROOM_IMAGE_LINK");
-            background-size: cover;
-            background-position: center;
-            border-radius: 20px;
-        }
-
-        .waitingCard {
-            background: rgba(20, 20, 20, 0.95);
-            border: 1px solid #b8860b;
-            border-radius: 15px;
-            padding: 10px;
-            margin-top: 20px;
-            box-shadow: 0 0 12px #b8860b;
-        }
-
-        #countdownCircle {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            margin: 10px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #111;
-            border: 2px solid #ffd700;
-            box-shadow: 0 0 10px #ffd700;
-        }
-        #countdown {
-            font-size: 25px;
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        .cancelBtn {
-            background: #8b0000;
-            color: white;
-            border: 1px solid red;
-            padding: 8px;
-            font-size: 16px;
-        }
-
-        #gameRoomBtn {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60%;
-            padding: 14px;
-            background: linear-gradient(145deg, #222, #111);
-            color: #ffd700;
-            font-size: 20px;
-            font-weight: bold;
-            border: 2px solid #ffd700;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-            letter-spacing: 1px;
-        }
-
-        .gameTop {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid #ffd700;
-            border-radius: 10px;
-            padding: 5px;
-            font-size: 14px;
-            flex-wrap: wrap;
-        }
-        .gameTop h3 {
-            margin: 5px;
-        }
-
-        .autoBox {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
-        }
-        #autoBtn {
-            width: 70%;
-            padding: 8px;
-            font-size: 14px;
-        }
-
-        /* ─── WINNER POPUP ─── */
-        #winnerPopup .waitingCard {
-            text-align: center;
-            background: rgba(20, 20, 20, 0.95);
-            border: 2px solid #ffd700;
-            border-radius: 20px;
-            padding: 20px;
-            margin-top: 80px;
-            box-shadow: 0 0 20px #ffd700;
-        }
-        #winnerPopup h1 {
-            color: #ffd700;
-        }
-
-        /* ─── WALLET ─── */
-        .walletBox {
-            background: linear-gradient(145deg, #222, #000);
-            border: 2px solid #b8860b;
-            border-radius: 15px;
-            padding: 8px;
-            margin: 10px auto;
-            width: 65%;
-            color: #ffd700;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            box-shadow: 0 0 10px #8b0000;
-            position: relative;
-            top: 150px;
-        }
-        .walletBox button {
-            width: 30%;
-            padding: 8px;
-            margin: 5px 3px;
-            font-size: 13px;
-            font-weight: bold;
-            border-radius: 10px;
-            background: linear-gradient(145deg, #222, #000);
-            color: #ffd700;
-            border: 2px solid #b8860b;
-            box-shadow: 0 0 6px #8b0000;
-        }
-        .walletBox .profile-btn {
-            width: 80%;
-            margin-top: 10px;
-            background: #1a1a2e;
-            border-color: #6a5acd;
-        }
-
-        /* ─── PROFILE SCREEN ─── */
-        .profileScreen {
-            background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(0, 0, 0, 0.95));
-            border: 2px solid #b8860b;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px auto;
-            width: 85%;
-            color: #ffd700;
-            box-shadow: 0 0 15px #8b0000;
-            position: relative;
-        }
-        .profileScreen .field {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #444;
-            font-size: 18px;
-        }
-        .profileScreen .field .label {
-            color: #aaa;
-        }
-        .profileScreen .field .value {
-            color: white;
-            font-weight: bold;
-        }
-        .profileScreen .back {
-            position: absolute;
-            top: 20px;
-            left: 15px;
-            width: 80px;
-            padding: 8px;
-            font-size: 14px;
-            margin: 0;
-            background: #8b0000;
-            color: white;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 2px solid var(--light);
+            margin-bottom: 20px;
         }
 
-        /* ─── DEPOSIT / WITHDRAW ─── */
-        .depositScreen,
-        .withdrawScreen {
-            background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(0, 0, 0, 0.95));
-            border: 2px solid #b8860b;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px auto;
-            width: 85%;
-            color: #ffd700;
-            box-shadow: 0 0 15px #8b0000;
-            position: relative;
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .depositScreen input,
-        .withdrawScreen input,
-        .depositScreen textarea {
-            width: 80%;
-            padding: 12px;
-            margin: 10px;
-            border-radius: 10px;
-            border: 1px solid #b8860b;
-            background: #111;
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-            font-size: 18px;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .logo-container h1 {
+            font-size: 20px;
+            color: var(--primary);
+        }
+
+        .balance-display {
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
             text-align: center;
         }
-        .depositScreen textarea {
-            height: 100px;
-            text-align: left;
-            resize: vertical;
+
+        .balance-label {
+            font-size: 10px;
+            opacity: 0.8;
+            display: block;
         }
-        .depositScreen button,
-        .withdrawScreen button {
-            width: 35%;
-            padding: 7px;
-            margin: 5px;
-            font-size: 13px;
+
+        .balance-amount {
+            font-size: 18px;
             font-weight: bold;
-            border-radius: 8px;
-            background: linear-gradient(145deg, #222, #000);
-            color: #ffd700;
-            border: 2px solid #b8860b;
-            box-shadow: 0 0 8px #8b0000;
         }
-        .depositScreen .back,
-        .withdrawScreen .back {
-            position: absolute;
-            top: 20px;
-            left: 15px;
-            width: 80px;
+
+        .screen-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 2px solid var(--light);
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--dark);
             padding: 8px;
-            font-size: 14px;
-            margin: 0;
-            background: #8b0000;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            background: var(--light);
+        }
+
+        .screen-header h2 {
+            font-size: 20px;
+            color: var(--dark);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--primary);
             color: white;
         }
 
-        .paymentInfo {
-            background: linear-gradient(145deg, #222, #000);
-            border: 2px solid #b8860b;
-            border-radius: 15px;
-            padding: 15px;
-            margin: 15px auto;
-            width: 85%;
-            color: #ffd700;
-            box-shadow: 0 0 10px #8b0000;
+        .btn-primary:hover {
+            background: var(--primary-dark);
         }
-        .paymentInfo button {
-            width: 40%;
-            padding: 8px;
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ===== HOME SCREEN ===== */
+        .home-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .home-buttons .btn {
+            padding: 20px;
+            flex-direction: column;
+            height: 100px;
+        }
+
+        .home-buttons .icon {
+            font-size: 28px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* ===== DEPOSIT & WITHDRAW ===== */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .method-btn {
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: var(--radius);
+            background: white;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .method-btn img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .method-btn.active {
+            border-color: var(--primary);
+            background: #F0F0FF;
+        }
+
+        .payment-number {
+            background: var(--light);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .number-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: var(--radius);
             font-size: 16px;
-            margin: 5px;
+            transition: var(--transition);
         }
 
-        #profileBtn {
-            margin-top: -20px;
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
         }
 
-        /* ─── ROOM MESSAGE ─── */
-        #roomMessage {
-            background: #111;
-            color: #ffd700;
-            padding: 40px;
+        .status-message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: var(--radius);
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            display: block;
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .status-message.error {
+            display: block;
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        /* ===== PROFILE ===== */
+        .profile-avatar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .info-item {
+            background: var(--light);
+            padding: 12px 16px;
+            border-radius: var(--radius);
+        }
+
+        .info-label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* ===== LEADERBOARD ===== */
+        .leaderboard-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
             border-radius: 20px;
-        }
-        #roomMessage button {
-            width: 60%;
-        }
-
-        /* ─── INVALID POPUP ─── */
-        #invalidPopup {
-            background: #111;
-            color: #ff4444;
-            padding: 40px;
-            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: var(--transition);
         }
 
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 600px) {
-            .gameLayout {
-                flex-direction: column;
-                align-items: center;
-            }
-            .calledBox {
-                width: 90%;
-            }
-            .cardArea {
-                width: 90%;
-            }
-            .walletBox {
-                width: 90%;
-                top: 80px;
-            }
-            #gameRoomBtn {
-                width: 80%;
-                bottom: 40px;
-            }
-            .cartelaGrid {
-                grid-template-columns: repeat(5, 1fr);
-            }
-            .depositScreen,
-            .withdrawScreen {
-                width: 95%;
-            }
-            .depositScreen button,
-            .withdrawScreen button {
-                width: 45%;
-            }
-            .profileScreen {
-                width: 95%;
-            }
-            .walletBox button {
-                width: 40%;
-            }
-            .walletBox .profile-btn {
-                width: 90%;
-            }
+        .filter-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
         }
-        @media (max-width: 400px) {
-            .cartelaGrid {
-                grid-template-columns: repeat(4, 1fr);
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .leaderboard-item {
+            display: grid;
+            grid-template-columns: 40px 1fr 60px 80px;
+            padding: 12px 16px;
+            background: var(--light);
+            border-radius: var(--radius);
+            align-items: center;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .player {
+            font-weight: 500;
+        }
+
+        .wins {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .earnings {
+            color: var(--success);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* ===== ROOMS ===== */
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .room-card {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .room-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .room-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .room-stake {
+            font-size: 14px;
+            color: #666;
+            margin: 4px 0 8px;
+        }
+
+        .room-players {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .room-status {
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        /* ===== WAITING ROOM ===== */
+        .waiting-details {
+            display: none;
+        }
+
+        .cartela-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 4px;
+            margin: 16px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .cartela-btn {
+            padding: 6px 4px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: var(--transition);
+            text-align: center;
+            min-height: 32px;
+        }
+
+        .cartela-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .cartela-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .cartela-btn.taken {
+            background: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .cartela-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .selected-cartelas {
+            margin: 16px 0;
+            padding: 12px;
+            background: var(--light);
+            border-radius: var(--radius);
+        }
+
+        .waiting-status {
+            text-align: center;
+            padding: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* ===== GAME SCREEN ===== */
+        .game-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .current-ball {
+            text-align: center;
+        }
+
+        .ball {
+            font-size: 72px;
+            transition: var(--transition);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .game-board .cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .game-board .cell.marked {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .game-board .cell.free {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .game-board .header-cell {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            font-weight: bold;
+        }
+
+        .game-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .game-status {
+            text-align: center;
+            padding: 12px;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* ===== WINNER SCREEN ===== */
+        .winner-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+        }
+
+        .winner-celebration {
+            font-size: 72px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .winner-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--secondary);
+            margin: 16px 0;
+        }
+
+        .winner-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .winner-prize {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--success);
+            margin: 16px 0;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .home-buttons {
+                grid-template-columns: 1fr 1fr;
             }
-            .singleCard div {
+            
+            .home-buttons .btn {
+                height: 80px;
+                padding: 12px;
+            }
+            
+            .profile-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .leaderboard-item {
+                grid-template-columns: 30px 1fr 50px 70px;
+                font-size: 13px;
+            }
+            
+            .game-board .cell {
+                font-size: 12px;
+            }
+
+            .cartela-grid {
+                grid-template-columns: repeat(8, 1fr);
+                gap: 3px;
+            }
+
+            .cartela-btn {
                 font-size: 10px;
-                padding: 4px 1px;
+                padding: 4px 2px;
+                min-height: 28px;
             }
-            .bingoLetters {
-                font-size: 18px;
-                gap: 4px;
+        }
+
+        @media (max-width: 380px) {
+            .cartela-grid {
+                grid-template-columns: repeat(6, 1fr);
             }
+        }
+
+        /* ===== TOASTS ===== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(0); opacity: 1; }
+            to { transform: translateX(-50%) translateY(20px); opacity: 0; }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        /* ===== COUNTDOWN POPUP ===== */
+        .countdown-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .countdown-popup.active {
+            display: flex;
+        }
+
+        .countdown-popup-content {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+            to { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .countdown-popup-content .big-number {
+            font-size: 90px;
+            font-weight: bold;
+            color: var(--primary);
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+
+        .countdown-popup-content .big-number.waiting {
+            font-size: 70px;
+            color: var(--warning);
+        }
+
+        .countdown-popup-content .popup-text {
+            font-size: 18px;
+            color: #666;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .countdown-popup-content .popup-sub {
+            font-size: 14px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .countdown-popup-content .popup-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+            padding: 16px;
+            background: var(--light);
+            border-radius: 12px;
+        }
+
+        .countdown-popup-content .popup-detail-item {
+            text-align: center;
+        }
+
+        .countdown-popup-content .popup-detail-item .label {
+            font-size: 12px;
+            color: #999;
+            display: block;
+        }
+
+        .countdown-popup-content .popup-detail-item .value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--dark);
+            display: block;
+            margin-top: 2px;
+        }
+
+        .countdown-popup-content .popup-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .countdown-popup-content .popup-buttons .btn {
+            padding: 12px;
+            font-size: 14px;
         }
     </style>
-
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js">
-    </script>
-
 </head>
-
 <body>
 
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- HOME SCREEN                                       -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="screen1" class="screen active">
+    <div id="app">
+        <!-- SCREEN CONTAINER -->
+        <div id="screen-container">
 
-        <p id="contactStatus"></p>
-
-        <div class="walletBox">
-            💰 BALANCE: <span id="balance">0</span> Br
-            <br><br>
-            <button onclick="openDeposit()">💳 DEPOSIT</button>
-            <button onclick="openWithdraw()">💸 WITHDRAW</button>
-            <br>
-            <button class="profile-btn" onclick="openProfile()">👤 PROFILE</button>
-        </div>
-
-        <button id="gameRoomBtn" onclick="openGameRoom()">🎮 GAME ROOM</button>
-
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- PROFILE SCREEN (updated: added Phone)             -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="profileScreen" class="screen">
-        <div class="profileScreen">
-            <button class="back" onclick="backHome()">⬅ BACK</button>
-            <h1 style="margin-top:0;">👤 Profile</h1>
-            <div class="field"><span class="label">Telegram ID</span><span class="value" id="profileTgId">-</span></div>
-            <div class="field"><span class="label">Username</span><span class="value" id="profileUsername">-</span></div>
-            <div class="field"><span class="label">First Name</span><span class="value" id="profileFirstName">-</span></div>
-            <div class="field"><span class="label">Phone</span><span class="value" id="profilePhone">-</span></div>
-            <div class="field"><span class="label">Balance</span><span class="value" id="profileBalance">0 Br</span></div>
-            <div class="field"><span class="label">Games Played</span><span class="value" id="profileGamesPlayed">0</span></div>
-            <div class="field"><span class="label">Games Won</span><span class="value" id="profileGamesWon">0</span></div>
-            <div class="field"><span class="label">Member Since</span><span class="value" id="profileMemberSince">-</span></div>
-        </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- DEPOSIT SCREEN                                    -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="depositScreen" class="screen">
-        <div class="depositScreen">
-
-            <h3>💳 Deposit Accounts</h3>
-
-            <p>📱 Telebirr: <br> <span id="telebirrNumber">0985661720</span>
-                <button onclick="copyText('telebirrNumber')">COPY</button>
-            </p>
-
-            <p>🏦 CBE Birr: <br> <span id="cbeNumber">0985661720</span>
-                <button onclick="copyText('cbeNumber')">COPY</button>
-            </p>
-
-            <button id="telebirrBtn" onclick="selectDepositMethod('Telebirr', this)">📱 Telebirr</button>
-            <button id="cbeBtn" onclick="selectDepositMethod('CBE Birr', this)">🏦 CBE Birr</button>
-
-            <br>
-            <input id="depositAmount" placeholder="Amount">
-            <br>
-            <textarea id="depositSMS" placeholder="Paste payment SMS"></textarea>
-            <br>
-            <button onclick="submitDeposit()">VERIFY DEPOSIT</button>
-
-            <button class="back" onclick="backHome()">⬅ BACK</button>
-
-        </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- WITHDRAW SCREEN                                   -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="withdrawScreen" class="screen">
-        <div class="withdrawScreen">
-
-            <h1>💸 WITHDRAW</h1>
-            <h3>Withdraw Method</h3>
-
-            <button id="withdrawTelebirrBtn" onclick="selectWithdrawMethod('Telebirr', this)">📱 Telebirr</button>
-            <button id="withdrawCbeBtn" onclick="selectWithdrawMethod('CBE Birr', this)">🏦 CBE Birr</button>
-
-            <input id="withdrawAmount" placeholder="Amount">
-            <br>
-            <input id="withdrawPhone" placeholder="Telebirr phone number">
-            <br>
-            <button onclick="submitWithdraw()">REQUEST WITHDRAW</button>
-
-            <button class="back" onclick="backHome()">⬅ BACK</button>
-
-        </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- GAME ROOM                                         -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="gameRoom" class="screen">
-
-        <div class="header">GAME ROOM</div>
-
-        <button id="room5Btn" onclick="openRoom('room5')">ባለ 5<br>Stake 5 Br</button>
-        <button id="room10Btn" onclick="openRoom('room10')">ባለ 10<br>Stake 10 Br</button>
-        <button id="room20Btn" onclick="openRoom('room20')">ባለ 20<br>Stake 20 Br</button>
-
-        <button class="back" onclick="backHome()">⬅ BACK</button>
-
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- ROOM 5 / 10 / 20                                  -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="room5" class="screen">
-        <div id="cartela5" class="cartelaGrid"></div>
-        <button onclick="startGame(5)">START GAME</button>
-        <button class="back" onclick="backGameRoom()">⬅ BACK</button>
-    </div>
-
-    <div id="room10" class="screen">
-        <div id="cartela10" class="cartelaGrid"></div>
-        <button onclick="startGame(10)">START GAME</button>
-        <button class="back" onclick="backGameRoom()">⬅ BACK</button>
-    </div>
-
-    <div id="room20" class="screen">
-        <div id="cartela20" class="cartelaGrid"></div>
-        <button onclick="startGame(20)">START GAME</button>
-        <button class="back" onclick="backGameRoom()">⬅ BACK</button>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- WAITING SCREEN                                    -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="waitingScreen" class="screen">
-        <div class="waitingCard">
-
-            <h2>GET READY</h2>
-
-            <div id="countdownCircle">
-                <span id="countdown">25</span>
-            </div>
-
-            <h3>👥 Players: <span id="playerCount">0/150</span></h3>
-            <h2>🏆 ደራሽ: <span id="prize">0</span> Br</h2>
-
-            <button id="cancelBtn" onclick="cancelCountdown()" class="cancelBtn">❌ cancel</button>
-
-        </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- GAME SCREEN                                       -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="gameScreen" class="screen">
-
-        <div class="gameTop">
-            <h3>👥 <span id="gamePlayers">0/150</span></h3>
-            <h3>🏆 ደራሽ: <span id="gamePrize">0</span> Br</h3>
-            <h3>📢 Calls: <span id="callCount">0/75</span></h3>
-        </div>
-
-        <div class="gameLayout">
-
-            <div class="calledBox">
-                <h3>CALLED</h3>
-                <h4>Calls: <span id="callCountGame">0</span>/75</h4>
-                <h2 id="currentCall">-</h2>
-                <div id="callGrid" class="callGrid"></div>
-                <div class="autoBox">
-                    <button onclick="toggleAutoMark()" id="autoBtn">AUTO MARK: ON</button>
+            <!-- ===== HOME SCREEN ===== -->
+            <div id="home-screen" class="screen active">
+                <div class="header">
+                    <div class="logo-container">
+                        <div class="logo">ZA</div>
+                        <h1>ZA Bingo V3</h1>
+                    </div>
+                    <div class="balance-display">
+                        <span class="balance-label">Balance</span>
+                        <span class="balance-amount" id="balance-amount">0 Br</span>
+                    </div>
+                </div>
+                <div class="home-buttons">
+                    <button class="btn btn-primary" onclick="navigateTo('deposit')">
+                        <span class="icon">💰</span> Deposit
+                    </button>
+                    <button class="btn btn-secondary" onclick="navigateTo('withdraw')">
+                        <span class="icon">💸</span> Withdraw
+                    </button>
+                    <button class="btn btn-info" onclick="navigateTo('profile')">
+                        <span class="icon">👤</span> Profile
+                    </button>
+                    <button class="btn btn-warning" onclick="navigateTo('leaderboard')">
+                        <span class="icon">🏆</span> Leaderboard
+                    </button>
+                    <button class="btn btn-success" onclick="navigateTo('rooms')">
+                        <span class="icon">🎮</span> Game Rooms
+                    </button>
+                </div>
+                <div class="footer">
+                    <small>Version 3.0 | © 2026 ZA Bingo</small>
                 </div>
             </div>
 
-            <div class="cardArea">
-                <div id="bingoCard"></div>
-                <button class="bingoButton" onclick="claimBingo()">BINGO</button>
+            <!-- ===== DEPOSIT SCREEN ===== -->
+            <div id="deposit-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" onclick="navigateTo('home')">←</button>
+                    <h2>💰 Deposit</h2>
+                </div>
+                <div class="screen-content">
+                    <div class="payment-methods">
+                        <button class="method-btn active" data-method="telebirr" onclick="selectMethod('telebirr')">
+                            📱 Telebirr
+                        </button>
+                        <button class="method-btn" data-method="cbe" onclick="selectMethod('cbe')">
+                            🏦 CBE Birr
+                        </button>
+                    </div>
+                    <div class="payment-number">
+                        <span>Payment Number</span>
+                        <span class="number-display" id="payment-number">09XXXXXXXX</span>
+                        <button class="btn-sm btn-primary" onclick="copyNumber()">Copy</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Amount (Br)</label>
+                        <input type="number" id="deposit-amount" placeholder="Enter amount" min="1" />
+                    </div>
+                    <div class="input-group">
+                        <label>Transaction ID / SMS Reference</label>
+                        <input type="text" id="transaction-id" placeholder="Enter transaction ID" />
+                    </div>
+                    <button class="btn btn-primary" onclick="submitDeposit()">Submit Deposit</button>
+                    <div id="deposit-status" class="status-message"></div>
+                </div>
+            </div>
+
+            <!-- ===== WITHDRAW SCREEN ===== -->
+            <div id="withdraw-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" onclick="navigateTo('home')">←</button>
+                    <h2>💸 Withdraw</h2>
+                </div>
+                <div class="screen-content">
+                    <div class="payment-methods">
+                        <button class="method-btn active" data-method="telebirr" onclick="selectWithdrawMethod('telebirr')">
+                            📱 Telebirr
+                        </button>
+                        <button class="method-btn" data-method="cbe" onclick="selectWithdrawMethod('cbe')">
+                            🏦 CBE Birr
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <label>Amount (Br)</label>
+                        <input type="number" id="withdraw-amount" placeholder="Enter amount" min="1" />
+                    </div>
+                    <div class="input-group">
+                        <label>Account Number</label>
+                        <input type="text" id="withdraw-account" placeholder="Enter account number" />
+                    </div>
+                    <button class="btn btn-secondary" onclick="submitWithdraw()">Submit Withdrawal</button>
+                    <div id="withdraw-status" class="status-message"></div>
+                </div>
+            </div>
+
+            <!-- ===== PROFILE SCREEN ===== -->
+            <div id="profile-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" onclick="navigateTo('home')">←</button>
+                    <h2>👤 Profile</h2>
+                </div>
+                <div class="screen-content">
+                    <div class="profile-avatar">
+                        <div class="avatar">👤</div>
+                    </div>
+                    <div class="profile-info">
+                        <div class="info-item">
+                            <span class="info-label">Player Name</span>
+                            <span class="info-value" id="player-name">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Telegram ID</span>
+                            <span class="info-value" id="telegram-id">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Username</span>
+                            <span class="info-value" id="username">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Phone Number</span>
+                            <span class="info-value" id="phone-number">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Balance</span>
+                            <span class="info-value" id="profile-balance">0 Br</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Games Played</span>
+                            <span class="info-value" id="games-played">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Games Won</span>
+                            <span class="info-value" id="games-won">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Win Rate</span>
+                            <span class="info-value" id="win-rate">0%</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Winnings</span>
+                            <span class="info-value" id="total-winnings">0 Br</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== LEADERBOARD SCREEN ===== -->
+            <div id="leaderboard-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" onclick="navigateTo('home')">←</button>
+                    <h2>🏆 Leaderboard</h2>
+                </div>
+                <div class="screen-content">
+                    <div class="leaderboard-filters">
+                        <button class="filter-btn active" onclick="filterLeaderboard('all')">All Time</button>
+                        <button class="filter-btn" onclick="filterLeaderboard('month')">This Month</button>
+                        <button class="filter-btn" onclick="filterLeaderboard('week')">This Week</button>
+                    </div>
+                    <div class="leaderboard-list" id="leaderboard-list">
+                        <div class="leaderboard-item">
+                            <span class="rank">1</span>
+                            <span class="player">Loading...</span>
+                            <span class="wins">-</span>
+                            <span class="earnings">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ROOMS SCREEN ===== -->
+            <div id="rooms-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" onclick="navigateTo('home')">←</button>
+                    <h2>🎮 Game Rooms</h2>
+                </div>
+                <div class="screen-content">
+                    <div class="rooms-grid">
+                        <div class="room-card" onclick="joinRoom('room1')">
+                            <div class="room-number">Room 1</div>
+                            <div class="room-stake">Stake: 5 Br</div>
+                            <div class="room-players" id="room1-players">👥 0/150</div>
+                            <div class="room-status" id="room1-status">🟢 Waiting</div>
+                            <button class="btn btn-success btn-sm">Join Room</button>
+                        </div>
+                        <div class="room-card" onclick="joinRoom('room2')">
+                            <div class="room-number">Room 2</div>
+                            <div class="room-stake">Stake: 10 Br</div>
+                            <div class="room-players" id="room2-players">👥 0/150</div>
+                            <div class="room-status" id="room2-status">🟢 Waiting</div>
+                            <button class="btn btn-success btn-sm">Join Room</button>
+                        </div>
+                        <div class="room-card" onclick="joinRoom('room3')">
+                            <div class="room-number">Room 3</div>
+                            <div class="room-stake">Stake: 20 Br</div>
+                            <div class="room-players" id="room3-players">👥 0/150</div>
+                            <div class="room-status" id="room3-status">🟢 Waiting</div>
+                            <button class="btn btn-success btn-sm">Join Room</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== WAITING ROOM SCREEN ===== -->
+            <div id="waiting-screen" class="screen">
+                <div class="screen-header">
+                    <button class="back-btn" onclick="leaveRoom()">←</button>
+                    <h2 id="waiting-room-name">⏳ Room 1</h2>
+                </div>
+                <div class="screen-content">
+                    <div class="cartela-selection">
+                        <h3>Select Your Cartelas</h3>
+                        <p>Maximum 2 cartelas per player</p>
+                        <div class="cartela-grid" id="cartela-grid"></div>
+                        <div class="selected-cartelas">
+                            <h4>Selected Cartelas</h4>
+                            <div id="selected-cartelas-display">None selected</div>
+                        </div>
+                        <button class="btn btn-primary" id="confirm-cartelas" onclick="confirmCartelas()">Confirm Cartelas</button>
+                    </div>
+                    <div class="waiting-status" id="waiting-status">⏳ Select your cartelas and confirm...</div>
+                </div>
+            </div>
+
+            <!-- ===== GAME SCREEN ===== -->
+            <div id="game-screen" class="screen">
+                <div class="screen-header">
+                    <h2 id="game-room-name">🎲 Room 1</h2>
+                    <div class="game-stats">
+                        <span id="game-players">👥 0</span>
+                        <span id="game-prize">💰 0 Br</span>
+                    </div>
+                </div>
+                <div class="screen-content">
+                    <div class="game-area">
+                        <div class="current-ball">
+                            <div class="ball" id="current-ball">🎱</div>
+                            <div class="call-history" id="call-history">
+                                <span>Called: </span>
+                                <span id="called-numbers-display">-</span>
+                            </div>
+                        </div>
+                        <div class="game-board" id="game-board"></div>
+                        <div class="game-controls">
+                            <button class="btn btn-info" onclick="toggleAutoMark()">
+                                <span id="auto-mark-text">🔘 Auto Mark</span>
+                            </button>
+                            <button class="btn btn-success" onclick="checkBingo()">🎯 BINGO!</button>
+                        </div>
+                        <div id="game-status" class="game-status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== WINNER SCREEN ===== -->
+            <div id="winner-screen" class="screen">
+                <div class="screen-content winner-content">
+                    <div class="winner-celebration">🎉🏆🎉</div>
+                    <div class="winner-title">WE HAVE A WINNER!</div>
+                    <div class="winner-name" id="winner-name">Player Name</div>
+                    <div class="winner-prize" id="winner-prize">💰 0 Br</div>
+                    <div class="winner-cartela" id="winner-cartela"></div>
+                    <button class="btn btn-primary" onclick="resetRoom()">Play Again</button>
+                </div>
             </div>
 
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- WINNER POPUP                                      -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="winnerPopup" class="screen">
-        <div class="waitingCard">
-            <h1 id="winnerTitle">🏆 BINGO WINNER</h1>
-            <h2 id="winnerName"></h2>
-            <h2 id="winnerCartela"></h2>
-            <h2 id="winnerPrize"></h2>
-            <h3>🎉 Congratulations!</h3>
+    <!-- ===== COUNTDOWN POPUP ===== -->
+    <div class="countdown-popup" id="countdownPopup">
+        <div class="countdown-popup-content">
+            <div class="big-number waiting" id="popupCountdown">⏳</div>
+            <div class="popup-text" id="popupText">Waiting for players...</div>
+            <div class="popup-sub" id="popupSub">Need at least 2 players to start</div>
+            <div class="popup-details">
+                <div class="popup-detail-item">
+                    <span class="label">👥 Players</span>
+                    <span class="value" id="popupPlayers">0</span>
+                </div>
+                <div class="popup-detail-item">
+                    <span class="label">💰 Prize Pool</span>
+                    <span class="value" id="popupPrize">0 Br</span>
+                </div>
+            </div>
+            <div class="popup-buttons">
+                <button class="btn btn-danger" onclick="cancelGame()">✕ Cancel</button>
+                <button class="btn btn-secondary" onclick="changeCartelas()">🔄 Change</button>
+            </div>
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- INVALID POPUP                                     -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="invalidPopup" class="screen">
-        <h1>❌ INVALID BINGO</h1>
-        <h2>You are banned from this game</h2>
-        <button onclick="backHome()">OK</button>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- ROOM MESSAGE                                      -->
-    <!-- ════════════════════════════════════════════════════ -->
-    <div id="roomMessage" class="screen">
-        <h2>🔒 ጨዋታው ተጀምሯል</h2>
-        <button onclick="backHome()">OK</button>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════ -->
-    <!-- JAVASCRIPT                                        -->
-    <!-- ════════════════════════════════════════════════════ -->
+    <!-- ============================================================ -->
+    <!-- ======================== JAVASCRIPT ======================== -->
+    <!-- ============================================================ -->
     <script>
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  FIREBASE CONFIG
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+        // ================================================================
+        // 1. FIREBASE CONFIG
+        // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
             authDomain: "za-bingo-7ad31.firebaseapp.com",
@@ -794,990 +1172,1011 @@
             measurementId: "G-40RYH7BT4C"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // ================================================================
+        // 2. STATE
+        // ================================================================
+        const state = {
+            currentScreen: 'home',
+            currentRoom: null,
+            playerId: null,
+            playerData: null,
+            cartelas: [],
+            selectedCartelas: [],
+            calledNumbers: [],
+            markedNumbers: [],
+            autoMark: false,
+            gameInterval: null,
+            countdownInterval: null,
+            isGameActive: false,
+            autoMarkInterval: null,
+            db: null,
+            auth: null,
+            roomPlayers: [],
+            countdownStarted: false,
+            cartelaTaken: {},
+            countdownValue: 25,
+            cancelled: false,
+            waitingInterval: null
+        };
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  STATE
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ================================================================
+        // 3. TELEGRAM
+        // ================================================================
+        let telegramUser = null;
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                telegramUser = window.Telegram.WebApp.initDataUnsafe?.user;
+                if (telegramUser) {
+                    window.Telegram.WebApp.ready();
+                    window.Telegram.WebApp.expand();
+                }
+            }
+        } catch (e) {
+            console.log('Not running in Telegram Web App');
+        }
 
-        let fixedCartelas = {};
-        let selectedCartelas = [];
-        let currentStake = 0;
-        let autoMarkEnabled = true;
-        let gameBanned = false;
-        let depositMethod = "";
-        let withdrawMethod = "";
-        let calledNumbers = [];
-        let callerTimer = null;
-        let countdownInterval = null;
-        let countdownListeners = [];
-        let isJoiningRoom = false;
+        // ================================================================
+        // 4. FIREBASE INIT
+        // ================================================================
+        let database, auth;
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  PLAYER ID  (now uses telegram_lookup like the bot)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function initFirebase() {
+            try {
+                if (typeof firebase !== 'undefined') {
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+                    database = firebase.database();
+                    auth = firebase.auth();
+                    state.db = database;
+                    state.auth = auth;
+                    console.log('✅ Firebase initialized');
+                    return true;
+                } else {
+                    console.warn('Firebase not loaded, using localStorage fallback');
+                    return false;
+                }
+            } catch (e) {
+                console.error('Firebase init error:', e);
+                return false;
+            }
+        }
 
-        function getPlayerID(callback) {
-            // 1) Check localStorage first
-            let stored = localStorage.getItem("playerID");
-            if (stored) {
-                callback(stored);
+        // ================================================================
+        // 5. AUTH
+        // ================================================================
+        async function initAuth() {
+            if (!state.db) {
+                state.playerId = 'local_' + Date.now();
+                await loadPlayerDataFallback();
+                return state.playerId;
+            }
+
+            try {
+                const result = await auth.signInAnonymously();
+                state.playerId = result.user.uid;
+                console.log('Authenticated with UID:', state.playerId);
+                await loadPlayerData();
+                return state.playerId;
+            } catch (error) {
+                console.error('Auth error:', error);
+                state.playerId = 'local_' + Date.now();
+                await loadPlayerDataFallback();
+                return state.playerId;
+            }
+        }
+
+        // ================================================================
+        // 6. PLAYER DATA
+        // ================================================================
+        async function loadPlayerData() {
+            if (!state.playerId || !state.db) return;
+
+            try {
+                const snapshot = await state.db.ref('players/' + state.playerId).once('value');
+                if (snapshot.exists()) {
+                    state.playerData = snapshot.val();
+                    updateUIWithPlayerData();
+                } else {
+                    const newPlayer = {
+                        playerName: telegramUser?.first_name || 'Player',
+                        username: telegramUser?.username || '',
+                        phoneNumber: '',
+                        balance: 0,
+                        gamesPlayed: 0,
+                        gamesWon: 0,
+                        totalWinnings: 0,
+                        createdAt: Date.now()
+                    };
+                    await state.db.ref('players/' + state.playerId).set(newPlayer);
+                    state.playerData = newPlayer;
+                    updateUIWithPlayerData();
+
+                    if (telegramUser?.id) {
+                        await state.db.ref('telegram_lookup/' + telegramUser.id).set(state.playerId);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading player data:', error);
+                await loadPlayerDataFallback();
+            }
+        }
+
+        async function loadPlayerDataFallback() {
+            const saved = localStorage.getItem('za_bingo_player_' + state.playerId);
+            if (saved) {
+                state.playerData = JSON.parse(saved);
+            } else {
+                state.playerData = {
+                    playerName: telegramUser?.first_name || 'Player',
+                    username: telegramUser?.username || '',
+                    phoneNumber: '',
+                    balance: 100,
+                    gamesPlayed: 0,
+                    gamesWon: 0,
+                    totalWinnings: 0,
+                    createdAt: Date.now()
+                };
+                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+            }
+            updateUIWithPlayerData();
+        }
+
+        function updateUIWithPlayerData() {
+            if (!state.playerData) return;
+
+            const balance = state.playerData.balance || 0;
+            document.getElementById('balance-amount').textContent = balance + ' Br';
+            document.getElementById('profile-balance').textContent = balance + ' Br';
+            document.getElementById('player-name').textContent = state.playerData.playerName || '-';
+            document.getElementById('telegram-id').textContent = telegramUser?.id || '-';
+            document.getElementById('username').textContent = state.playerData.username || '-';
+            document.getElementById('phone-number').textContent = state.playerData.phoneNumber || '-';
+            document.getElementById('games-played').textContent = state.playerData.gamesPlayed || 0;
+            document.getElementById('games-won').textContent = state.playerData.gamesWon || 0;
+
+            const winRate = state.playerData.gamesPlayed > 0
+                ? Math.round((state.playerData.gamesWon / state.playerData.gamesPlayed) * 100)
+                : 0;
+            document.getElementById('win-rate').textContent = winRate + '%';
+            document.getElementById('total-winnings').textContent = (state.playerData.totalWinnings || 0) + ' Br';
+        }
+
+        // ================================================================
+        // 7. NAVIGATION
+        // ================================================================
+        function navigateTo(screen) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+
+            const target = document.getElementById(screen + '-screen');
+            if (target) {
+                target.classList.add('active');
+                state.currentScreen = screen;
+            }
+
+            if (screen === 'leaderboard') loadLeaderboard();
+            if (screen === 'rooms') listenToRoomStatus();
+        }
+        window.navigateTo = navigateTo;
+
+        // ================================================================
+        // 8. DEPOSIT
+        // ================================================================
+        let selectedMethod = 'telebirr';
+
+        function selectMethod(method) {
+            selectedMethod = method;
+            document.querySelectorAll('#deposit-screen .method-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.method === method);
+            });
+            const numberDisplay = document.getElementById('payment-number');
+            numberDisplay.textContent = method === 'telebirr' ? '09XXXXXXXX' : '10XXXXXXXX';
+        }
+        window.selectMethod = selectMethod;
+
+        function copyNumber() {
+            const number = document.getElementById('payment-number').textContent;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(number);
+            } else {
+                const input = document.createElement('input');
+                input.value = number;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                input.remove();
+            }
+            showStatus('deposit-status', 'Number copied!', 'success');
+        }
+        window.copyNumber = copyNumber;
+
+        async function submitDeposit() {
+            const amount = document.getElementById('deposit-amount').value;
+            const transactionId = document.getElementById('transaction-id').value;
+
+            if (!amount || amount <= 0) {
+                showStatus('deposit-status', 'Please enter a valid amount', 'error');
                 return;
             }
-            // 2) Use Telegram WebApp
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                const tgUser = Telegram.WebApp.initDataUnsafe.user;
-                if (tgUser && tgUser.id) {
-                    const tgId = tgUser.id.toString();
-                    // Read telegram_lookup to get the player ID used by the bot
-                    db.ref("telegram_lookup/" + tgId).once("value", function(snap) {
-                        if (snap.exists()) {
-                            const pid = snap.val().playerID || snap.val(); // could be string or object
-                            if (pid) {
-                                localStorage.setItem("playerID", pid);
-                                callback(pid);
-                                return;
-                            }
-                        }
-                        // If no lookup, create a new player entry and set the lookup
-                        const newPid = tgId; // use Telegram ID as player ID
-                        const playerData = {
-                            telegram_id: parseInt(tgId),
-                            username: tgUser.username || "",
-                            first_name: tgUser.first_name || "",
-                            phone: "",
-                            balance: 30,
-                            gamesPlayed: 0,
-                            gamesWon: 0,
-                            createdAt: Date.now()
-                        };
-                        db.ref("players/" + newPid).set(playerData, function(err) {
-                            if (err) {
-                                console.error("Failed to create player:", err);
-                                callback(null);
-                                return;
-                            }
-                            // Write lookup
-                            db.ref("telegram_lookup/" + tgId).set({ playerID: newPid }, function(e2) {
-                                if (e2) console.error("Failed to set lookup:", e2);
-                                localStorage.setItem("playerID", newPid);
-                                callback(newPid);
-                            });
-                        });
+            if (!transactionId) {
+                showStatus('deposit-status', 'Please enter transaction ID', 'error');
+                return;
+            }
+
+            if (state.db) {
+                try {
+                    await state.db.ref('deposits').push({
+                        playerId: state.playerId,
+                        playerName: state.playerData?.playerName || 'Unknown',
+                        method: selectedMethod,
+                        amount: parseFloat(amount),
+                        transactionId: transactionId,
+                        status: 'pending',
+                        createdAt: Date.now()
                     });
-                    return;
+                    showStatus('deposit-status', '✅ Deposit submitted! Waiting for admin approval.', 'success');
+                    document.getElementById('deposit-amount').value = '';
+                    document.getElementById('transaction-id').value = '';
+                } catch (error) {
+                    console.error('Deposit error:', error);
+                    showStatus('deposit-status', '❌ Error submitting deposit.', 'error');
                 }
-            }
-            // 3) Fallback
-            callback(null);
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  BALANCE & PROFILE (now using the correct player ID)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function loadWalletBalance() {
-            getPlayerID(function(pid) {
-                if (!pid) {
-                    document.getElementById("balance").innerHTML = "0.00";
-                    return;
-                }
-                // Read once
-                db.ref("players/" + pid + "/balance").once("value", function(snap) {
-                    const bal = snap.val() || 0;
-                    document.getElementById("balance").innerHTML = Number(bal).toFixed(2);
-                });
-                // Listen for updates
-                db.ref("players/" + pid + "/balance").on("value", function(snap) {
-                    const bal = snap.val() || 0;
-                    document.getElementById("balance").innerHTML = Number(bal).toFixed(2);
-                });
-            });
-        }
-
-        function openProfile() {
-            showScreen("profileScreen");
-            loadProfile();
-        }
-
-        function loadProfile() {
-            getPlayerID(function(pid) {
-                if (!pid) {
-                    document.getElementById("profileTgId").innerText = "Not found";
-                    return;
-                }
-                db.ref("players/" + pid).once("value", function(snap) {
-                    const data = snap.val();
-                    if (!data) {
-                        document.getElementById("profileTgId").innerText = "No data";
-                        return;
-                    }
-                    document.getElementById("profileTgId").innerText = data.telegram_id || "-";
-                    document.getElementById("profileUsername").innerText = data.username || "-";
-                    document.getElementById("profileFirstName").innerText = data.first_name || "-";
-                    document.getElementById("profilePhone").innerText = data.phone || "-";
-                    document.getElementById("profileBalance").innerText = (data.balance || 0).toFixed(2) + " Br";
-                    document.getElementById("profileGamesPlayed").innerText = data.gamesPlayed || 0;
-                    document.getElementById("profileGamesWon").innerText = data.gamesWon || 0;
-                    if (data.createdAt) {
-                        const d = new Date(data.createdAt);
-                        document.getElementById("profileMemberSince").innerText =
-                            d.toLocaleDateString() + " " + d.toLocaleTimeString();
-                    } else {
-                        document.getElementById("profileMemberSince").innerText = "-";
-                    }
-                });
-                // Also listen for balance updates
-                db.ref("players/" + pid + "/balance").on("value", function(snap) {
-                    const bal = snap.val() || 0;
-                    document.getElementById("profileBalance").innerText = bal.toFixed(2) + " Br";
-                });
-            });
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  FIXED CARTELAS
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function generateFixedCartelas() {
-            for (let c = 1; c <= 150; c++) {
-                const B = [],
-                    I = [],
-                    N = [],
-                    G = [],
-                    O = [];
-                for (let i = 1; i <= 15; i++) {
-                    B.push(i);
-                    I.push(i + 15);
-                    N.push(i + 30);
-                    G.push(i + 45);
-                    O.push(i + 60);
-                }
-                const pick = (arr, count) => {
-                    const copy = [...arr],
-                        res = [];
-                    while (res.length < count) {
-                        const idx = Math.floor(Math.random() * copy.length);
-                        res.push(copy[idx]);
-                        copy.splice(idx, 1);
-                    }
-                    return res;
-                };
-                const b = pick(B, 5),
-                    i = pick(I, 5),
-                    n = pick(N, 5),
-                    g = pick(G, 5),
-                    o = pick(O, 5);
-                const card = [
-                    b[0], i[0], n[0], g[0], o[0],
-                    b[1], i[1], n[1], g[1], o[1],
-                    b[2], i[2], n[2], g[2], o[2],
-                    b[3], i[3], n[3], g[3], o[3],
-                    b[4], i[4], n[4], g[4], o[4]
-                ];
-                card[12] = "*";
-                fixedCartelas[c] = card;
+            } else {
+                const bal = (state.playerData.balance || 0) + parseFloat(amount);
+                state.playerData.balance = bal;
+                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+                updateUIWithPlayerData();
+                showStatus('deposit-status', '✅ Deposit successful!', 'success');
+                document.getElementById('deposit-amount').value = '';
+                document.getElementById('transaction-id').value = '';
             }
         }
+        window.submitDeposit = submitDeposit;
 
-        function loadFixedCartelas() {
-            db.ref("ZA_Bingo_V3/cartelas").once("value", function(snap) {
-                if (snap.exists()) {
-                    fixedCartelas = snap.val();
-                } else {
-                    generateFixedCartelas();
-                    db.ref("ZA_Bingo_V3/cartelas").set(fixedCartelas);
-                }
-            });
-        }
+        // ================================================================
+        // 9. WITHDRAW
+        // ================================================================
+        let withdrawMethod = 'telebirr';
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  ROOM BUTTON WATCHER
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function watchRoomButtons() {
-            const rooms = [
-                { room: "room5", btn: "room5Btn", name: "ባለ 5" },
-                { room: "room10", btn: "room10Btn", name: "ባለ 10" },
-                { room: "room20", btn: "room20Btn", name: "ባለ 20" }
-            ];
-            rooms.forEach(function(item) {
-                db.ref("ZA_Bingo_V3/rooms/" + item.room).on("value", function(snap) {
-                    const data = snap.val();
-                    const btn = document.getElementById(item.btn);
-                    if (!btn || !data) return;
-                    if (data.status === "countdown") {
-                        btn.innerHTML = "⏳ " + item.name + "<br>Starts in: " + (data.countdown || 0) + "s";
-                    } else if (data.status === "playing") {
-                        btn.innerHTML = "🔒 " + item.name + "<br>GAME RUNNING";
-                    } else {
-                        btn.innerHTML = item.name + "<br>Stake " + item.room.replace("room", "") + " Br";
-                    }
-                });
-            });
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  SCREEN HELPERS
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function showScreen(id) {
-            document.querySelectorAll(".screen").forEach(function(el) {
-                el.classList.remove("active");
-            });
-            const target = document.getElementById(id);
-            if (target) target.classList.add("active");
-        }
-
-        function backHome() {
-            showScreen("screen1");
-        }
-
-        function backGameRoom() {
-            showScreen("gameRoom");
-        }
-
-        function showRoomMessage() {
-            showScreen("roomMessage");
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  DEPOSIT / WITHDRAW
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function openDeposit() { showScreen("depositScreen"); }
-
-        function openWithdraw() { showScreen("withdrawScreen"); }
-
-        function selectDepositMethod(method, btn) {
-            depositMethod = method;
-            document.getElementById("telebirrBtn").classList.remove("selected");
-            document.getElementById("cbeBtn").classList.remove("selected");
-            btn.classList.add("selected");
-        }
-
-        function selectWithdrawMethod(method, btn) {
+        function selectWithdrawMethod(method) {
             withdrawMethod = method;
-            document.getElementById("withdrawTelebirrBtn").classList.remove("selected");
-            document.getElementById("withdrawCbeBtn").classList.remove("selected");
-            btn.classList.add("selected");
-        }
-
-        function copyText(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            navigator.clipboard.writeText(el.innerText).then(function() {
-                alert("Copied: " + el.innerText);
-            }).catch(function() {
-                alert("Copied: " + el.innerText);
+            document.querySelectorAll('#withdraw-screen .method-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.method === method);
             });
         }
+        window.selectWithdrawMethod = selectWithdrawMethod;
 
-        function submitDeposit() {
-            getPlayerID(function(pid) {
-                if (!pid) { alert("Player account not found"); return; }
-                const amount = Number(document.getElementById("depositAmount").value);
-                const sms = document.getElementById("depositSMS").value;
-                if (!amount || !sms) { alert("Enter amount and SMS"); return; }
-                if (!depositMethod) { alert("Select a deposit method"); return; }
-                const depositID = "DEP_" + Date.now();
-                db.ref("ZA_Bingo_V3/deposits/" + depositID).set({
-                    playerID: pid,
-                    amount: amount,
-                    method: depositMethod,
-                    sms: sms,
-                    txId: "",
-                    status: "pending",
-                    time: Date.now()
-                }, function(err) {
-                    if (err) { alert("Error: " + err.message); return; }
-                    alert("Deposit submitted. Waiting approval.");
-                    document.getElementById("depositAmount").value = "";
-                    document.getElementById("depositSMS").value = "";
-                });
-            });
-        }
+        async function submitWithdraw() {
+            const amount = document.getElementById('withdraw-amount').value;
+            const account = document.getElementById('withdraw-account').value;
 
-        function submitWithdraw() {
-            getPlayerID(function(pid) {
-                if (!pid) { alert("Player account not found"); return; }
-                const amount = Number(document.getElementById("withdrawAmount").value);
-                const phone = document.getElementById("withdrawPhone").value;
-                if (!amount || !phone) { alert("Enter amount and phone number"); return; }
-                if (amount < 50) { alert("Minimum withdrawal is 50 Br"); return; }
-                if (!withdrawMethod) { alert("Select a withdrawal method"); return; }
-
-                db.ref("players/" + pid + "/balance").once("value", function(snap) {
-                    const balance = snap.val() || 0;
-                    if (balance < amount) { alert("Insufficient balance"); return; }
-
-                    db.ref("players/" + pid + "/balance").transaction(function(cur) {
-                        if (cur < amount) return;
-                        return cur - amount;
-                    }, function(err, committed) {
-                        if (err || !committed) { alert("Withdraw failed"); return; }
-                        const wid = "WITH_" + Date.now();
-                        db.ref("ZA_Bingo_V3/withdraws/" + wid).set({
-                            playerID: pid,
-                            amount: amount,
-                            phone: phone,
-                            method: withdrawMethod,
-                            status: "pending",
-                            time: Date.now()
-                        }, function(e) {
-                            if (e) { alert("Error: " + e.message); return; }
-                            alert("Withdraw request sent");
-                            document.getElementById("withdrawAmount").value = "";
-                            document.getElementById("withdrawPhone").value = "";
-                        });
-                    });
-                });
-            });
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  OPEN ROOM  (cartela selection)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function openRoom(room) {
-            countdownListeners.forEach(function(ref) { ref.off(); });
-            countdownListeners = [];
-
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/status").once("value", function(snap) {
-                const status = snap.val();
-                if (status === "playing") {
-                    showRoomMessage();
-                    return;
-                }
-                showScreen(room);
-
-                db.ref("ZA_Bingo_V3/rooms/" + room).update({
-                    status: "waiting",
-                    stake: Number(room.replace("room", "")),
-                    prizepool: 0,
-                    countdown: 25,
-                    lastCall: ""
-                });
-
-                const ref = db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas");
-                ref.on("value", function(snap) {
-                    window.takenCartelas = snap.val() || {};
-                });
-                countdownListeners.push(ref);
-
-                createCartelas(room);
-            });
-        }
-
-        function createCartelas(room) {
-            const id = room === "room5" ? "cartela5" :
-                room === "room10" ? "cartela10" : "cartela20";
-            const box = document.getElementById(id);
-            if (!box) return;
-            box.innerHTML = "";
-            selectedCartelas = [];
-
-            for (let i = 1; i <= 150; i++) {
-                const btn = document.createElement("button");
-                btn.innerHTML = i;
-                btn.onclick = function() {
-                    const taken = window.takenCartelas || {};
-                    if (taken[i]) {
-                        alert("Cartela already taken");
-                        return;
-                    }
-                    if (btn.classList.contains("selected")) {
-                        btn.classList.remove("selected");
-                        selectedCartelas = selectedCartelas.filter(x => x !== i);
-                    } else {
-                        if (selectedCartelas.length < 2) {
-                            btn.classList.add("selected");
-                            selectedCartelas.push(i);
-                        } else {
-                            alert("Maximum 2 Cartelas");
-                        }
-                    }
-                };
-                box.appendChild(btn);
-            }
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  START GAME
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function startGame(stake) {
-            if (selectedCartelas.length === 0) {
-                alert("Choose Cartela first");
+            if (!amount || amount <= 0) {
+                showStatus('withdraw-status', 'Please enter a valid amount', 'error');
                 return;
             }
-            if (isJoiningRoom) return;
-            isJoiningRoom = true;
-
-            currentStake = stake;
-            gameBanned = false;
-
-            getPlayerID(function(pid) {
-                if (!pid) {
-                    isJoiningRoom = false;
-                    alert("Player account not found");
-                    return;
-                }
-
-                db.ref("players/" + pid + "/balance").once("value", function(balanceSnap) {
-                    const balance = balanceSnap.val() || 0;
-                    if (balance < stake) {
-                        isJoiningRoom = false;
-                        alert("Insufficient balance");
-                        return;
-                    }
-
-                    db.ref("players/" + pid + "/balance").transaction(function(cur) {
-                        if (cur < stake) return;
-                        return cur - stake;
-                    }, function(err, committed) {
-                        if (err || !committed) {
-                            isJoiningRoom = false;
-                            alert("Insufficient balance");
-                            return;
-                        }
-
-                        const room = "room" + stake;
-                        const playerData = {
-                            cartelas: selectedCartelas,
-                            status: "playing",
-                            joinedAt: Date.now()
-                        };
-
-                        db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).set(playerData,
-                        function(e) {
-                            if (e) {
-                                isJoiningRoom = false;
-                                alert("Failed to join: " + e.message);
-                                db.ref("players/" + pid + "/balance").transaction(function(cur) {
-                                    return (cur || 0) + stake;
-                                });
-                                return;
-                            }
-
-                            selectedCartelas.forEach(function(card) {
-                                db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas/" + card)
-                                    .set(true);
-                            });
-
-                            db.ref("players/" + pid + "/gamesPlayed").transaction(function(count) {
-                                return (count || 0) + 1;
-                            });
-
-                            showScreen("waitingScreen");
-                            document.getElementById("cancelBtn").style.display = "block";
-                            setupCountdown(room);
-                            isJoiningRoom = false;
-                        });
-                    });
-                });
-            });
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  COUNTDOWN
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function setupCountdown(room) {
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
+            if (!account) {
+                showStatus('withdraw-status', 'Please enter account number', 'error');
+                return;
+            }
+            if (parseFloat(amount) > (state.playerData?.balance || 0)) {
+                showStatus('withdraw-status', '❌ Insufficient balance', 'error');
+                return;
             }
 
-            const playersRef = db.ref("ZA_Bingo_V3/rooms/" + room + "/players");
-            playersRef.on("value", function(snap) {
-                const count = snap.numChildren();
-                document.getElementById("playerCount").innerHTML = count + "/150";
-                document.getElementById("gamePlayers").innerHTML = count + "/150";
-
-                let totalCartelas = 0;
-                snap.forEach(function(p) {
-                    const data = p.val();
-                    if (data && data.cartelas) totalCartelas += data.cartelas.length;
-                });
-                const totalMoney = totalCartelas * currentStake;
-                const prize = totalMoney - (totalMoney * 0.15);
-                document.getElementById("prize").innerHTML = prize.toFixed(2);
-                document.getElementById("gamePrize").innerHTML = prize.toFixed(2);
-
-                if (count >= 2) {
-                    db.ref("ZA_Bingo_V3/rooms/" + room + "/status").once("value", function(statusSnap) {
-                        const st = statusSnap.val();
-                        if (st === "countdown" || st === "playing") return;
-
-                        db.ref("ZA_Bingo_V3/rooms/" + room).update({
-                            status: "countdown",
-                            countdown: 25
-                        });
-
-                        let time = 25;
-                        if (countdownInterval) clearInterval(countdownInterval);
-                        countdownInterval = setInterval(function() {
-                            time--;
-                            db.ref("ZA_Bingo_V3/rooms/" + room + "/countdown").set(time);
-                            document.getElementById("countdown").innerHTML = time;
-
-                            if (time <= 0) {
-                                clearInterval(countdownInterval);
-                                countdownInterval = null;
-                                db.ref("ZA_Bingo_V3/rooms/" + room).update({
-                                    status: "playing",
-                                    locked: true,
-                                    countdown: 0
-                                });
-                                document.getElementById("cancelBtn").style.display = "none";
-                                lockCartelas();
-                                openGameScreen(room);
-                            }
-                        }, 1000);
+            if (state.db) {
+                try {
+                    await state.db.ref('withdrawals').push({
+                        playerId: state.playerId,
+                        playerName: state.playerData?.playerName || 'Unknown',
+                        method: withdrawMethod,
+                        amount: parseFloat(amount),
+                        accountNumber: account,
+                        status: 'pending',
+                        createdAt: Date.now()
                     });
-                } else {
-                    document.getElementById("countdown").innerHTML = "Waiting for player...";
+                    showStatus('withdraw-status', '✅ Withdrawal request submitted!', 'success');
+                    document.getElementById('withdraw-amount').value = '';
+                    document.getElementById('withdraw-account').value = '';
+                } catch (error) {
+                    console.error('Withdraw error:', error);
+                    showStatus('withdraw-status', '❌ Error submitting withdrawal.', 'error');
                 }
-            });
-            countdownListeners.push(playersRef);
-
-            const cdRef = db.ref("ZA_Bingo_V3/rooms/" + room + "/countdown");
-            cdRef.on("value", function(snap) {
-                const val = snap.val();
-                if (val !== null && val !== undefined && val !== "") {
-                    document.getElementById("countdown").innerHTML = val;
-                }
-            });
-            countdownListeners.push(cdRef);
-        }
-
-        function lockCartelas() {
-            document.querySelectorAll(".cartelaGrid button").forEach(function(btn) {
-                btn.disabled = true;
-            });
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  CANCEL COUNTDOWN
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function cancelCountdown() {
-            if (currentStake === 0 || selectedCartelas.length === 0) return;
-            const room = "room" + currentStake;
-
-            getPlayerID(function(pid) {
-                if (!pid) return;
-
-                db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).once("value", function(snap) {
-                    const data = snap.val();
-                    if (!data) return;
-                    const refund = currentStake;
-                    db.ref("players/" + pid + "/balance").transaction(function(bal) {
-                        return (bal || 0) + refund;
-                    });
-                    db.ref("ZA_Bingo_V3/rooms/" + room + "/players/" + pid).remove();
-                    selectedCartelas.forEach(function(card) {
-                        db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas/" + card).remove();
-                    });
-                    selectedCartelas = [];
-                    showScreen(room);
-                    createCartelas(room);
-                    if (countdownInterval) {
-                        clearInterval(countdownInterval);
-                        countdownInterval = null;
-                    }
-                });
-            });
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  GAME SCREEN
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function openGameScreen(room) {
-            showScreen("gameScreen");
-            createCallGrid();
-            createBingoCards();
-            listenToCalledNumbers(room);
-            listenToWinner(room);
-
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/caller").transaction(function(cur) {
-                if (cur) return;
-                return { player: localStorage.getItem("playerID") || "system", time: Date.now() };
-            }, function(err, committed) {
-                if (committed) {
-                    db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").once("value", function(snap) {
-                        if (!snap.exists()) {
-                            db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").set([]);
-                        }
-                        startCaller(room);
-                    });
-                }
-            });
-        }
-
-        function createCallGrid() {
-            const grid = document.getElementById("callGrid");
-            grid.innerHTML = "";
-            const cols = [
-                ["B", 1],
-                ["I", 16],
-                ["N", 31],
-                ["G", 46],
-                ["O", 61]
-            ];
-            cols.forEach(function(col) {
-                const head = document.createElement("div");
-                head.className = "callBox";
-                head.innerHTML = col[0];
-                grid.appendChild(head);
-            });
-            for (let row = 0; row < 15; row++) {
-                cols.forEach(function(col) {
-                    const num = col[1] + row;
-                    const box = document.createElement("div");
-                    box.className = "callBox";
-                    box.id = "call_" + num;
-                    box.innerHTML = num;
-                    grid.appendChild(box);
-                });
+            } else {
+                const bal = (state.playerData.balance || 0) - parseFloat(amount);
+                state.playerData.balance = bal;
+                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+                updateUIWithPlayerData();
+                showStatus('withdraw-status', '✅ Withdrawal successful!', 'success');
+                document.getElementById('withdraw-amount').value = '';
+                document.getElementById('withdraw-account').value = '';
             }
         }
+        window.submitWithdraw = submitWithdraw;
 
-        function createBingoCards() {
-            const area = document.getElementById("bingoCard");
-            area.innerHTML = "";
-            selectedCartelas.forEach(function(num) {
-                const card = fixedCartelas[num];
-                if (!card) return;
-                const container = document.createElement("div");
-                container.className = "cardContainer";
-                const title = document.createElement("h3");
-                title.innerHTML = "Cartela " + num;
-                container.appendChild(title);
-                const letters = document.createElement("div");
-                letters.className = "bingoLetters";
-                letters.innerHTML = "<span>B</span><span>I</span><span>N</span><span>G</span><span>O</span>";
-                container.appendChild(letters);
-                const grid = document.createElement("div");
-                grid.className = "singleCard";
-                card.forEach(function(value) {
-                    const box = document.createElement("div");
-                    box.innerHTML = value;
-                    if (value === "*") box.classList.add("freeBox");
-                    box.onclick = function() { box.classList.toggle("marked"); };
-                    grid.appendChild(box);
-                });
-                container.appendChild(grid);
-                area.appendChild(container);
-            });
+        // ================================================================
+        // 10. UTILITY
+        // ================================================================
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.textContent = message;
+            el.className = 'status-message ' + type;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
         }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  CALLED NUMBERS LISTENER
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function listenToCalledNumbers(room) {
-            const ref = db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers");
-            ref.on("value", function(snap) {
-                calledNumbers = snap.val() || [];
-                document.getElementById("callCountGame").innerHTML = calledNumbers.length;
-                document.getElementById("callCount").innerHTML = calledNumbers.length;
-
-                if (calledNumbers.length > 0) {
-                    const number = calledNumbers[calledNumbers.length - 1];
-                    let letter = "O";
-                    if (number <= 15) letter = "B";
-                    else if (number <= 30) letter = "I";
-                    else if (number <= 45) letter = "N";
-                    else if (number <= 60) letter = "G";
-                    const el = document.getElementById("currentCall");
-                    el.className = letter;
-                    el.innerHTML = letter + " " + number;
-
-                    const box = document.getElementById("call_" + number);
-                    if (box) box.classList.add("called");
-
-                    if (autoMarkEnabled) autoMark(number);
-                }
-            });
-            countdownListeners.push(ref);
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  CALLER
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function startCaller(room) {
-            if (callerTimer) {
-                clearInterval(callerTimer);
-                callerTimer = null;
-            }
-            callerTimer = setInterval(function() {
-                db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").once("value", function(snap) {
-                    const arr = snap.val() || [];
-                    if (arr.length >= 75) {
-                        clearInterval(callerTimer);
-                        callerTimer = null;
-                        return;
-                    }
-                    let num;
-                    do {
-                        num = Math.floor(Math.random() * 75) + 1;
-                    } while (arr.includes(num));
-                    arr.push(num);
-                    db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").set(arr);
-                });
+        function showToast(message, type) {
+            const colors = {
+                success: '#4CAF50',
+                error: '#f44336',
+                info: '#2196F3'
+            };
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = colors[type] || '#333';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideDown 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
 
-        function autoMark(number) {
-            document.querySelectorAll(".singleCard div").forEach(function(box) {
-                if (Number(box.innerHTML) === number) {
-                    box.classList.add("marked");
-                }
-            });
+        // ================================================================
+        // 11. ROOMS
+        // ================================================================
+        function getStakeForRoom(roomId) {
+            switch (roomId) {
+                case 'room1': return 5;
+                case 'room2': return 10;
+                case 'room3': return 20;
+                default: return 5;
+            }
         }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  TOGGLE AUTO MARK
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        let roomPlayersCount = { room1: 0, room2: 0, room3: 0 };
 
-        function toggleAutoMark() {
-            autoMarkEnabled = !autoMarkEnabled;
-            document.getElementById("autoBtn").innerHTML = "AUTO MARK: " + (autoMarkEnabled ? "ON" : "OFF");
-        }
+        async function joinRoom(roomId) {
+            if (!state.playerId) {
+                await initAuth();
+            }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  CLAIM BINGO
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            state.currentRoom = roomId;
+            const stake = getStakeForRoom(roomId);
 
-        function claimBingo() {
-            if (gameBanned) {
-                alert("You are banned from this game");
+            if ((state.playerData?.balance || 0) < stake) {
+                showToast('❌ Insufficient balance! Please deposit.', 'error');
                 return;
             }
 
-            const cards = document.querySelectorAll(".singleCard");
-            let winner = false;
+            // Deduct stake
+            const bal = (state.playerData.balance || 0) - stake;
+            state.playerData.balance = bal;
+            localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+            updateUIWithPlayerData();
 
-            cards.forEach(function(card) {
-                const boxes = card.querySelectorAll("div");
-                const values = [];
-                boxes.forEach(function(box) {
-                    const val = box.innerHTML;
-                    if (val === "*") {
-                        values.push(true);
-                    } else if (box.classList.contains("marked") && calledNumbers.includes(Number(val))) {
-                        values.push(true);
-                    } else {
-                        values.push(false);
+            roomPlayersCount[roomId] = (roomPlayersCount[roomId] || 0) + 1;
+            state.roomPlayers = [state.playerId];
+            state.countdownStarted = false;
+            state.cancelled = false;
+            state.cartelaTaken = {};
+
+            navigateTo('waiting');
+            loadWaitingRoom(roomId);
+        }
+        window.joinRoom = joinRoom;
+
+        function leaveRoom() {
+            if (state.currentRoom) {
+                roomPlayersCount[state.currentRoom] = Math.max(0, (roomPlayersCount[state.currentRoom] || 0) - 1);
+            }
+            if (state.countdownInterval) {
+                clearInterval(state.countdownInterval);
+                state.countdownInterval = null;
+            }
+            if (state.waitingInterval) {
+                clearInterval(state.waitingInterval);
+                state.waitingInterval = null;
+            }
+            document.getElementById('countdownPopup').classList.remove('active');
+            state.countdownStarted = false;
+            state.cancelled = false;
+            navigateTo('rooms');
+        }
+        window.leaveRoom = leaveRoom;
+
+        // ================================================================
+        // 12. WAITING ROOM
+        // ================================================================
+        function loadWaitingRoom(roomId) {
+            const roomName = roomId.replace('room', 'Room ');
+            document.getElementById('waiting-room-name').textContent = '⏳ ' + roomName;
+
+            state.selectedCartelas = [];
+            document.getElementById('confirm-cartelas').disabled = false;
+            document.getElementById('confirm-cartelas').textContent = 'Confirm Cartelas';
+            document.getElementById('selected-cartelas-display').textContent = 'None selected';
+            document.getElementById('waiting-status').textContent = '⏳ Select your cartelas and confirm...';
+
+            loadCartelas();
+        }
+
+        function loadCartelas() {
+            const grid = document.getElementById('cartela-grid');
+            grid.innerHTML = '';
+
+            state.cartelaTaken = {};
+
+            for (let i = 1; i <= 150; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'cartela-btn';
+                btn.textContent = i;
+                btn.dataset.cartela = i;
+                btn.onclick = function() { toggleCartela(i); };
+                grid.appendChild(btn);
+            }
+        }
+
+        function toggleCartela(cartelaNum) {
+            if (state.cartelaTaken[cartelaNum]) {
+                showToast('Cartela ' + cartelaNum + ' is already taken!', 'error');
+                return;
+            }
+
+            if (state.selectedCartelas.includes(cartelaNum)) {
+                state.selectedCartelas = state.selectedCartelas.filter(c => c !== cartelaNum);
+            } else if (state.selectedCartelas.length < 2) {
+                state.selectedCartelas.push(cartelaNum);
+            } else {
+                showToast('Maximum 2 cartelas per player', 'error');
+                return;
+            }
+
+            document.querySelectorAll('.cartela-btn').forEach(btn => {
+                const num = parseInt(btn.dataset.cartela);
+                btn.classList.toggle('selected', state.selectedCartelas.includes(num));
+            });
+
+            const display = document.getElementById('selected-cartelas-display');
+            display.textContent = state.selectedCartelas.length > 0 ?
+                'Cartelas: ' + state.selectedCartelas.join(', ') :
+                'None selected';
+        }
+
+        // ================================================================
+        // 13. CONFIRM CARTELAS -> SHOW POPUP (waiting)
+        // ================================================================
+        function confirmCartelas() {
+            if (state.selectedCartelas.length === 0) {
+                showToast('Please select at least one cartela', 'error');
+                return;
+            }
+
+            // Mark cartelas as taken
+            state.selectedCartelas.forEach(num => {
+                state.cartelaTaken[num] = true;
+            });
+
+            document.querySelectorAll('.cartela-btn').forEach(btn => {
+                const num = parseInt(btn.dataset.cartela);
+                if (state.cartelaTaken[num]) {
+                    btn.classList.add('taken');
+                    btn.disabled = true;
+                }
+                btn.classList.remove('selected');
+            });
+
+            showToast('✅ Cartelas confirmed!', 'success');
+            document.getElementById('confirm-cartelas').disabled = true;
+            document.getElementById('confirm-cartelas').textContent = '✅ Confirmed';
+
+            // Show popup immediately
+            showWaitingPopup();
+        }
+        window.confirmCartelas = confirmCartelas;
+
+        // ================================================================
+        // 14. SHOW WAITING POPUP
+        // ================================================================
+        function showWaitingPopup() {
+            const popup = document.getElementById('countdownPopup');
+            const popupCount = document.getElementById('popupCountdown');
+            const popupText = document.getElementById('popupText');
+            const popupSub = document.getElementById('popupSub');
+            const popupPlayers = document.getElementById('popupPlayers');
+            const popupPrize = document.getElementById('popupPrize');
+
+            // Set waiting state
+            popupCount.className = 'big-number waiting';
+            popupCount.textContent = '⏳';
+            popupText.textContent = 'Waiting for players...';
+            popupSub.textContent = 'Need at least 2 players to start';
+
+            // Update player count and prize
+            const currentCount = roomPlayersCount[state.currentRoom] || 1;
+            const stake = getStakeForRoom(state.currentRoom);
+            const prize = currentCount * stake;
+            popupPlayers.textContent = currentCount;
+            popupPrize.textContent = prize + ' Br';
+
+            // Show popup
+            popup.classList.add('active');
+
+            // Clear any existing waiting interval
+            if (state.waitingInterval) {
+                clearInterval(state.waitingInterval);
+                state.waitingInterval = null;
+            }
+
+            // Start checking for player count changes
+            state.waitingInterval = setInterval(() => {
+                const count = roomPlayersCount[state.currentRoom] || 1;
+                const prize = count * stake;
+                popupPlayers.textContent = count;
+                popupPrize.textContent = prize + ' Br';
+
+                // If count >= 2 and countdown not started, start countdown
+                if (count >= 2 && !state.countdownStarted && !state.cancelled) {
+                    clearInterval(state.waitingInterval);
+                    state.waitingInterval = null;
+                    startCountdown();
+                }
+            }, 1000);
+        }
+
+        // ================================================================
+        // 15. COUNTDOWN
+        // ================================================================
+        function startCountdown() {
+            if (state.cancelled) return;
+
+            state.countdownStarted = true;
+            const popup = document.getElementById('countdownPopup');
+            const popupCount = document.getElementById('popupCountdown');
+            const popupText = document.getElementById('popupText');
+            const popupSub = document.getElementById('popupSub');
+            const popupPlayers = document.getElementById('popupPlayers');
+            const popupPrize = document.getElementById('popupPrize');
+
+            // Switch to countdown mode
+            popupCount.className = 'big-number';
+            state.countdownValue = 25;
+            popupCount.textContent = state.countdownValue;
+            popupText.textContent = 'Game Starting in...';
+            popupSub.textContent = 'Get ready!';
+
+            const playerCount = roomPlayersCount[state.currentRoom] || 2;
+            const stake = getStakeForRoom(state.currentRoom);
+            const prize = playerCount * stake;
+            popupPlayers.textContent = playerCount;
+            popupPrize.textContent = prize + ' Br';
+
+            document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue + 's...';
+
+            if (state.countdownInterval) {
+                clearInterval(state.countdownInterval);
+                state.countdownInterval = null;
+            }
+
+            state.countdownInterval = setInterval(() => {
+                state.countdownValue--;
+                popupCount.textContent = state.countdownValue;
+
+                // Animate the number
+                popupCount.style.animation = 'none';
+                setTimeout(() => {
+                    popupCount.style.animation = 'pulse 0.3s ease';
+                }, 10);
+
+                document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue + 's...';
+
+                if (state.countdownValue <= 0) {
+                    clearInterval(state.countdownInterval);
+                    state.countdownInterval = null;
+                    popup.classList.remove('active');
+                    document.getElementById('waiting-status').textContent = '🎮 Game starting!';
+                    navigateTo('game');
+                    loadGame(state.currentRoom);
+                }
+            }, 1000);
+        }
+
+        // ================================================================
+        // 16. CANCEL / CHANGE
+        // ================================================================
+        function cancelGame() {
+            state.cancelled = true;
+            if (state.countdownInterval) {
+                clearInterval(state.countdownInterval);
+                state.countdownInterval = null;
+            }
+            if (state.waitingInterval) {
+                clearInterval(state.waitingInterval);
+                state.waitingInterval = null;
+            }
+            document.getElementById('countdownPopup').classList.remove('active');
+            state.countdownStarted = false;
+
+            // Refund stake (player can cancel before countdown ends)
+            if (state.currentRoom) {
+                const stake = getStakeForRoom(state.currentRoom);
+                state.playerData.balance = (state.playerData.balance || 0) + stake;
+                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+                updateUIWithPlayerData();
+                roomPlayersCount[state.currentRoom] = Math.max(0, (roomPlayersCount[state.currentRoom] || 0) - 1);
+            }
+
+            showToast('Game cancelled - stake refunded', 'info');
+            navigateTo('rooms');
+        }
+        window.cancelGame = cancelGame;
+
+        function changeCartelas() {
+            if (state.countdownInterval) {
+                clearInterval(state.countdownInterval);
+                state.countdownInterval = null;
+            }
+            if (state.waitingInterval) {
+                clearInterval(state.waitingInterval);
+                state.waitingInterval = null;
+            }
+            document.getElementById('countdownPopup').classList.remove('active');
+            state.countdownStarted = false;
+
+            // Refund stake so player can re-select
+            if (state.currentRoom) {
+                const stake = getStakeForRoom(state.currentRoom);
+                state.playerData.balance = (state.playerData.balance || 0) + stake;
+                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+                updateUIWithPlayerData();
+            }
+
+            showToast('Select new cartelas', 'info');
+            navigateTo('waiting');
+            loadWaitingRoom(state.currentRoom);
+        }
+        window.changeCartelas = changeCartelas;
+
+        // ================================================================
+        // 17. GAME
+        // ================================================================
+        function loadGame(roomId) {
+            const roomName = roomId.replace('room', 'Room ');
+            document.getElementById('game-room-name').textContent = '🎲 ' + roomName;
+
+            state.calledNumbers = [];
+            if (state.gameInterval) clearInterval(state.gameInterval);
+
+            generateBingoBoards();
+
+            const playerCount = roomPlayersCount[roomId] || 2;
+            document.getElementById('game-players').textContent = '👥 ' + playerCount;
+            document.getElementById('game-prize').textContent = '💰 ' + (playerCount * getStakeForRoom(roomId)) + ' Br';
+
+            state.gameInterval = setInterval(() => {
+                const num = Math.floor(Math.random() * 75) + 1;
+                if (!state.calledNumbers.includes(num)) {
+                    state.calledNumbers.push(num);
+                    document.getElementById('called-numbers-display').textContent = state.calledNumbers.join(', ');
+                    document.getElementById('current-ball').textContent = '🎱 ' + num;
+
+                    if (state.autoMark) {
+                        markNumberOnBoards(num);
                     }
+
+                    if (state.calledNumbers.length > 15 && Math.random() < 0.03) {
+                        clearInterval(state.gameInterval);
+                        showBingoWinner();
+                    }
+                }
+            }, 3000);
+        }
+
+        function generateBingoBoards() {
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+
+            const selected = state.selectedCartelas;
+            if (selected.length === 0) {
+                board.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No cartela selected</p>';
+                return;
+            }
+
+            const cartelaData = generateCartelaNumbers(selected[0]);
+            
+            ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
+                const cell = document.createElement('div');
+                cell.className = 'cell header-cell';
+                cell.textContent = letter;
+                board.appendChild(cell);
+            });
+
+            cartelaData.forEach(row => {
+                row.forEach(num => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (num === 0) {
+                        cell.textContent = '☆';
+                        cell.classList.add('free');
+                    } else {
+                        cell.textContent = num;
+                        cell.dataset.num = num;
+                    }
+                    board.appendChild(cell);
+                });
+            });
+
+            if (selected.length > 1) {
+                const sep = document.createElement('div');
+                sep.style.cssText = 'grid-column: 1/-1; height: 2px; background: var(--primary); margin: 8px 0;';
+                board.appendChild(sep);
+
+                ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell header-cell';
+                    cell.textContent = letter;
+                    board.appendChild(cell);
                 });
 
-                for (let r = 0; r < 5; r++) {
-                    let win = true;
-                    for (let c = 0; c < 5; c++) {
-                        if (!values[r * 5 + c]) { win = false; break; }
-                    }
-                    if (win) { winner = true; return; }
-                }
-                for (let c = 0; c < 5; c++) {
-                    let win = true;
-                    for (let r = 0; r < 5; r++) {
-                        if (!values[r * 5 + c]) { win = false; break; }
-                    }
-                    if (win) { winner = true; return; }
-                }
-                if (values[0] && values[6] && values[12] && values[18] && values[24]) { winner = true; return; }
-                if (values[4] && values[8] && values[12] && values[16] && values[20]) { winner = true; return; }
-                if (values[0] && values[4] && values[20] && values[24]) { winner = true; return; }
-            });
-
-            if (!winner) {
-                gameBanned = true;
-                showScreen("invalidPopup");
-                setTimeout(function() {
-                    gameBanned = false;
-                    backHome();
-                }, 3000);
-                return;
-            }
-
-            if (callerTimer) {
-                clearInterval(callerTimer);
-                callerTimer = null;
-            }
-
-            const room = "room" + currentStake;
-            getPlayerID(function(pid) {
-                if (!pid) return;
-
-                db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").transaction(function(cur) {
-                    if (cur) return;
-                    return { playerID: pid, prize: 0 };
-                }, function(err, committed) {
-                    if (err || !committed) {
-                        alert("Another player already claimed BINGO!");
-                        return;
-                    }
-                    db.ref("ZA_Bingo_V3/rooms/" + room + "/players").once("value", function(snap) {
-                        let totalCartelas = 0;
-                        snap.forEach(function(p) {
-                            const d = p.val();
-                            if (d && d.cartelas) totalCartelas += d.cartelas.length;
-                        });
-                        const totalMoney = totalCartelas * currentStake;
-                        const prize = totalMoney - (totalMoney * 0.15);
-
-                        db.ref("players/" + pid + "/balance").transaction(function(bal) {
-                            return (bal || 0) + prize;
-                        }, function(e2) {
-                            if (e2) { alert("Failed to pay winner."); return; }
-                            db.ref("players/" + pid + "/gamesWon").transaction(function(w) {
-                                return (w || 0) + 1;
-                            });
-                            db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").update({
-                                playerID: pid,
-                                prize: prize.toFixed(2)
-                            });
-                        });
+                const cartelaData2 = generateCartelaNumbers(selected[1]);
+                cartelaData2.forEach(row => {
+                    row.forEach(num => {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        if (num === 0) {
+                            cell.textContent = '☆';
+                            cell.classList.add('free');
+                        } else {
+                            cell.textContent = num;
+                            cell.dataset.num = num;
+                        }
+                        board.appendChild(cell);
                     });
                 });
-            });
+            }
         }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  LISTEN TO WINNER
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function listenToWinner(room) {
-            const ref = db.ref("ZA_Bingo_V3/rooms/" + room + "/winner");
-            ref.on("value", function(snap) {
-                const winner = snap.val();
-                if (!winner) return;
-                if (callerTimer) {
-                    clearInterval(callerTimer);
-                    callerTimer = null;
+        function generateCartelaNumbers(cartelaNum) {
+            const seed = cartelaNum;
+            const matrix = [];
+            for (let row = 0; row < 5; row++) {
+                const rowData = [];
+                for (let col = 0; col < 5; col++) {
+                    if (row === 2 && col === 2) {
+                        rowData.push(0);
+                    } else {
+                        const min = col * 15 + 1;
+                        const max = (col + 1) * 15;
+                        const value = ((seed * 7 + row * 13 + col * 17 + seed * 3) % (max - min)) + min;
+                        rowData.push(value);
+                    }
                 }
-
-                getPlayerID(function(pid) {
-                    const isMe = (pid && winner.playerID === pid);
-                    const titleEl = document.getElementById("winnerTitle");
-                    const nameEl = document.getElementById("winnerName");
-                    const prizeEl = document.getElementById("winnerPrize");
-
-                    if (titleEl) {
-                        titleEl.innerHTML = isMe ? "🏆 YOU WIN!" : "❌ GAME OVER";
-                    }
-                    if (nameEl) {
-                        nameEl.innerHTML = isMe ? "🎉 Congratulations!" : "YOU LOST";
-                    }
-                    if (prizeEl) {
-                        prizeEl.innerHTML = "Prize: " + (winner.prize || "0") + " Br";
-                    }
-
-                    showScreen("winnerPopup");
-
-                    setTimeout(function() {
-                        resetRoom(room);
-                        resetGame();
-                    }, 4000);
-                });
-            });
-            countdownListeners.push(ref);
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  RESET
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function resetRoom(room) {
-            db.ref("ZA_Bingo_V3/rooms/" + room).update({
-                status: "waiting",
-                countdown: 25,
-                lastCall: "",
-                locked: false
-            });
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/players").remove();
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/takenCartelas").remove();
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/calledNumbers").remove();
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/winner").remove();
-            db.ref("ZA_Bingo_V3/rooms/" + room + "/caller").remove();
-        }
-
-        function resetGame() {
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
+                matrix.push(rowData);
             }
-            if (callerTimer) {
-                clearInterval(callerTimer);
-                callerTimer = null;
-            }
-            countdownListeners.forEach(function(ref) { ref.off(); });
-            countdownListeners = [];
-            selectedCartelas = [];
-            calledNumbers = [];
-            gameBanned = false;
-            isJoiningRoom = false;
-            backHome();
+            return matrix;
         }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  INIT
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        loadFixedCartelas();
-        watchRoomButtons();
-        loadWalletBalance();
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  LEGACY ADMIN
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function approveDeposit(depositID) {
-            db.ref("ZA_Bingo_V3/deposits/" + depositID).once("value", function(snap) {
-                const deposit = snap.val();
-                if (!deposit) { alert("Deposit not found"); return; }
-                const pid = deposit.playerID;
-                const amount = deposit.amount;
-                db.ref("ZA_Bingo_V3/deposits/" + depositID).update({ status: "approved" });
-                db.ref("players/" + pid + "/balance").transaction(function(bal) {
-                    return (bal || 0) + amount;
-                });
-                alert("Deposit approved");
+        function markNumberOnBoards(num) {
+            const cells = document.querySelectorAll('#game-board .cell:not(.header-cell):not(.free)');
+            cells.forEach(cell => {
+                if (parseInt(cell.dataset.num) === num) {
+                    cell.classList.add('marked');
+                }
             });
         }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  EXPOSE GLOBALS
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ================================================================
+        // 18. BINGO CHECK
+        // ================================================================
+        function checkBingo() {
+            const cells = document.querySelectorAll('#game-board .cell:not(.header-cell)');
+            const marked = Array.from(cells).map(cell =>
+                cell.classList.contains('marked') || cell.classList.contains('free')
+            );
 
-        window.openDeposit = openDeposit;
-        window.openWithdraw = openWithdraw;
-        window.openProfile = openProfile;
-        window.loadProfile = loadProfile;
-        window.selectDepositMethod = selectDepositMethod;
-        window.selectWithdrawMethod = selectWithdrawMethod;
-        window.submitDeposit = submitDeposit;
-        window.submitWithdraw = submitWithdraw;
-        window.copyText = copyText;
-        window.backHome = backHome;
-        window.backGameRoom = backGameRoom;
-        window.openGameRoom = function() { showScreen("gameRoom"); };
-        window.openRoom = openRoom;
-        window.startGame = startGame;
-        window.cancelCountdown = cancelCountdown;
-        window.claimBingo = claimBingo;
+            for (let r = 0; r < 10; r++) {
+                let allMarked = true;
+                for (let c = 0; c < 5; c++) {
+                    const idx = r * 5 + c;
+                    if (idx < marked.length && !marked[idx]) { allMarked = false; break; }
+                }
+                if (allMarked && r * 5 + 4 < marked.length) {
+                    showBingoWinner();
+                    return;
+                }
+            }
+
+            for (let cartela = 0; cartela < 2; cartela++) {
+                const offset = cartela * 25;
+                for (let c = 0; c < 5; c++) {
+                    let allMarked = true;
+                    for (let r = 0; r < 5; r++) {
+                        const idx = offset + r * 5 + c;
+                        if (idx < marked.length && !marked[idx]) { allMarked = false; break; }
+                    }
+                    if (allMarked && offset + 24 < marked.length) {
+                        showBingoWinner();
+                        return;
+                    }
+                }
+            }
+
+            showToast('No BINGO yet! Keep playing.', 'info');
+        }
+        window.checkBingo = checkBingo;
+
+        // ================================================================
+        // 19. AUTO MARK
+        // ================================================================
+        function toggleAutoMark() {
+            state.autoMark = !state.autoMark;
+            document.getElementById('auto-mark-text').textContent = state.autoMark ? '⏹️ Stop Mark' : '🔘 Auto Mark';
+
+            if (state.autoMark) {
+                state.calledNumbers.forEach(num => markNumberOnBoards(num));
+            }
+        }
         window.toggleAutoMark = toggleAutoMark;
-        window.approveDeposit = approveDeposit;
-        window.showRoomMessage = showRoomMessage;
+
+        // ================================================================
+        // 20. WINNER
+        // ================================================================
+        function showBingoWinner() {
+            if (state.gameInterval) {
+                clearInterval(state.gameInterval);
+                state.gameInterval = null;
+            }
+
+            navigateTo('winner');
+            document.getElementById('winner-name').textContent = state.playerData?.playerName || 'Player';
+            
+            const playerCount = roomPlayersCount[state.currentRoom] || 2;
+            const prize = playerCount * getStakeForRoom(state.currentRoom);
+            document.getElementById('winner-prize').textContent = '💰 ' + prize + ' Br';
+
+            state.playerData.gamesPlayed = (state.playerData.gamesPlayed || 0) + 1;
+            state.playerData.gamesWon = (state.playerData.gamesWon || 0) + 1;
+            state.playerData.totalWinnings = (state.playerData.totalWinnings || 0) + prize;
+            state.playerData.balance = (state.playerData.balance || 0) + prize;
+            localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+            updateUIWithPlayerData();
+        }
+
+        // ================================================================
+        // 21. RESET ROOM
+        // ================================================================
+        function resetRoom() {
+            if (state.gameInterval) {
+                clearInterval(state.gameInterval);
+                state.gameInterval = null;
+            }
+            if (state.countdownInterval) {
+                clearInterval(state.countdownInterval);
+                state.countdownInterval = null;
+            }
+            if (state.waitingInterval) {
+                clearInterval(state.waitingInterval);
+                state.waitingInterval = null;
+            }
+            document.getElementById('countdownPopup').classList.remove('active');
+            state.calledNumbers = [];
+            state.selectedCartelas = [];
+            state.autoMark = false;
+            state.countdownStarted = false;
+            state.cancelled = false;
+            state.cartelaTaken = {};
+            document.getElementById('auto-mark-text').textContent = '🔘 Auto Mark';
+            
+            if (state.currentRoom) {
+                roomPlayersCount[state.currentRoom] = Math.max(0, (roomPlayersCount[state.currentRoom] || 0) - 1);
+            }
+            
+            navigateTo('rooms');
+            showToast('🔄 Room reset!', 'success');
+        }
+        window.resetRoom = resetRoom;
+
+        // ================================================================
+        // 22. LEADERBOARD
+        // ================================================================
+        let leaderboardFilter = 'all';
+
+        function filterLeaderboard(filter) {
+            leaderboardFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === filter);
+            });
+            loadLeaderboard();
+        }
+        window.filterLeaderboard = filterLeaderboard;
+
+        function loadLeaderboard() {
+            const container = document.getElementById('leaderboard-list');
+            const players = [];
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('za_bingo_player_')) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        if (data && data.playerName && data.playerName !== 'Player') {
+                            players.push(data);
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            players.sort((a, b) => (b.totalWinnings || 0) - (a.totalWinnings || 0));
+
+            container.innerHTML = '';
+            if (players.length === 0) {
+                container.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">No players yet</p>';
+                return;
+            }
+
+            players.slice(0, 50).forEach((player, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                const rank = index + 1;
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                item.innerHTML = `
+                    <span class="rank">${medal}</span>
+                    <span class="player">${player.playerName || 'Unknown'}</span>
+                    <span class="wins">${player.gamesWon || 0}</span>
+                    <span class="earnings">${player.totalWinnings || 0} Br</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // ================================================================
+        // 23. ROOM STATUS
+        // ================================================================
+        function listenToRoomStatus() {
+            const rooms = ['room1', 'room2', 'room3'];
+            rooms.forEach(roomId => {
+                const playersEl = document.getElementById(roomId + '-players');
+                const statusEl = document.getElementById(roomId + '-status');
+                if (playersEl) {
+                    const count = roomPlayersCount[roomId] || 0;
+                    playersEl.textContent = '👥 ' + count + '/150';
+                }
+                if (statusEl) {
+                    statusEl.textContent = '🟢 Waiting';
+                    statusEl.style.color = '#4CAF50';
+                }
+            });
+        }
+
+        // ================================================================
+        // 24. INIT
+        // ================================================================
+        async function init() {
+            const firebaseLoaded = initFirebase();
+            await initAuth();
+            loadLeaderboard();
+            listenToRoomStatus();
+
+            setInterval(() => {
+                listenToRoomStatus();
+            }, 5000);
+
+            console.log('🎯 ZA Bingo V3 loaded!');
+            console.log('Player ID:', state.playerId);
+            console.log('Firebase:', firebaseLoaded ? '✅ Connected' : '⚠️ Local mode');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <!-- Firebase CDN Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js">
     </script>
 
 </body>
-
 </html>
