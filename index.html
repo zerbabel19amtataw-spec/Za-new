@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ZA Bingo V3</title>
     <style>
+        /* ===== ALL CSS (unchanged) ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
-
         :root {
             --primary: #6C63FF;
             --primary-dark: #5A52D5;
@@ -22,18 +22,16 @@
             --dark: #2D2D2D;
             --light: #F5F5F5;
             --white: #FFFFFF;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 20px rgba(0,0,0,0.1);
             --radius: 16px;
             --transition: all 0.3s ease;
         }
-
         body {
             background: var(--light);
             color: var(--dark);
             min-height: 100vh;
             overflow-x: hidden;
         }
-
         #app {
             max-width: 480px;
             margin: 0 auto;
@@ -41,7 +39,6 @@
             min-height: 100vh;
             position: relative;
         }
-
         .screen {
             display: none;
             width: 100%;
@@ -49,16 +46,13 @@
             padding: 16px;
             animation: fadeIn 0.3s ease;
         }
-
         .screen.active {
             display: block;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -67,13 +61,11 @@
             border-bottom: 2px solid var(--light);
             margin-bottom: 20px;
         }
-
         .logo-container {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
         .logo {
             width: 48px;
             height: 48px;
@@ -86,12 +78,10 @@
             font-weight: bold;
             font-size: 24px;
         }
-
         .logo-container h1 {
             font-size: 20px;
             color: var(--primary);
         }
-
         .balance-display {
             background: var(--primary);
             color: white;
@@ -99,18 +89,15 @@
             border-radius: 20px;
             text-align: center;
         }
-
         .balance-label {
             font-size: 10px;
             opacity: 0.8;
             display: block;
         }
-
         .balance-amount {
             font-size: 18px;
             font-weight: bold;
         }
-
         .screen-header {
             display: flex;
             align-items: center;
@@ -119,7 +106,6 @@
             border-bottom: 2px solid var(--light);
             margin-bottom: 20px;
         }
-
         .back-btn {
             background: none;
             border: none;
@@ -130,16 +116,13 @@
             border-radius: 8px;
             transition: var(--transition);
         }
-
         .back-btn:hover {
             background: var(--light);
         }
-
         .screen-header h2 {
             font-size: 20px;
             color: var(--dark);
         }
-
         .btn {
             padding: 14px 24px;
             border: none;
@@ -154,97 +137,79 @@
             gap: 8px;
             width: 100%;
         }
-
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow);
         }
-
         .btn:active {
             transform: scale(0.98);
         }
-
         .btn-primary {
             background: var(--primary);
             color: white;
         }
-
         .btn-primary:hover {
             background: var(--primary-dark);
         }
-
         .btn-secondary {
             background: var(--secondary);
             color: white;
         }
-
         .btn-success {
             background: var(--success);
             color: white;
         }
-
         .btn-warning {
             background: var(--warning);
             color: var(--dark);
         }
-
         .btn-info {
             background: var(--info);
             color: white;
         }
-
         .btn-sm {
             padding: 8px 16px;
             font-size: 14px;
             width: auto;
         }
-
         .btn-danger {
             background: #f44336;
             color: white;
         }
-
         .btn-danger:hover {
             background: #d32f2f;
         }
-
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none !important;
         }
-
         .home-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-top: 20px;
         }
-
         .home-buttons .btn {
             padding: 20px;
             flex-direction: column;
             height: 100px;
         }
-
         .home-buttons .icon {
             font-size: 28px;
         }
-
         .footer {
             text-align: center;
             margin-top: 40px;
             color: #999;
             font-size: 12px;
         }
-
         .payment-methods {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 20px;
         }
-
         .method-btn {
             padding: 16px;
             border: 2px solid #ddd;
@@ -258,12 +223,10 @@
             gap: 8px;
             font-weight: 500;
         }
-
         .method-btn.active {
             border-color: var(--primary);
             background: #F0F0FF;
         }
-
         .payment-number {
             background: var(--light);
             padding: 16px;
@@ -273,24 +236,20 @@
             align-items: center;
             justify-content: space-between;
         }
-
         .number-display {
             font-size: 18px;
             font-weight: bold;
             color: var(--primary);
         }
-
         .input-group {
             margin-bottom: 16px;
         }
-
         .input-group label {
             display: block;
             font-weight: 500;
             margin-bottom: 6px;
             font-size: 14px;
         }
-
         .input-group input {
             width: 100%;
             padding: 12px 16px;
@@ -299,13 +258,11 @@
             font-size: 16px;
             transition: var(--transition);
         }
-
         .input-group input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
         }
-
         .status-message {
             margin-top: 16px;
             padding: 12px;
@@ -313,25 +270,21 @@
             text-align: center;
             display: none;
         }
-
         .status-message.success {
             display: block;
             background: #E8F5E9;
             color: #2E7D32;
         }
-
         .status-message.error {
             display: block;
             background: #FFEBEE;
             color: #C62828;
         }
-
         .profile-avatar {
             display: flex;
             justify-content: center;
             margin-bottom: 24px;
         }
-
         .avatar {
             width: 80px;
             height: 80px;
@@ -343,19 +296,16 @@
             align-items: center;
             justify-content: center;
         }
-
         .profile-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
-
         .info-item {
             background: var(--light);
             padding: 12px 16px;
             border-radius: var(--radius);
         }
-
         .info-label {
             display: block;
             font-size: 11px;
@@ -364,20 +314,17 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
         .info-value {
             display: block;
             font-size: 16px;
             font-weight: 600;
             margin-top: 4px;
         }
-
         .leaderboard-filters {
             display: flex;
             gap: 8px;
             margin-bottom: 16px;
         }
-
         .filter-btn {
             padding: 8px 16px;
             border: 2px solid #ddd;
@@ -387,19 +334,16 @@
             font-size: 13px;
             transition: var(--transition);
         }
-
         .filter-btn.active {
             border-color: var(--primary);
             background: var(--primary);
             color: white;
         }
-
         .leaderboard-list {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-
         .leaderboard-item {
             display: grid;
             grid-template-columns: 40px 1fr 60px 80px;
@@ -408,34 +352,28 @@
             border-radius: var(--radius);
             align-items: center;
         }
-
         .rank {
             font-weight: bold;
             color: var(--primary);
             font-size: 16px;
         }
-
         .player {
             font-weight: 500;
         }
-
         .wins {
             color: var(--secondary);
             font-weight: 600;
         }
-
         .earnings {
             color: var(--success);
             font-weight: 600;
             text-align: right;
         }
-
         .rooms-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 16px;
         }
-
         .room-card {
             background: white;
             border: 2px solid #ddd;
@@ -444,35 +382,29 @@
             transition: var(--transition);
             cursor: pointer;
         }
-
         .room-card:hover {
             border-color: var(--primary);
             transform: translateY(-2px);
             box-shadow: var(--shadow);
         }
-
         .room-number {
             font-size: 20px;
             font-weight: bold;
             color: var(--primary);
         }
-
         .room-stake {
             font-size: 14px;
             color: #666;
             margin: 4px 0 8px;
         }
-
         .room-players {
             font-size: 14px;
             margin-bottom: 8px;
         }
-
         .room-status {
             font-size: 13px;
             margin-bottom: 12px;
         }
-
         .cartela-grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
@@ -482,7 +414,6 @@
             overflow-y: auto;
             padding: 4px;
         }
-
         .cartela-btn {
             padding: 6px 4px;
             border: 2px solid #ddd;
@@ -495,75 +426,63 @@
             text-align: center;
             min-height: 32px;
         }
-
         .cartela-btn:hover:not(:disabled) {
             border-color: var(--primary);
             transform: scale(1.05);
         }
-
         .cartela-btn.selected {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
         }
-
         .cartela-btn.taken {
             background: #f0f0f0;
             color: #999;
             cursor: not-allowed;
             opacity: 0.5;
         }
-
         .cartela-btn:disabled {
             cursor: not-allowed;
         }
-
         .selected-cartelas {
             margin: 16px 0;
             padding: 12px;
             background: var(--light);
             border-radius: var(--radius);
         }
-
         .waiting-status {
             text-align: center;
             padding: 12px;
             color: #666;
             font-size: 14px;
         }
-
         .game-stats {
             display: flex;
             gap: 16px;
             font-size: 14px;
             color: #666;
         }
-
         .game-area {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 16px;
         }
-
         .current-ball {
             text-align: center;
         }
-
         .ball {
             font-size: 72px;
             transition: var(--transition);
         }
-
         .game-board {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(5,1fr);
             gap: 4px;
             width: 100%;
             max-width: 400px;
             margin: 0 auto;
         }
-
         .game-board .cell {
             aspect-ratio: 1;
             display: flex;
@@ -576,26 +495,22 @@
             font-size: 14px;
             transition: var(--transition);
         }
-
         .game-board .cell.marked {
             background: var(--success);
             color: white;
             border-color: var(--success);
         }
-
         .game-board .cell.free {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
         }
-
         .game-board .header-cell {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
             font-weight: bold;
         }
-
         .game-controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -603,7 +518,6 @@
             width: 100%;
             max-width: 400px;
         }
-
         .game-status {
             text-align: center;
             padding: 12px;
@@ -611,7 +525,6 @@
             width: 100%;
             max-width: 400px;
         }
-
         .winner-content {
             display: flex;
             flex-direction: column;
@@ -620,39 +533,32 @@
             min-height: 80vh;
             text-align: center;
         }
-
         .winner-celebration {
             font-size: 72px;
             animation: bounce 1s infinite;
         }
-
         @keyframes bounce {
-            0%,
-            100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            0%,100%{transform:translateY(0)}
+            50%{transform:translateY(-20px)}
         }
-
         .winner-title {
             font-size: 28px;
             font-weight: bold;
             color: var(--secondary);
             margin: 16px 0;
         }
-
         .winner-name {
             font-size: 24px;
             font-weight: bold;
             color: var(--primary);
         }
-
         .winner-prize {
             font-size: 32px;
             font-weight: bold;
             color: var(--success);
             margin: 16px 0;
         }
-
-        @media (max-width: 480px) {
+        @media (max-width:480px) {
             .home-buttons {
                 grid-template-columns: 1fr 1fr;
             }
@@ -671,7 +577,7 @@
                 font-size: 12px;
             }
             .cartela-grid {
-                grid-template-columns: repeat(8, 1fr);
+                grid-template-columns: repeat(8,1fr);
                 gap: 3px;
             }
             .cartela-btn {
@@ -680,13 +586,11 @@
                 min-height: 28px;
             }
         }
-
-        @media (max-width: 380px) {
+        @media (max-width:380px) {
             .cartela-grid {
-                grid-template-columns: repeat(6, 1fr);
+                grid-template-columns: repeat(6,1fr);
             }
         }
-
         .toast {
             position: fixed;
             bottom: 20px;
@@ -699,20 +603,17 @@
             z-index: 1000;
             max-width: 90%;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             animation: slideUp 0.3s ease;
         }
-
         @keyframes slideUp {
             from { transform: translateX(-50%) translateY(20px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
-
         @keyframes slideDown {
             from { transform: translateX(-50%) translateY(0); opacity: 1; }
             to { transform: translateX(-50%) translateY(20px); opacity: 0; }
         }
-
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -724,24 +625,21 @@
             background: var(--primary);
             border-radius: 4px;
         }
-
         .countdown-popup {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0,0,0,0.85);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 999;
         }
-
         .countdown-popup.active {
             display: flex;
         }
-
         .countdown-popup-content {
             background: white;
             padding: 40px 30px;
@@ -751,12 +649,10 @@
             width: 400px;
             animation: popIn 0.3s ease;
         }
-
         @keyframes popIn {
             from { transform: scale(0.8) rotate(-5deg); opacity: 0; }
             to { transform: scale(1) rotate(0); opacity: 1; }
         }
-
         .countdown-popup-content .big-number {
             font-size: 90px;
             font-weight: bold;
@@ -764,25 +660,21 @@
             line-height: 1;
             transition: all 0.2s ease;
         }
-
         .countdown-popup-content .big-number.waiting {
             font-size: 70px;
             color: var(--warning);
         }
-
         .countdown-popup-content .popup-text {
             font-size: 18px;
             color: #666;
             margin-top: 8px;
             font-weight: 500;
         }
-
         .countdown-popup-content .popup-sub {
             font-size: 14px;
             color: #999;
             margin-top: 4px;
         }
-
         .countdown-popup-content .popup-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -792,17 +684,14 @@
             background: var(--light);
             border-radius: 12px;
         }
-
         .countdown-popup-content .popup-detail-item {
             text-align: center;
         }
-
         .countdown-popup-content .popup-detail-item .label {
             font-size: 12px;
             color: #999;
             display: block;
         }
-
         .countdown-popup-content .popup-detail-item .value {
             font-size: 20px;
             font-weight: bold;
@@ -810,14 +699,12 @@
             display: block;
             margin-top: 2px;
         }
-
         .countdown-popup-content .popup-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-top: 16px;
         }
-
         .countdown-popup-content .popup-buttons .btn {
             padding: 12px;
             font-size: 14px;
@@ -872,12 +759,8 @@
                 </div>
                 <div class="screen-content">
                     <div class="payment-methods">
-                        <button class="method-btn active" data-method="telebirr" onclick="selectMethod('telebirr')">
-                            📱 Telebirr
-                        </button>
-                        <button class="method-btn" data-method="cbe" onclick="selectMethod('cbe')">
-                            🏦 CBE Birr
-                        </button>
+                        <button class="method-btn active" data-method="telebirr" onclick="selectMethod('telebirr')">📱 Telebirr</button>
+                        <button class="method-btn" data-method="cbe" onclick="selectMethod('cbe')">🏦 CBE Birr</button>
                     </div>
                     <div class="payment-number">
                         <span>Payment Number</span>
@@ -905,12 +788,8 @@
                 </div>
                 <div class="screen-content">
                     <div class="payment-methods">
-                        <button class="method-btn active" data-method="telebirr" onclick="selectWithdrawMethod('telebirr')">
-                            📱 Telebirr
-                        </button>
-                        <button class="method-btn" data-method="cbe" onclick="selectWithdrawMethod('cbe')">
-                            🏦 CBE Birr
-                        </button>
+                        <button class="method-btn active" data-method="telebirr" onclick="selectWithdrawMethod('telebirr')">📱 Telebirr</button>
+                        <button class="method-btn" data-method="cbe" onclick="selectWithdrawMethod('cbe')">🏦 CBE Birr</button>
                     </div>
                     <div class="input-group">
                         <label>Amount (Br)</label>
@@ -936,42 +815,15 @@
                         <div class="avatar">👤</div>
                     </div>
                     <div class="profile-info">
-                        <div class="info-item">
-                            <span class="info-label">Player Name</span>
-                            <span class="info-value" id="player-name">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Telegram ID</span>
-                            <span class="info-value" id="telegram-id">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Username</span>
-                            <span class="info-value" id="username">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Phone Number</span>
-                            <span class="info-value" id="phone-number">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Balance</span>
-                            <span class="info-value" id="profile-balance">0 Br</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Games Played</span>
-                            <span class="info-value" id="games-played">0</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Games Won</span>
-                            <span class="info-value" id="games-won">0</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Win Rate</span>
-                            <span class="info-value" id="win-rate">0%</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Total Winnings</span>
-                            <span class="info-value" id="total-winnings">0 Br</span>
-                        </div>
+                        <div class="info-item"><span class="info-label">Player Name</span><span class="info-value" id="player-name">-</span></div>
+                        <div class="info-item"><span class="info-label">Telegram ID</span><span class="info-value" id="telegram-id">-</span></div>
+                        <div class="info-item"><span class="info-label">Username</span><span class="info-value" id="username">-</span></div>
+                        <div class="info-item"><span class="info-label">Phone Number</span><span class="info-value" id="phone-number">-</span></div>
+                        <div class="info-item"><span class="info-label">Balance</span><span class="info-value" id="profile-balance">0 Br</span></div>
+                        <div class="info-item"><span class="info-label">Games Played</span><span class="info-value" id="games-played">0</span></div>
+                        <div class="info-item"><span class="info-label">Games Won</span><span class="info-value" id="games-won">0</span></div>
+                        <div class="info-item"><span class="info-label">Win Rate</span><span class="info-value" id="win-rate">0%</span></div>
+                        <div class="info-item"><span class="info-label">Total Winnings</span><span class="info-value" id="total-winnings">0 Br</span></div>
                     </div>
                 </div>
             </div>
@@ -989,12 +841,7 @@
                         <button class="filter-btn" onclick="filterLeaderboard('week')">This Week</button>
                     </div>
                     <div class="leaderboard-list" id="leaderboard-list">
-                        <div class="leaderboard-item">
-                            <span class="rank">1</span>
-                            <span class="player">Loading...</span>
-                            <span class="wins">-</span>
-                            <span class="earnings">-</span>
-                        </div>
+                        <div class="leaderboard-item"><span class="rank">1</span><span class="player">Loading...</span><span class="wins">-</span><span class="earnings">-</span></div>
                     </div>
                 </div>
             </div>
@@ -1066,7 +913,7 @@
                     <div class="game-area">
                         <div class="current-ball">
                             <div class="ball" id="current-ball">🎱</div>
-                            <div class="call-history" id="call-history">
+                            <div class="call-history">
                                 <span>Called: </span>
                                 <span id="called-numbers-display">-</span>
                             </div>
@@ -1105,14 +952,8 @@
             <div class="popup-text" id="popupText">Waiting for players...</div>
             <div class="popup-sub" id="popupSub">Need at least 2 players to start</div>
             <div class="popup-details">
-                <div class="popup-detail-item">
-                    <span class="label">👥 Players</span>
-                    <span class="value" id="popupPlayers">0</span>
-                </div>
-                <div class="popup-detail-item">
-                    <span class="label">💰 Prize Pool</span>
-                    <span class="value" id="popupPrize">0 Br</span>
-                </div>
+                <div class="popup-detail-item"><span class="label">👥 Players</span><span class="value" id="popupPlayers">0</span></div>
+                <div class="popup-detail-item"><span class="label">💰 Prize Pool</span><span class="value" id="popupPrize">0 Br</span></div>
             </div>
             <div class="popup-buttons">
                 <button class="btn btn-danger" onclick="cancelGame()">✕ Cancel</button>
@@ -1283,10 +1124,37 @@
         }
 
         // ================================================================
-        // PLAYER DATA – READS FROM FIREBASE ONLY
+        // PLAYER DATA – READS FROM FIREBASE WITH FALLBACK LOOKUP
         // ================================================================
         async function loadPlayerData() {
-            if (!state.playerId || !state.db) return;
+            if (!state.db) {
+                console.warn('DB not ready');
+                return;
+            }
+
+            // If playerId is missing, try to get it from telegram_lookup
+            if (!state.playerId && telegramUser && telegramUser.id) {
+                try {
+                    const snap = await state.db.ref('telegram_lookup/' + telegramUser.id).once('value');
+                    const pid = snap.val();
+                    if (pid) {
+                        state.playerId = pid;
+                        console.log('✅ Retrieved playerId from telegram_lookup in loadPlayerData:', pid);
+                    } else {
+                        console.warn('No playerId found in telegram_lookup');
+                        // Optionally create new player? But we'll just exit.
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error fetching telegram_lookup:', e);
+                    return;
+                }
+            }
+
+            if (!state.playerId) {
+                console.warn('No playerId available');
+                return;
+            }
 
             try {
                 const snapshot = await state.db.ref('players/' + state.playerId).once('value');
@@ -1296,6 +1164,7 @@
                     console.log('✅ Player data loaded from Firebase');
                 } else {
                     console.warn('Player not found in database');
+                    // Optionally create new player? But we'll leave it.
                 }
             } catch (error) {
                 console.error('Error loading player data:', error);
@@ -1340,7 +1209,7 @@
 
             if (screen === 'leaderboard') loadLeaderboard();
             if (screen === 'rooms') listenToRoomStatus();
-            if (screen === 'profile') loadPlayerData(); // <-- THIS FIXES PROFILE
+            if (screen === 'profile') loadPlayerData(); // <-- FIX: reload profile from Firebase
         }
         window.navigateTo = navigateTo;
 
@@ -1479,11 +1348,7 @@
         }
 
         function showToast(message, type) {
-            const colors = {
-                success: '#4CAF50',
-                error: '#f44336',
-                info: '#2196F3'
-            };
+            const colors = { success: '#4CAF50', error: '#f44336', info: '#2196F3' };
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.style.background = colors[type] || '#333';
@@ -2062,11 +1927,11 @@
                 const rank = index + 1;
                 const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
                 item.innerHTML = `
-                            <span class="rank">${medal}</span>
-                            <span class="player">${player.playerName || 'Unknown'}</span>
-                            <span class="wins">${player.gamesWon || 0}</span>
-                            <span class="earnings">${player.totalWinnings || 0} Br</span>
-                        `;
+                    <span class="rank">${medal}</span>
+                    <span class="player">${player.playerName || 'Unknown'}</span>
+                    <span class="wins">${player.gamesWon || 0}</span>
+                    <span class="earnings">${player.totalWinnings || 0} Br</span>
+                `;
                 container.appendChild(item);
             });
         }
@@ -2114,12 +1979,9 @@
     </script>
 
     <!-- Firebase CDN Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js">
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js">
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 </body>
 </html>
