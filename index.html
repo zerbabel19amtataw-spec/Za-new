@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ZA Bingo V3</title>
     <style>
-        /* ===== ALL CSS (unchanged) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -46,9 +45,7 @@
             padding: 16px;
             animation: fadeIn 0.3s ease;
         }
-        .screen.active {
-            display: block;
-        }
+        .screen.active { display: block; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -116,9 +113,7 @@
             border-radius: 8px;
             transition: var(--transition);
         }
-        .back-btn:hover {
-            background: var(--light);
-        }
+        .back-btn:hover { background: var(--light); }
         .screen-header h2 {
             font-size: 20px;
             color: var(--dark);
@@ -137,53 +132,18 @@
             gap: 8px;
             width: 100%;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-        .btn:active {
-            transform: scale(0.98);
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-        .btn-secondary {
-            background: var(--secondary);
-            color: white;
-        }
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        .btn-warning {
-            background: var(--warning);
-            color: var(--dark);
-        }
-        .btn-info {
-            background: var(--info);
-            color: white;
-        }
-        .btn-sm {
-            padding: 8px 16px;
-            font-size: 14px;
-            width: auto;
-        }
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-        .btn-danger:hover {
-            background: #d32f2f;
-        }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+        .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: var(--dark); }
+        .btn-info { background: var(--info); color: white; }
+        .btn-sm { padding: 8px 16px; font-size: 14px; width: auto; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-danger:hover { background: #d32f2f; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
         .home-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -195,9 +155,7 @@
             flex-direction: column;
             height: 100px;
         }
-        .home-buttons .icon {
-            font-size: 28px;
-        }
+        .home-buttons .icon { font-size: 28px; }
         .footer {
             text-align: center;
             margin-top: 40px;
@@ -270,16 +228,8 @@
             text-align: center;
             display: none;
         }
-        .status-message.success {
-            display: block;
-            background: #E8F5E9;
-            color: #2E7D32;
-        }
-        .status-message.error {
-            display: block;
-            background: #FFEBEE;
-            color: #C62828;
-        }
+        .status-message.success { display: block; background: #E8F5E9; color: #2E7D32; }
+        .status-message.error { display: block; background: #FFEBEE; color: #C62828; }
         .profile-avatar {
             display: flex;
             justify-content: center;
@@ -352,23 +302,10 @@
             border-radius: var(--radius);
             align-items: center;
         }
-        .rank {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 16px;
-        }
-        .player {
-            font-weight: 500;
-        }
-        .wins {
-            color: var(--secondary);
-            font-weight: 600;
-        }
-        .earnings {
-            color: var(--success);
-            font-weight: 600;
-            text-align: right;
-        }
+        .rank { font-weight: bold; color: var(--primary); font-size: 16px; }
+        .player { font-weight: 500; }
+        .wins { color: var(--secondary); font-weight: 600; }
+        .earnings { color: var(--success); font-weight: 600; text-align: right; }
         .rooms-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -441,9 +378,7 @@
             cursor: not-allowed;
             opacity: 0.5;
         }
-        .cartela-btn:disabled {
-            cursor: not-allowed;
-        }
+        .cartela-btn:disabled { cursor: not-allowed; }
         .selected-cartelas {
             margin: 16px 0;
             padding: 12px;
@@ -468,16 +403,11 @@
             align-items: center;
             gap: 16px;
         }
-        .current-ball {
-            text-align: center;
-        }
-        .ball {
-            font-size: 72px;
-            transition: var(--transition);
-        }
+        .current-ball { text-align: center; }
+        .ball { font-size: 72px; transition: var(--transition); }
         .game-board {
             display: grid;
-            grid-template-columns: repeat(5,1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 4px;
             width: 100%;
             max-width: 400px;
@@ -559,37 +489,16 @@
             margin: 16px 0;
         }
         @media (max-width:480px) {
-            .home-buttons {
-                grid-template-columns: 1fr 1fr;
-            }
-            .home-buttons .btn {
-                height: 80px;
-                padding: 12px;
-            }
-            .profile-info {
-                grid-template-columns: 1fr;
-            }
-            .leaderboard-item {
-                grid-template-columns: 30px 1fr 50px 70px;
-                font-size: 13px;
-            }
-            .game-board .cell {
-                font-size: 12px;
-            }
-            .cartela-grid {
-                grid-template-columns: repeat(8,1fr);
-                gap: 3px;
-            }
-            .cartela-btn {
-                font-size: 10px;
-                padding: 4px 2px;
-                min-height: 28px;
-            }
+            .home-buttons { grid-template-columns: 1fr 1fr; }
+            .home-buttons .btn { height: 80px; padding: 12px; }
+            .profile-info { grid-template-columns: 1fr; }
+            .leaderboard-item { grid-template-columns: 30px 1fr 50px 70px; font-size: 13px; }
+            .game-board .cell { font-size: 12px; }
+            .cartela-grid { grid-template-columns: repeat(8,1fr); gap: 3px; }
+            .cartela-btn { font-size: 10px; padding: 4px 2px; min-height: 28px; }
         }
         @media (max-width:380px) {
-            .cartela-grid {
-                grid-template-columns: repeat(6,1fr);
-            }
+            .cartela-grid { grid-template-columns: repeat(6,1fr); }
         }
         .toast {
             position: fixed;
@@ -614,17 +523,9 @@
             from { transform: translateX(-50%) translateY(0); opacity: 1; }
             to { transform: translateX(-50%) translateY(20px); opacity: 0; }
         }
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--light);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--light); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
         .countdown-popup {
             position: fixed;
             top: 0;
@@ -637,9 +538,7 @@
             align-items: center;
             z-index: 999;
         }
-        .countdown-popup.active {
-            display: flex;
-        }
+        .countdown-popup.active { display: flex; }
         .countdown-popup-content {
             background: white;
             padding: 40px 30px;
@@ -712,236 +611,185 @@
     </style>
 </head>
 <body>
-
     <div id="app">
-        <!-- SCREEN CONTAINER -->
-        <div id="screen-container">
-
-            <!-- HOME SCREEN -->
-            <div id="home-screen" class="screen active">
-                <div class="header">
-                    <div class="logo-container">
-                        <div class="logo">ZA</div>
-                        <h1>ZA Bingo V3</h1>
-                    </div>
-                    <div class="balance-display">
-                        <span class="balance-label">Balance</span>
-                        <span class="balance-amount" id="balance-amount">0 Br</span>
-                    </div>
+        <!-- HOME SCREEN -->
+        <div id="home-screen" class="screen active">
+            <div class="header">
+                <div class="logo-container">
+                    <div class="logo">ZA</div>
+                    <h1>ZA Bingo V3</h1>
                 </div>
-                <div class="home-buttons">
-                    <button class="btn btn-primary" onclick="navigateTo('deposit')">
-                        <span class="icon">💰</span> Deposit
-                    </button>
-                    <button class="btn btn-secondary" onclick="navigateTo('withdraw')">
-                        <span class="icon">💸</span> Withdraw
-                    </button>
-                    <button class="btn btn-info" onclick="navigateTo('profile')">
-                        <span class="icon">👤</span> Profile
-                    </button>
-                    <button class="btn btn-warning" onclick="navigateTo('leaderboard')">
-                        <span class="icon">🏆</span> Leaderboard
-                    </button>
-                    <button class="btn btn-success" onclick="navigateTo('rooms')">
-                        <span class="icon">🎮</span> Game Rooms
-                    </button>
-                </div>
-                <div class="footer">
-                    <small>Version 3.0 | © 2026 ZA Bingo</small>
+                <div class="balance-display">
+                    <span class="balance-label">Balance</span>
+                    <span class="balance-amount" id="balance-amount">0 Br</span>
                 </div>
             </div>
+            <div class="home-buttons">
+                <button class="btn btn-primary" onclick="navigateTo('deposit')"><span class="icon">💰</span> Deposit</button>
+                <button class="btn btn-secondary" onclick="navigateTo('withdraw')"><span class="icon">💸</span> Withdraw</button>
+                <button class="btn btn-info" onclick="navigateTo('profile')"><span class="icon">👤</span> Profile</button>
+                <button class="btn btn-warning" onclick="navigateTo('leaderboard')"><span class="icon">🏆</span> Leaderboard</button>
+                <button class="btn btn-success" onclick="navigateTo('rooms')"><span class="icon">🎮</span> Game Rooms</button>
+            </div>
+            <div class="footer"><small>Version 3.0 | © 2026 ZA Bingo</small></div>
+        </div>
 
-            <!-- DEPOSIT SCREEN -->
-            <div id="deposit-screen" class="screen">
-                <div class="screen-header">
-                    <button class="back-btn" onclick="navigateTo('home')">←</button>
-                    <h2>💰 Deposit</h2>
+        <!-- DEPOSIT SCREEN -->
+        <div id="deposit-screen" class="screen">
+            <div class="screen-header"><button class="back-btn" onclick="navigateTo('home')">←</button><h2>💰 Deposit</h2></div>
+            <div class="screen-content">
+                <div class="payment-methods">
+                    <button class="method-btn active" data-method="telebirr" onclick="selectMethod('telebirr')">📱 Telebirr</button>
+                    <button class="method-btn" data-method="cbe" onclick="selectMethod('cbe')">🏦 CBE Birr</button>
                 </div>
-                <div class="screen-content">
-                    <div class="payment-methods">
-                        <button class="method-btn active" data-method="telebirr" onclick="selectMethod('telebirr')">📱 Telebirr</button>
-                        <button class="method-btn" data-method="cbe" onclick="selectMethod('cbe')">🏦 CBE Birr</button>
-                    </div>
-                    <div class="payment-number">
-                        <span>Payment Number</span>
-                        <span class="number-display" id="payment-number">09XXXXXXXX</span>
-                        <button class="btn-sm btn-primary" onclick="copyNumber()">Copy</button>
-                    </div>
-                    <div class="input-group">
-                        <label>Amount (Br)</label>
-                        <input type="number" id="deposit-amount" placeholder="Enter amount" min="1" />
-                    </div>
-                    <div class="input-group">
-                        <label>Transaction ID / SMS Reference</label>
-                        <input type="text" id="transaction-id" placeholder="Enter transaction ID" />
-                    </div>
-                    <button class="btn btn-primary" onclick="submitDeposit()">Submit Deposit</button>
-                    <div id="deposit-status" class="status-message"></div>
+                <div class="payment-number">
+                    <span>Payment Number</span>
+                    <span class="number-display" id="payment-number">09XXXXXXXX</span>
+                    <button class="btn-sm btn-primary" onclick="copyNumber()">Copy</button>
+                </div>
+                <div class="input-group">
+                    <label>Amount (Br)</label>
+                    <input type="number" id="deposit-amount" placeholder="Enter amount" min="1" />
+                </div>
+                <div class="input-group">
+                    <label>Transaction ID / SMS Reference</label>
+                    <input type="text" id="transaction-id" placeholder="Enter transaction ID" />
+                </div>
+                <button class="btn btn-primary" onclick="submitDeposit()">Submit Deposit</button>
+                <div id="deposit-status" class="status-message"></div>
+            </div>
+        </div>
+
+        <!-- WITHDRAW SCREEN -->
+        <div id="withdraw-screen" class="screen">
+            <div class="screen-header"><button class="back-btn" onclick="navigateTo('home')">←</button><h2>💸 Withdraw</h2></div>
+            <div class="screen-content">
+                <div class="payment-methods">
+                    <button class="method-btn active" data-method="telebirr" onclick="selectWithdrawMethod('telebirr')">📱 Telebirr</button>
+                    <button class="method-btn" data-method="cbe" onclick="selectWithdrawMethod('cbe')">🏦 CBE Birr</button>
+                </div>
+                <div class="input-group">
+                    <label>Amount (Br)</label>
+                    <input type="number" id="withdraw-amount" placeholder="Enter amount" min="1" />
+                </div>
+                <div class="input-group">
+                    <label>Account Number</label>
+                    <input type="text" id="withdraw-account" placeholder="Enter account number" />
+                </div>
+                <button class="btn btn-secondary" onclick="submitWithdraw()">Submit Withdrawal</button>
+                <div id="withdraw-status" class="status-message"></div>
+            </div>
+        </div>
+
+        <!-- PROFILE SCREEN -->
+        <div id="profile-screen" class="screen">
+            <div class="screen-header"><button class="back-btn" onclick="navigateTo('home')">←</button><h2>👤 Profile</h2></div>
+            <div class="screen-content">
+                <div class="profile-avatar"><div class="avatar">👤</div></div>
+                <div class="profile-info">
+                    <div class="info-item"><span class="info-label">Player Name</span><span class="info-value" id="player-name">-</span></div>
+                    <div class="info-item"><span class="info-label">Telegram ID</span><span class="info-value" id="telegram-id">-</span></div>
+                    <div class="info-item"><span class="info-label">Username</span><span class="info-value" id="username">-</span></div>
+                    <div class="info-item"><span class="info-label">Phone Number</span><span class="info-value" id="phone-number">-</span></div>
+                    <div class="info-item"><span class="info-label">Balance</span><span class="info-value" id="profile-balance">0 Br</span></div>
+                    <div class="info-item"><span class="info-label">Games Played</span><span class="info-value" id="games-played">0</span></div>
+                    <div class="info-item"><span class="info-label">Games Won</span><span class="info-value" id="games-won">0</span></div>
+                    <div class="info-item"><span class="info-label">Win Rate</span><span class="info-value" id="win-rate">0%</span></div>
+                    <div class="info-item"><span class="info-label">Total Winnings</span><span class="info-value" id="total-winnings">0 Br</span></div>
                 </div>
             </div>
+        </div>
 
-            <!-- WITHDRAW SCREEN -->
-            <div id="withdraw-screen" class="screen">
-                <div class="screen-header">
-                    <button class="back-btn" onclick="navigateTo('home')">←</button>
-                    <h2>💸 Withdraw</h2>
+        <!-- LEADERBOARD SCREEN -->
+        <div id="leaderboard-screen" class="screen">
+            <div class="screen-header"><button class="back-btn" onclick="navigateTo('home')">←</button><h2>🏆 Leaderboard</h2></div>
+            <div class="screen-content">
+                <div class="leaderboard-filters">
+                    <button class="filter-btn active" onclick="filterLeaderboard('all')">All Time</button>
+                    <button class="filter-btn" onclick="filterLeaderboard('month')">This Month</button>
+                    <button class="filter-btn" onclick="filterLeaderboard('week')">This Week</button>
                 </div>
-                <div class="screen-content">
-                    <div class="payment-methods">
-                        <button class="method-btn active" data-method="telebirr" onclick="selectWithdrawMethod('telebirr')">📱 Telebirr</button>
-                        <button class="method-btn" data-method="cbe" onclick="selectWithdrawMethod('cbe')">🏦 CBE Birr</button>
-                    </div>
-                    <div class="input-group">
-                        <label>Amount (Br)</label>
-                        <input type="number" id="withdraw-amount" placeholder="Enter amount" min="1" />
-                    </div>
-                    <div class="input-group">
-                        <label>Account Number</label>
-                        <input type="text" id="withdraw-account" placeholder="Enter account number" />
-                    </div>
-                    <button class="btn btn-secondary" onclick="submitWithdraw()">Submit Withdrawal</button>
-                    <div id="withdraw-status" class="status-message"></div>
-                </div>
+                <div class="leaderboard-list" id="leaderboard-list"><div class="leaderboard-item"><span class="rank">1</span><span class="player">Loading...</span><span class="wins">-</span><span class="earnings">-</span></div></div>
             </div>
+        </div>
 
-            <!-- PROFILE SCREEN -->
-            <div id="profile-screen" class="screen">
-                <div class="screen-header">
-                    <button class="back-btn" onclick="navigateTo('home')">←</button>
-                    <h2>👤 Profile</h2>
-                </div>
-                <div class="screen-content">
-                    <div class="profile-avatar">
-                        <div class="avatar">👤</div>
+        <!-- ROOMS SCREEN -->
+        <div id="rooms-screen" class="screen">
+            <div class="screen-header"><button class="back-btn" onclick="navigateTo('home')">←</button><h2>🎮 Game Rooms</h2></div>
+            <div class="screen-content">
+                <div class="rooms-grid">
+                    <div class="room-card" onclick="joinRoom('room1')">
+                        <div class="room-number">Room 1</div>
+                        <div class="room-stake">Stake: 5 Br</div>
+                        <div class="room-players" id="room1-players">👥 0/150</div>
+                        <div class="room-status" id="room1-status">🟢 Waiting</div>
+                        <button class="btn btn-success btn-sm">Join Room</button>
                     </div>
-                    <div class="profile-info">
-                        <div class="info-item"><span class="info-label">Player Name</span><span class="info-value" id="player-name">-</span></div>
-                        <div class="info-item"><span class="info-label">Telegram ID</span><span class="info-value" id="telegram-id">-</span></div>
-                        <div class="info-item"><span class="info-label">Username</span><span class="info-value" id="username">-</span></div>
-                        <div class="info-item"><span class="info-label">Phone Number</span><span class="info-value" id="phone-number">-</span></div>
-                        <div class="info-item"><span class="info-label">Balance</span><span class="info-value" id="profile-balance">0 Br</span></div>
-                        <div class="info-item"><span class="info-label">Games Played</span><span class="info-value" id="games-played">0</span></div>
-                        <div class="info-item"><span class="info-label">Games Won</span><span class="info-value" id="games-won">0</span></div>
-                        <div class="info-item"><span class="info-label">Win Rate</span><span class="info-value" id="win-rate">0%</span></div>
-                        <div class="info-item"><span class="info-label">Total Winnings</span><span class="info-value" id="total-winnings">0 Br</span></div>
+                    <div class="room-card" onclick="joinRoom('room2')">
+                        <div class="room-number">Room 2</div>
+                        <div class="room-stake">Stake: 10 Br</div>
+                        <div class="room-players" id="room2-players">👥 0/150</div>
+                        <div class="room-status" id="room2-status">🟢 Waiting</div>
+                        <button class="btn btn-success btn-sm">Join Room</button>
                     </div>
-                </div>
-            </div>
-
-            <!-- LEADERBOARD SCREEN -->
-            <div id="leaderboard-screen" class="screen">
-                <div class="screen-header">
-                    <button class="back-btn" onclick="navigateTo('home')">←</button>
-                    <h2>🏆 Leaderboard</h2>
-                </div>
-                <div class="screen-content">
-                    <div class="leaderboard-filters">
-                        <button class="filter-btn active" onclick="filterLeaderboard('all')">All Time</button>
-                        <button class="filter-btn" onclick="filterLeaderboard('month')">This Month</button>
-                        <button class="filter-btn" onclick="filterLeaderboard('week')">This Week</button>
-                    </div>
-                    <div class="leaderboard-list" id="leaderboard-list">
-                        <div class="leaderboard-item"><span class="rank">1</span><span class="player">Loading...</span><span class="wins">-</span><span class="earnings">-</span></div>
+                    <div class="room-card" onclick="joinRoom('room3')">
+                        <div class="room-number">Room 3</div>
+                        <div class="room-stake">Stake: 20 Br</div>
+                        <div class="room-players" id="room3-players">👥 0/150</div>
+                        <div class="room-status" id="room3-status">🟢 Waiting</div>
+                        <button class="btn btn-success btn-sm">Join Room</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- ROOMS SCREEN -->
-            <div id="rooms-screen" class="screen">
-                <div class="screen-header">
-                    <button class="back-btn" onclick="navigateTo('home')">←</button>
-                    <h2>🎮 Game Rooms</h2>
+        <!-- WAITING ROOM SCREEN -->
+        <div id="waiting-screen" class="screen">
+            <div class="screen-header"><button class="back-btn" onclick="leaveRoom()">←</button><h2 id="waiting-room-name">⏳ Room 1</h2></div>
+            <div class="screen-content">
+                <div class="cartela-selection">
+                    <h3>Select Your Cartelas</h3>
+                    <p>Maximum 2 cartelas per player</p>
+                    <div class="cartela-grid" id="cartela-grid"></div>
+                    <div class="selected-cartelas"><h4>Selected Cartelas</h4><div id="selected-cartelas-display">None selected</div></div>
+                    <button class="btn btn-primary" id="confirm-cartelas" onclick="confirmCartelas()">Confirm Cartelas</button>
                 </div>
-                <div class="screen-content">
-                    <div class="rooms-grid">
-                        <div class="room-card" onclick="joinRoom('room1')">
-                            <div class="room-number">Room 1</div>
-                            <div class="room-stake">Stake: 5 Br</div>
-                            <div class="room-players" id="room1-players">👥 0/150</div>
-                            <div class="room-status" id="room1-status">🟢 Waiting</div>
-                            <button class="btn btn-success btn-sm">Join Room</button>
-                        </div>
-                        <div class="room-card" onclick="joinRoom('room2')">
-                            <div class="room-number">Room 2</div>
-                            <div class="room-stake">Stake: 10 Br</div>
-                            <div class="room-players" id="room2-players">👥 0/150</div>
-                            <div class="room-status" id="room2-status">🟢 Waiting</div>
-                            <button class="btn btn-success btn-sm">Join Room</button>
-                        </div>
-                        <div class="room-card" onclick="joinRoom('room3')">
-                            <div class="room-number">Room 3</div>
-                            <div class="room-stake">Stake: 20 Br</div>
-                            <div class="room-players" id="room3-players">👥 0/150</div>
-                            <div class="room-status" id="room3-status">🟢 Waiting</div>
-                            <button class="btn btn-success btn-sm">Join Room</button>
-                        </div>
+                <div class="waiting-status" id="waiting-status">⏳ Select your cartelas and confirm...</div>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="screen">
+            <div class="screen-header">
+                <h2 id="game-room-name">🎲 Room 1</h2>
+                <div class="game-stats"><span id="game-players">👥 0</span><span id="game-prize">💰 0 Br</span></div>
+            </div>
+            <div class="screen-content">
+                <div class="game-area">
+                    <div class="current-ball">
+                        <div class="ball" id="current-ball">🎱</div>
+                        <div class="call-history"><span>Called: </span><span id="called-numbers-display">-</span></div>
                     </div>
+                    <div class="game-board" id="game-board"></div>
+                    <div class="game-controls">
+                        <button class="btn btn-info" onclick="toggleAutoMark()"><span id="auto-mark-text">🔘 Auto Mark</span></button>
+                        <button class="btn btn-success" onclick="checkBingo()">🎯 BINGO!</button>
+                    </div>
+                    <div id="game-status" class="game-status"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- WAITING ROOM SCREEN -->
-            <div id="waiting-screen" class="screen">
-                <div class="screen-header">
-                    <button class="back-btn" onclick="leaveRoom()">←</button>
-                    <h2 id="waiting-room-name">⏳ Room 1</h2>
-                </div>
-                <div class="screen-content">
-                    <div class="cartela-selection">
-                        <h3>Select Your Cartelas</h3>
-                        <p>Maximum 2 cartelas per player</p>
-                        <div class="cartela-grid" id="cartela-grid"></div>
-                        <div class="selected-cartelas">
-                            <h4>Selected Cartelas</h4>
-                            <div id="selected-cartelas-display">None selected</div>
-                        </div>
-                        <button class="btn btn-primary" id="confirm-cartelas" onclick="confirmCartelas()">Confirm Cartelas</button>
-                    </div>
-                    <div class="waiting-status" id="waiting-status">⏳ Select your cartelas and confirm...</div>
-                </div>
+        <!-- WINNER SCREEN -->
+        <div id="winner-screen" class="screen">
+            <div class="screen-content winner-content">
+                <div class="winner-celebration">🎉🏆🎉</div>
+                <div class="winner-title">WE HAVE A WINNER!</div>
+                <div class="winner-name" id="winner-name">Player Name</div>
+                <div class="winner-prize" id="winner-prize">💰 0 Br</div>
+                <div class="winner-cartela" id="winner-cartela"></div>
+                <button class="btn btn-primary" onclick="resetRoom()">Play Again</button>
             </div>
-
-            <!-- GAME SCREEN -->
-            <div id="game-screen" class="screen">
-                <div class="screen-header">
-                    <h2 id="game-room-name">🎲 Room 1</h2>
-                    <div class="game-stats">
-                        <span id="game-players">👥 0</span>
-                        <span id="game-prize">💰 0 Br</span>
-                    </div>
-                </div>
-                <div class="screen-content">
-                    <div class="game-area">
-                        <div class="current-ball">
-                            <div class="ball" id="current-ball">🎱</div>
-                            <div class="call-history">
-                                <span>Called: </span>
-                                <span id="called-numbers-display">-</span>
-                            </div>
-                        </div>
-                        <div class="game-board" id="game-board"></div>
-                        <div class="game-controls">
-                            <button class="btn btn-info" onclick="toggleAutoMark()">
-                                <span id="auto-mark-text">🔘 Auto Mark</span>
-                            </button>
-                            <button class="btn btn-success" onclick="checkBingo()">🎯 BINGO!</button>
-                        </div>
-                        <div id="game-status" class="game-status"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- WINNER SCREEN -->
-            <div id="winner-screen" class="screen">
-                <div class="screen-content winner-content">
-                    <div class="winner-celebration">🎉🏆🎉</div>
-                    <div class="winner-title">WE HAVE A WINNER!</div>
-                    <div class="winner-name" id="winner-name">Player Name</div>
-                    <div class="winner-prize" id="winner-prize">💰 0 Br</div>
-                    <div class="winner-cartela" id="winner-cartela"></div>
-                    <button class="btn btn-primary" onclick="resetRoom()">Play Again</button>
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -1012,9 +860,7 @@
                     window.Telegram.WebApp.expand();
                 }
             }
-        } catch (e) {
-            console.log('Not running in Telegram Web App');
-        }
+        } catch (e) { /* not in Telegram */ }
 
         // ================================================================
         // FIREBASE INIT
@@ -1024,9 +870,7 @@
         function initFirebase() {
             try {
                 if (typeof firebase !== 'undefined') {
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(firebaseConfig);
-                    }
+                    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                     database = firebase.database();
                     auth = firebase.auth();
                     state.db = database;
@@ -1044,115 +888,73 @@
         }
 
         // ================================================================
-        // AUTH – TELEGRAM LOOKUP FIRST, THEN ANONYMOUS
+        // AUTH – COMPLETE SETUP
         // ================================================================
         async function initAuth() {
-            if (!state.db) {
-                showToast('❌ Firebase not connected.', 'error');
-                return null;
-            }
+            if (!state.db) return null;
 
             try {
-                if (telegramUser && telegramUser.id) {
-                    console.log('Telegram user ID:', telegramUser.id);
-                    const lookupRef = state.db.ref('telegram_lookup/' + telegramUser.id);
-                    const lookupSnapshot = await lookupRef.once('value');
-                    const playerId = lookupSnapshot.val();
+                // 1. Sign in anonymously (or use existing)
+                let user = auth.currentUser;
+                if (!user) {
+                    const result = await auth.signInAnonymously();
+                    user = result.user;
+                }
+                console.log('Auth UID:', user.uid);
 
-                    if (playerId) {
-                        state.playerId = playerId;
-                        console.log('Found player ID from telegram_lookup:', playerId);
-                        await loadPlayerData();
-                        return state.playerId;
-                    } else {
-                        console.log('No player found, creating new...');
+                // 2. Try to get playerId from telegram_lookup
+                let playerId = null;
+                if (telegramUser && telegramUser.id) {
+                    const snap = await state.db.ref('telegram_lookup/' + telegramUser.id).once('value');
+                    playerId = snap.val();
+                }
+
+                // 3. If no telegram lookup, use UID as playerId
+                if (!playerId) {
+                    playerId = user.uid;
+                    // Check if this player exists
+                    const check = await state.db.ref('players/' + playerId).once('value');
+                    if (!check.exists()) {
+                        // Create new player
                         const newPlayer = {
-                            playerName: telegramUser.first_name || 'Player',
-                            username: telegramUser.username || '',
+                            playerName: telegramUser?.first_name || 'Player',
+                            username: telegramUser?.username || '',
                             phoneNumber: '',
-                            telegramId: telegramUser.id,
+                            telegramId: telegramUser?.id || null,
                             balance: 0,
                             gamesPlayed: 0,
                             gamesWon: 0,
                             totalWinnings: 0,
                             createdAt: Date.now()
                         };
-                        const playerRef = state.db.ref('players').push();
-                        state.playerId = playerRef.key;
-                        await playerRef.set(newPlayer);
-                        await state.db.ref('telegram_lookup/' + telegramUser.id).set(state.playerId);
-                        state.playerData = newPlayer;
-                        updateUIWithPlayerData();
-                        console.log('✅ New player created with ID:', state.playerId);
-                        return state.playerId;
+                        await state.db.ref('players/' + playerId).set(newPlayer);
+                        // If telegram user exists, create lookup
+                        if (telegramUser && telegramUser.id) {
+                            await state.db.ref('telegram_lookup/' + telegramUser.id).set(playerId);
+                        }
                     }
                 }
 
-                // Fallback to anonymous auth
-                console.log('No Telegram, using anonymous auth...');
-                const result = await auth.signInAnonymously();
-                state.playerId = result.user.uid;
-                const playerSnap = await state.db.ref('players/' + state.playerId).once('value');
-                if (playerSnap.exists()) {
-                    state.playerData = playerSnap.val();
-                    updateUIWithPlayerData();
-                    console.log('✅ Existing anonymous player loaded');
-                } else {
-                    const newPlayer = {
-                        playerName: 'Player',
-                        username: '',
-                        phoneNumber: '',
-                        telegramId: null,
-                        balance: 0,
-                        gamesPlayed: 0,
-                        gamesWon: 0,
-                        totalWinnings: 0,
-                        createdAt: Date.now()
-                    };
-                    await state.db.ref('players/' + state.playerId).set(newPlayer);
-                    state.playerData = newPlayer;
-                    updateUIWithPlayerData();
-                    console.log('✅ New anonymous player created');
-                }
+                state.playerId = playerId;
+                console.log('✅ Player ID set:', state.playerId);
+
+                // 4. Load player data immediately
+                await loadPlayerData();
                 return state.playerId;
 
             } catch (error) {
                 console.error('Auth error:', error);
-                showToast('❌ Auth failed. Refresh.', 'error');
+                showToast('❌ Authentication failed. Please refresh.', 'error');
                 return null;
             }
         }
 
         // ================================================================
-        // PLAYER DATA – READS FROM FIREBASE WITH FALLBACK LOOKUP
+        // PLAYER DATA – LOADS FROM FIREBASE
         // ================================================================
         async function loadPlayerData() {
-            if (!state.db) {
-                console.warn('DB not ready');
-                return;
-            }
-
-            // If playerId is missing, try to get it from telegram_lookup
-            if (!state.playerId && telegramUser && telegramUser.id) {
-                try {
-                    const snap = await state.db.ref('telegram_lookup/' + telegramUser.id).once('value');
-                    const pid = snap.val();
-                    if (pid) {
-                        state.playerId = pid;
-                        console.log('✅ Retrieved playerId from telegram_lookup in loadPlayerData:', pid);
-                    } else {
-                        console.warn('No playerId found in telegram_lookup');
-                        // Optionally create new player? But we'll just exit.
-                        return;
-                    }
-                } catch (e) {
-                    console.error('Error fetching telegram_lookup:', e);
-                    return;
-                }
-            }
-
-            if (!state.playerId) {
-                console.warn('No playerId available');
+            if (!state.db || !state.playerId) {
+                console.warn('Cannot load player data: db or playerId missing');
                 return;
             }
 
@@ -1161,13 +963,28 @@
                 if (snapshot.exists()) {
                     state.playerData = snapshot.val();
                     updateUIWithPlayerData();
-                    console.log('✅ Player data loaded from Firebase');
+                    console.log('✅ Player data loaded');
                 } else {
-                    console.warn('Player not found in database');
-                    // Optionally create new player? But we'll leave it.
+                    console.warn('Player not found, creating default');
+                    // Create default player
+                    const defaultData = {
+                        playerName: telegramUser?.first_name || 'Player',
+                        username: telegramUser?.username || '',
+                        phoneNumber: '',
+                        telegramId: telegramUser?.id || null,
+                        balance: 0,
+                        gamesPlayed: 0,
+                        gamesWon: 0,
+                        totalWinnings: 0,
+                        createdAt: Date.now()
+                    };
+                    await state.db.ref('players/' + state.playerId).set(defaultData);
+                    state.playerData = defaultData;
+                    updateUIWithPlayerData();
                 }
             } catch (error) {
                 console.error('Error loading player data:', error);
+                showToast('❌ Failed to load profile.', 'error');
             }
         }
 
@@ -1176,40 +993,41 @@
         // ================================================================
         function updateUIWithPlayerData() {
             if (!state.playerData) return;
-
-            const balance = state.playerData.balance || 0;
+            const data = state.playerData;
+            const balance = data.balance || 0;
             document.getElementById('balance-amount').textContent = balance + ' Br';
             document.getElementById('profile-balance').textContent = balance + ' Br';
-            document.getElementById('player-name').textContent = state.playerData.playerName || '-';
-            document.getElementById('telegram-id').textContent = state.playerData.telegramId || telegramUser?.id || '-';
-            document.getElementById('username').textContent = state.playerData.username || '-';
-            document.getElementById('phone-number').textContent = state.playerData.phoneNumber || '-';
-            document.getElementById('games-played').textContent = state.playerData.gamesPlayed || 0;
-            document.getElementById('games-won').textContent = state.playerData.gamesWon || 0;
-
-            const winRate = state.playerData.gamesPlayed > 0 ?
-                Math.round((state.playerData.gamesWon / state.playerData.gamesPlayed) * 100) :
-                0;
+            document.getElementById('player-name').textContent = data.playerName || '-';
+            document.getElementById('telegram-id').textContent = data.telegramId || telegramUser?.id || '-';
+            document.getElementById('username').textContent = data.username || '-';
+            document.getElementById('phone-number').textContent = data.phoneNumber || '-';
+            document.getElementById('games-played').textContent = data.gamesPlayed || 0;
+            document.getElementById('games-won').textContent = data.gamesWon || 0;
+            const winRate = data.gamesPlayed > 0 ? Math.round((data.gamesWon / data.gamesPlayed) * 100) : 0;
             document.getElementById('win-rate').textContent = winRate + '%';
-            document.getElementById('total-winnings').textContent = (state.playerData.totalWinnings || 0) + ' Br';
+            document.getElementById('total-winnings').textContent = (data.totalWinnings || 0) + ' Br';
         }
 
         // ================================================================
-        // NAVIGATION – RELOADS PROFILE WHEN OPENED
+        // NAVIGATION
         // ================================================================
         function navigateTo(screen) {
-            const screens = document.querySelectorAll('.screen');
-            screens.forEach(s => s.classList.remove('active'));
-
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const target = document.getElementById(screen + '-screen');
-            if (target) {
-                target.classList.add('active');
-                state.currentScreen = screen;
-            }
+            if (target) target.classList.add('active');
+            state.currentScreen = screen;
 
+            if (screen === 'profile') {
+                // Ensure data is loaded when profile is opened
+                if (state.playerId) {
+                    loadPlayerData();
+                } else {
+                    // If playerId missing, re-run auth
+                    initAuth().then(() => loadPlayerData());
+                }
+            }
             if (screen === 'leaderboard') loadLeaderboard();
             if (screen === 'rooms') listenToRoomStatus();
-            if (screen === 'profile') loadPlayerData(); // <-- FIX: reload profile from Firebase
         }
         window.navigateTo = navigateTo;
 
@@ -1217,28 +1035,23 @@
         // DEPOSIT
         // ================================================================
         let selectedMethod = 'telebirr';
-
-        function selectMethod(method) {
-            selectedMethod = method;
-            document.querySelectorAll('#deposit-screen .method-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.method === method);
-            });
-            const numberDisplay = document.getElementById('payment-number');
-            numberDisplay.textContent = method === 'telebirr' ? '09XXXXXXXX' : '10XXXXXXXX';
+        function selectMethod(m) {
+            selectedMethod = m;
+            document.querySelectorAll('#deposit-screen .method-btn').forEach(b => b.classList.toggle('active', b.dataset.method === m));
+            document.getElementById('payment-number').textContent = m === 'telebirr' ? '09XXXXXXXX' : '10XXXXXXXX';
         }
         window.selectMethod = selectMethod;
 
         function copyNumber() {
-            const number = document.getElementById('payment-number').textContent;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(number);
-            } else {
-                const input = document.createElement('input');
-                input.value = number;
-                document.body.appendChild(input);
-                input.select();
+            const n = document.getElementById('payment-number').textContent;
+            if (navigator.clipboard) navigator.clipboard.writeText(n);
+            else {
+                const i = document.createElement('input');
+                i.value = n;
+                document.body.appendChild(i);
+                i.select();
                 document.execCommand('copy');
-                input.remove();
+                i.remove();
             }
             showStatus('deposit-status', 'Number copied!', 'success');
         }
@@ -1246,37 +1059,25 @@
 
         async function submitDeposit() {
             const amount = document.getElementById('deposit-amount').value;
-            const transactionId = document.getElementById('transaction-id').value;
-
-            if (!amount || amount <= 0) {
-                showStatus('deposit-status', 'Please enter a valid amount', 'error');
-                return;
-            }
-            if (!transactionId) {
-                showStatus('deposit-status', 'Please enter transaction ID', 'error');
-                return;
-            }
-
-            if (state.db && state.playerId) {
-                try {
-                    await state.db.ref('deposits').push({
-                        playerId: state.playerId,
-                        playerName: state.playerData?.playerName || 'Unknown',
-                        method: selectedMethod,
-                        amount: parseFloat(amount),
-                        transactionId: transactionId,
-                        status: 'pending',
-                        createdAt: Date.now()
-                    });
-                    showStatus('deposit-status', '✅ Deposit submitted! Waiting for admin approval.', 'success');
-                    document.getElementById('deposit-amount').value = '';
-                    document.getElementById('transaction-id').value = '';
-                } catch (error) {
-                    console.error('Deposit error:', error);
-                    showStatus('deposit-status', '❌ Error submitting deposit.', 'error');
-                }
-            } else {
-                showStatus('deposit-status', '❌ Please connect to Firebase first.', 'error');
+            const tid = document.getElementById('transaction-id').value;
+            if (!amount || amount <= 0) return showStatus('deposit-status', 'Enter valid amount', 'error');
+            if (!tid) return showStatus('deposit-status', 'Enter transaction ID', 'error');
+            if (!state.db || !state.playerId) return showStatus('deposit-status', 'Not connected', 'error');
+            try {
+                await state.db.ref('deposits').push({
+                    playerId: state.playerId,
+                    playerName: state.playerData?.playerName || 'Unknown',
+                    method: selectedMethod,
+                    amount: parseFloat(amount),
+                    transactionId: tid,
+                    status: 'pending',
+                    createdAt: Date.now()
+                });
+                showStatus('deposit-status', '✅ Deposit submitted!', 'success');
+                document.getElementById('deposit-amount').value = '';
+                document.getElementById('transaction-id').value = '';
+            } catch (e) {
+                showStatus('deposit-status', '❌ Error submitting', 'error');
             }
         }
         window.submitDeposit = submitDeposit;
@@ -1285,52 +1086,34 @@
         // WITHDRAW
         // ================================================================
         let withdrawMethod = 'telebirr';
-
-        function selectWithdrawMethod(method) {
-            withdrawMethod = method;
-            document.querySelectorAll('#withdraw-screen .method-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.method === method);
-            });
+        function selectWithdrawMethod(m) {
+            withdrawMethod = m;
+            document.querySelectorAll('#withdraw-screen .method-btn').forEach(b => b.classList.toggle('active', b.dataset.method === m));
         }
         window.selectWithdrawMethod = selectWithdrawMethod;
 
         async function submitWithdraw() {
             const amount = document.getElementById('withdraw-amount').value;
-            const account = document.getElementById('withdraw-account').value;
-
-            if (!amount || amount <= 0) {
-                showStatus('withdraw-status', 'Please enter a valid amount', 'error');
-                return;
-            }
-            if (!account) {
-                showStatus('withdraw-status', 'Please enter account number', 'error');
-                return;
-            }
-            if (parseFloat(amount) > (state.playerData?.balance || 0)) {
-                showStatus('withdraw-status', '❌ Insufficient balance', 'error');
-                return;
-            }
-
-            if (state.db && state.playerId) {
-                try {
-                    await state.db.ref('withdrawals').push({
-                        playerId: state.playerId,
-                        playerName: state.playerData?.playerName || 'Unknown',
-                        method: withdrawMethod,
-                        amount: parseFloat(amount),
-                        accountNumber: account,
-                        status: 'pending',
-                        createdAt: Date.now()
-                    });
-                    showStatus('withdraw-status', '✅ Withdrawal request submitted!', 'success');
-                    document.getElementById('withdraw-amount').value = '';
-                    document.getElementById('withdraw-account').value = '';
-                } catch (error) {
-                    console.error('Withdraw error:', error);
-                    showStatus('withdraw-status', '❌ Error submitting withdrawal.', 'error');
-                }
-            } else {
-                showStatus('withdraw-status', '❌ Please connect to Firebase first.', 'error');
+            const acc = document.getElementById('withdraw-account').value;
+            if (!amount || amount <= 0) return showStatus('withdraw-status', 'Enter valid amount', 'error');
+            if (!acc) return showStatus('withdraw-status', 'Enter account number', 'error');
+            if (parseFloat(amount) > (state.playerData?.balance || 0)) return showStatus('withdraw-status', 'Insufficient balance', 'error');
+            if (!state.db || !state.playerId) return showStatus('withdraw-status', 'Not connected', 'error');
+            try {
+                await state.db.ref('withdrawals').push({
+                    playerId: state.playerId,
+                    playerName: state.playerData?.playerName || 'Unknown',
+                    method: withdrawMethod,
+                    amount: parseFloat(amount),
+                    accountNumber: acc,
+                    status: 'pending',
+                    createdAt: Date.now()
+                });
+                showStatus('withdraw-status', '✅ Withdrawal submitted!', 'success');
+                document.getElementById('withdraw-amount').value = '';
+                document.getElementById('withdraw-account').value = '';
+            } catch (e) {
+                showStatus('withdraw-status', '❌ Error submitting', 'error');
             }
         }
         window.submitWithdraw = submitWithdraw;
@@ -1338,25 +1121,25 @@
         // ================================================================
         // UTILITY
         // ================================================================
-        function showStatus(elementId, message, type) {
-            const el = document.getElementById(elementId);
+        function showStatus(id, msg, type) {
+            const el = document.getElementById(id);
             if (!el) return;
-            el.textContent = message;
+            el.textContent = msg;
             el.className = 'status-message ' + type;
             el.style.display = 'block';
-            setTimeout(() => { el.style.display = 'none'; }, 5000);
+            setTimeout(() => el.style.display = 'none', 5000);
         }
 
-        function showToast(message, type) {
+        function showToast(msg, type) {
             const colors = { success: '#4CAF50', error: '#f44336', info: '#2196F3' };
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.style.background = colors[type] || '#333';
-            toast.textContent = message;
-            document.body.appendChild(toast);
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.style.background = colors[type] || '#333';
+            t.textContent = msg;
+            document.body.appendChild(t);
             setTimeout(() => {
-                toast.style.animation = 'slideDown 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
+                t.style.animation = 'slideDown 0.3s ease';
+                setTimeout(() => t.remove(), 300);
             }, 3000);
         }
 
@@ -1375,22 +1158,19 @@
         async function joinRoom(roomId) {
             if (!state.playerId) {
                 await initAuth();
+                if (!state.playerId) return;
             }
-
             state.currentRoom = roomId;
             const stake = getStakeForRoom(roomId);
-
             if ((state.playerData?.balance || 0) < stake) {
-                showToast('❌ Insufficient balance! Please deposit.', 'error');
+                showToast('❌ Insufficient balance!', 'error');
                 return;
             }
-
+            // Deduct stake
             const bal = (state.playerData.balance || 0) - stake;
             state.playerData.balance = bal;
             if (state.db && state.playerId) {
-                try {
-                    await state.db.ref('players/' + state.playerId + '/balance').set(bal);
-                } catch (e) { console.error(e); }
+                await state.db.ref('players/' + state.playerId + '/balance').set(bal);
             }
             updateUIWithPlayerData();
 
@@ -1398,7 +1178,6 @@
             state.countdownStarted = false;
             state.cancelled = false;
             state.cartelaTaken = {};
-
             navigateTo('waiting');
             loadWaitingRoom(roomId);
         }
@@ -1421,15 +1200,12 @@
         // WAITING ROOM
         // ================================================================
         function loadWaitingRoom(roomId) {
-            const roomName = roomId.replace('room', 'Room ');
-            document.getElementById('waiting-room-name').textContent = '⏳ ' + roomName;
-
+            document.getElementById('waiting-room-name').textContent = '⏳ ' + roomId.replace('room', 'Room ');
             state.selectedCartelas = [];
             document.getElementById('confirm-cartelas').disabled = false;
             document.getElementById('confirm-cartelas').textContent = 'Confirm Cartelas';
             document.getElementById('selected-cartelas-display').textContent = 'None selected';
             document.getElementById('waiting-status').textContent = '⏳ Select your cartelas and confirm...';
-
             loadCartelas();
         }
 
@@ -1437,7 +1213,6 @@
             const grid = document.getElementById('cartela-grid');
             grid.innerHTML = '';
             state.cartelaTaken = {};
-
             for (let i = 1; i <= 150; i++) {
                 const btn = document.createElement('button');
                 btn.className = 'cartela-btn';
@@ -1448,54 +1223,42 @@
             }
         }
 
-        function toggleCartela(cartelaNum) {
-            if (state.cartelaTaken[cartelaNum]) {
-                showToast('Cartela ' + cartelaNum + ' is already taken!', 'error');
+        function toggleCartela(num) {
+            if (state.cartelaTaken[num]) {
+                showToast('Cartela ' + num + ' taken', 'error');
                 return;
             }
-
-            if (state.selectedCartelas.includes(cartelaNum)) {
-                state.selectedCartelas = state.selectedCartelas.filter(c => c !== cartelaNum);
+            const idx = state.selectedCartelas.indexOf(num);
+            if (idx > -1) {
+                state.selectedCartelas.splice(idx, 1);
             } else if (state.selectedCartelas.length < 2) {
-                state.selectedCartelas.push(cartelaNum);
+                state.selectedCartelas.push(num);
             } else {
-                showToast('Maximum 2 cartelas per player', 'error');
+                showToast('Max 2 cartelas', 'error');
                 return;
             }
-
-            document.querySelectorAll('.cartela-btn').forEach(btn => {
-                const num = parseInt(btn.dataset.cartela);
-                btn.classList.toggle('selected', state.selectedCartelas.includes(num));
+            document.querySelectorAll('.cartela-btn').forEach(b => {
+                const n = parseInt(b.dataset.cartela);
+                b.classList.toggle('selected', state.selectedCartelas.includes(n));
             });
-
-            const display = document.getElementById('selected-cartelas-display');
-            display.textContent = state.selectedCartelas.length > 0 ?
-                'Cartelas: ' + state.selectedCartelas.join(', ') :
-                'None selected';
+            document.getElementById('selected-cartelas-display').textContent =
+                state.selectedCartelas.length ? 'Cartelas: ' + state.selectedCartelas.join(', ') : 'None selected';
         }
 
-        // ================================================================
-        // CONFIRM CARTELAS -> SHOW POPUP (waiting)
-        // ================================================================
         function confirmCartelas() {
             if (state.selectedCartelas.length === 0) {
-                showToast('Please select at least one cartela', 'error');
+                showToast('Select at least one cartela', 'error');
                 return;
             }
-
-            state.selectedCartelas.forEach(num => {
-                state.cartelaTaken[num] = true;
-            });
-
-            document.querySelectorAll('.cartela-btn').forEach(btn => {
-                const num = parseInt(btn.dataset.cartela);
-                if (state.cartelaTaken[num]) {
-                    btn.classList.add('taken');
-                    btn.disabled = true;
+            state.selectedCartelas.forEach(n => state.cartelaTaken[n] = true);
+            document.querySelectorAll('.cartela-btn').forEach(b => {
+                const n = parseInt(b.dataset.cartela);
+                if (state.cartelaTaken[n]) {
+                    b.classList.add('taken');
+                    b.disabled = true;
                 }
-                btn.classList.remove('selected');
+                b.classList.remove('selected');
             });
-
             showToast('✅ Cartelas confirmed!', 'success');
             document.getElementById('confirm-cartelas').disabled = true;
             document.getElementById('confirm-cartelas').textContent = '✅ Confirmed';
@@ -1503,9 +1266,6 @@
         }
         window.confirmCartelas = confirmCartelas;
 
-        // ================================================================
-        // SHOW WAITING POPUP
-        // ================================================================
         function showWaitingPopup() {
             const popup = document.getElementById('countdownPopup');
             const popupCount = document.getElementById('popupCountdown');
@@ -1517,25 +1277,19 @@
             popupCount.className = 'big-number waiting';
             popupCount.textContent = '⏳';
             popupText.textContent = 'Waiting for players...';
-            popupSub.textContent = 'Need at least 2 players to start';
-
-            const currentCount = state.roomPlayersCount[state.currentRoom] || 1;
+            popupSub.textContent = 'Need at least 2 players';
+            const count = state.roomPlayersCount[state.currentRoom] || 1;
             const stake = getStakeForRoom(state.currentRoom);
-            const prize = currentCount * stake;
-            popupPlayers.textContent = currentCount;
-            popupPrize.textContent = prize + ' Br';
-
+            popupPlayers.textContent = count;
+            popupPrize.textContent = (count * stake) + ' Br';
             popup.classList.add('active');
 
             if (state.waitingInterval) clearInterval(state.waitingInterval);
-
             state.waitingInterval = setInterval(() => {
-                const count = state.roomPlayersCount[state.currentRoom] || 1;
-                const prize = count * stake;
-                popupPlayers.textContent = count;
-                popupPrize.textContent = prize + ' Br';
-
-                if (count >= 2 && !state.countdownStarted && !state.cancelled) {
+                const c = state.roomPlayersCount[state.currentRoom] || 1;
+                popupPlayers.textContent = c;
+                popupPrize.textContent = (c * stake) + ' Br';
+                if (c >= 2 && !state.countdownStarted && !state.cancelled) {
                     clearInterval(state.waitingInterval);
                     state.waitingInterval = null;
                     startCountdown();
@@ -1548,7 +1302,6 @@
         // ================================================================
         function startCountdown() {
             if (state.cancelled) return;
-
             state.countdownStarted = true;
             const popup = document.getElementById('countdownPopup');
             const popupCount = document.getElementById('popupCountdown');
@@ -1562,28 +1315,19 @@
             popupCount.textContent = state.countdownValue;
             popupText.textContent = 'Game Starting in...';
             popupSub.textContent = 'Get ready!';
-
-            const playerCount = state.roomPlayersCount[state.currentRoom] || 2;
+            const count = state.roomPlayersCount[state.currentRoom] || 2;
             const stake = getStakeForRoom(state.currentRoom);
-            const prize = playerCount * stake;
-            popupPlayers.textContent = playerCount;
-            popupPrize.textContent = prize + ' Br';
-
+            popupPlayers.textContent = count;
+            popupPrize.textContent = (count * stake) + ' Br';
             document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue + 's...';
 
             if (state.countdownInterval) clearInterval(state.countdownInterval);
-
             state.countdownInterval = setInterval(() => {
                 state.countdownValue--;
                 popupCount.textContent = state.countdownValue;
-
                 popupCount.style.animation = 'none';
-                setTimeout(() => {
-                    popupCount.style.animation = 'pulse 0.3s ease';
-                }, 10);
-
+                setTimeout(() => popupCount.style.animation = 'pulse 0.3s ease', 10);
                 document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue + 's...';
-
                 if (state.countdownValue <= 0) {
                     clearInterval(state.countdownInterval);
                     state.countdownInterval = null;
@@ -1604,7 +1348,6 @@
             if (state.waitingInterval) clearInterval(state.waitingInterval);
             document.getElementById('countdownPopup').classList.remove('active');
             state.countdownStarted = false;
-
             if (state.currentRoom) {
                 const stake = getStakeForRoom(state.currentRoom);
                 state.playerData.balance = (state.playerData.balance || 0) + stake;
@@ -1614,7 +1357,6 @@
                 updateUIWithPlayerData();
                 state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) - 1);
             }
-
             showToast('Game cancelled - stake refunded', 'info');
             navigateTo('rooms');
         }
@@ -1625,7 +1367,6 @@
             if (state.waitingInterval) clearInterval(state.waitingInterval);
             document.getElementById('countdownPopup').classList.remove('active');
             state.countdownStarted = false;
-
             if (state.currentRoom) {
                 const stake = getStakeForRoom(state.currentRoom);
                 state.playerData.balance = (state.playerData.balance || 0) + stake;
@@ -1634,7 +1375,6 @@
                 }
                 updateUIWithPlayerData();
             }
-
             showToast('Select new cartelas', 'info');
             navigateTo('waiting');
             loadWaitingRoom(state.currentRoom);
@@ -1645,17 +1385,13 @@
         // GAME
         // ================================================================
         function loadGame(roomId) {
-            const roomName = roomId.replace('room', 'Room ');
-            document.getElementById('game-room-name').textContent = '🎲 ' + roomName;
-
+            document.getElementById('game-room-name').textContent = '🎲 ' + roomId.replace('room', 'Room ');
             state.calledNumbers = [];
             if (state.gameInterval) clearInterval(state.gameInterval);
-
             generateBingoBoards();
-
-            const playerCount = state.roomPlayersCount[roomId] || 2;
-            document.getElementById('game-players').textContent = '👥 ' + playerCount;
-            document.getElementById('game-prize').textContent = '💰 ' + (playerCount * getStakeForRoom(roomId)) + ' Br';
+            const count = state.roomPlayersCount[roomId] || 2;
+            document.getElementById('game-players').textContent = '👥 ' + count;
+            document.getElementById('game-prize').textContent = '💰 ' + (count * getStakeForRoom(roomId)) + ' Br';
 
             state.gameInterval = setInterval(() => {
                 const num = Math.floor(Math.random() * 75) + 1;
@@ -1663,11 +1399,7 @@
                     state.calledNumbers.push(num);
                     document.getElementById('called-numbers-display').textContent = state.calledNumbers.join(', ');
                     document.getElementById('current-ball').textContent = '🎱 ' + num;
-
-                    if (state.autoMark) {
-                        markNumberOnBoards(num);
-                    }
-
+                    if (state.autoMark) markNumberOnBoards(num);
                     if (state.calledNumbers.length > 15 && Math.random() < 0.03) {
                         clearInterval(state.gameInterval);
                         showBingoWinner();
@@ -1679,93 +1411,63 @@
         function generateBingoBoards() {
             const board = document.getElementById('game-board');
             board.innerHTML = '';
-
             const selected = state.selectedCartelas;
-            if (selected.length === 0) {
-                board.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No cartela selected</p>';
+            if (!selected.length) {
+                board.innerHTML = '<p style="grid-column:1/-1;text-align:center;">No cartela selected</p>';
                 return;
             }
-
-            const cartelaData = generateCartelaNumbers(selected[0]);
-
-            ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
-                const cell = document.createElement('div');
-                cell.className = 'cell header-cell';
-                cell.textContent = letter;
-                board.appendChild(cell);
-            });
-
-            cartelaData.forEach(row => {
-                row.forEach(num => {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    if (num === 0) {
-                        cell.textContent = '☆';
-                        cell.classList.add('free');
-                    } else {
-                        cell.textContent = num;
-                        cell.dataset.num = num;
-                    }
-                    board.appendChild(cell);
+            const renderCartela = (num) => {
+                const matrix = generateCartelaNumbers(num);
+                ['B','I','N','G','O'].forEach(l => {
+                    const c = document.createElement('div');
+                    c.className = 'cell header-cell';
+                    c.textContent = l;
+                    board.appendChild(c);
                 });
-            });
-
-            if (selected.length > 1) {
-                const sep = document.createElement('div');
-                sep.style.cssText = 'grid-column: 1/-1; height: 2px; background: var(--primary); margin: 8px 0;';
-                board.appendChild(sep);
-
-                ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell header-cell';
-                    cell.textContent = letter;
-                    board.appendChild(cell);
-                });
-
-                const cartelaData2 = generateCartelaNumbers(selected[1]);
-                cartelaData2.forEach(row => {
-                    row.forEach(num => {
-                        const cell = document.createElement('div');
-                        cell.className = 'cell';
-                        if (num === 0) {
-                            cell.textContent = '☆';
-                            cell.classList.add('free');
+                matrix.forEach(row => {
+                    row.forEach(n => {
+                        const c = document.createElement('div');
+                        c.className = 'cell';
+                        if (n === 0) {
+                            c.textContent = '☆';
+                            c.classList.add('free');
                         } else {
-                            cell.textContent = num;
-                            cell.dataset.num = num;
+                            c.textContent = n;
+                            c.dataset.num = n;
                         }
-                        board.appendChild(cell);
+                        board.appendChild(c);
                     });
                 });
+            };
+            renderCartela(selected[0]);
+            if (selected.length > 1) {
+                const sep = document.createElement('div');
+                sep.style.cssText = 'grid-column:1/-1;height:2px;background:var(--primary);margin:8px 0;';
+                board.appendChild(sep);
+                renderCartela(selected[1]);
             }
         }
 
-        function generateCartelaNumbers(cartelaNum) {
-            const seed = cartelaNum;
+        function generateCartelaNumbers(num) {
+            const seed = num;
             const matrix = [];
-            for (let row = 0; row < 5; row++) {
-                const rowData = [];
-                for (let col = 0; col < 5; col++) {
-                    if (row === 2 && col === 2) {
-                        rowData.push(0);
-                    } else {
-                        const min = col * 15 + 1;
-                        const max = (col + 1) * 15;
-                        const value = ((seed * 7 + row * 13 + col * 17 + seed * 3) % (max - min)) + min;
-                        rowData.push(value);
-                    }
+            for (let r = 0; r < 5; r++) {
+                const row = [];
+                for (let c = 0; c < 5; c++) {
+                    if (r === 2 && c === 2) { row.push(0); continue; }
+                    const min = c * 15 + 1;
+                    const max = (c + 1) * 15;
+                    const v = ((seed * 7 + r * 13 + c * 17 + seed * 3) % (max - min)) + min;
+                    row.push(v);
                 }
-                matrix.push(rowData);
+                matrix.push(row);
             }
             return matrix;
         }
 
         function markNumberOnBoards(num) {
-            const cells = document.querySelectorAll('#game-board .cell:not(.header-cell):not(.free)');
-            cells.forEach(cell => {
-                if (parseInt(cell.dataset.num) === num) {
-                    cell.classList.add('marked');
-                }
+            document.querySelectorAll('#game-board .cell:not(.header-cell):not(.free)').forEach(cell => {
+                if (parseInt(cell.dataset.num) === num) cell.classList.add('marked');
             });
         }
 
@@ -1774,51 +1476,36 @@
         // ================================================================
         function checkBingo() {
             const cells = document.querySelectorAll('#game-board .cell:not(.header-cell)');
-            const marked = Array.from(cells).map(cell =>
-                cell.classList.contains('marked') || cell.classList.contains('free')
-            );
-
+            const marked = Array.from(cells).map(c => c.classList.contains('marked') || c.classList.contains('free'));
+            // Check rows (10 rows)
             for (let r = 0; r < 10; r++) {
-                let allMarked = true;
+                let all = true;
                 for (let c = 0; c < 5; c++) {
                     const idx = r * 5 + c;
-                    if (idx < marked.length && !marked[idx]) { allMarked = false; break; }
+                    if (idx < marked.length && !marked[idx]) { all = false; break; }
                 }
-                if (allMarked && r * 5 + 4 < marked.length) {
-                    showBingoWinner();
-                    return;
-                }
+                if (all && r * 5 + 4 < marked.length) { showBingoWinner(); return; }
             }
-
-            for (let cartela = 0; cartela < 2; cartela++) {
-                const offset = cartela * 25;
+            // Check columns for each cartela
+            for (let cart = 0; cart < 2; cart++) {
+                const off = cart * 25;
                 for (let c = 0; c < 5; c++) {
-                    let allMarked = true;
+                    let all = true;
                     for (let r = 0; r < 5; r++) {
-                        const idx = offset + r * 5 + c;
-                        if (idx < marked.length && !marked[idx]) { allMarked = false; break; }
+                        const idx = off + r * 5 + c;
+                        if (idx < marked.length && !marked[idx]) { all = false; break; }
                     }
-                    if (allMarked && offset + 24 < marked.length) {
-                        showBingoWinner();
-                        return;
-                    }
+                    if (all && off + 24 < marked.length) { showBingoWinner(); return; }
                 }
             }
-
-            showToast('No BINGO yet! Keep playing.', 'info');
+            showToast('No BINGO yet.', 'info');
         }
         window.checkBingo = checkBingo;
 
-        // ================================================================
-        // AUTO MARK
-        // ================================================================
         function toggleAutoMark() {
             state.autoMark = !state.autoMark;
             document.getElementById('auto-mark-text').textContent = state.autoMark ? '⏹️ Stop Mark' : '🔘 Auto Mark';
-
-            if (state.autoMark) {
-                state.calledNumbers.forEach(num => markNumberOnBoards(num));
-            }
+            if (state.autoMark) state.calledNumbers.forEach(n => markNumberOnBoards(n));
         }
         window.toggleAutoMark = toggleAutoMark;
 
@@ -1826,18 +1513,12 @@
         // WINNER
         // ================================================================
         function showBingoWinner() {
-            if (state.gameInterval) {
-                clearInterval(state.gameInterval);
-                state.gameInterval = null;
-            }
-
+            if (state.gameInterval) clearInterval(state.gameInterval);
             navigateTo('winner');
             document.getElementById('winner-name').textContent = state.playerData?.playerName || 'Player';
-
-            const playerCount = state.roomPlayersCount[state.currentRoom] || 2;
-            const prize = playerCount * getStakeForRoom(state.currentRoom);
+            const count = state.roomPlayersCount[state.currentRoom] || 2;
+            const prize = count * getStakeForRoom(state.currentRoom);
             document.getElementById('winner-prize').textContent = '💰 ' + prize + ' Br';
-
             state.playerData.gamesPlayed = (state.playerData.gamesPlayed || 0) + 1;
             state.playerData.gamesWon = (state.playerData.gamesWon || 0) + 1;
             state.playerData.totalWinnings = (state.playerData.totalWinnings || 0) + prize;
@@ -1868,11 +1549,9 @@
             state.cancelled = false;
             state.cartelaTaken = {};
             document.getElementById('auto-mark-text').textContent = '🔘 Auto Mark';
-
             if (state.currentRoom) {
                 state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) - 1);
             }
-
             navigateTo('rooms');
             showToast('🔄 Room reset!', 'success');
         }
@@ -1882,76 +1561,45 @@
         // LEADERBOARD
         // ================================================================
         let leaderboardFilter = 'all';
-
         function filterLeaderboard(filter) {
             leaderboardFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent === filter);
-            });
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.textContent === filter));
             loadLeaderboard();
         }
         window.filterLeaderboard = filterLeaderboard;
 
         function loadLeaderboard() {
             const container = document.getElementById('leaderboard-list');
-            if (state.db) {
-                state.db.ref('players').once('value').then(snapshot => {
-                    const players = [];
-                    snapshot.forEach(child => {
-                        const data = child.val();
-                        if (data && data.playerName) {
-                            players.push(data);
-                        }
-                    });
-                    displayLeaderboard(players, container);
-                }).catch(() => {
-                    displayLeaderboard([], container);
+            if (!state.db) { container.innerHTML = '<p>Not connected</p>'; return; }
+            state.db.ref('players').once('value').then(snap => {
+                const players = [];
+                snap.forEach(child => {
+                    const d = child.val();
+                    if (d && d.playerName) players.push(d);
                 });
-            } else {
-                displayLeaderboard([], container);
-            }
-        }
-
-        function displayLeaderboard(players, container) {
-            players.sort((a, b) => (b.totalWinnings || 0) - (a.totalWinnings || 0));
-
-            container.innerHTML = '';
-            if (players.length === 0) {
-                container.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">No players yet</p>';
-                return;
-            }
-
-            players.slice(0, 50).forEach((player, index) => {
-                const item = document.createElement('div');
-                item.className = 'leaderboard-item';
-                const rank = index + 1;
-                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-                item.innerHTML = `
-                    <span class="rank">${medal}</span>
-                    <span class="player">${player.playerName || 'Unknown'}</span>
-                    <span class="wins">${player.gamesWon || 0}</span>
-                    <span class="earnings">${player.totalWinnings || 0} Br</span>
-                `;
-                container.appendChild(item);
-            });
+                players.sort((a,b) => (b.totalWinnings||0) - (a.totalWinnings||0));
+                container.innerHTML = '';
+                if (!players.length) { container.innerHTML = '<p style="text-align:center;padding:20px;color:#999;">No players yet</p>'; return; }
+                players.slice(0,50).forEach((p,i) => {
+                    const div = document.createElement('div');
+                    div.className = 'leaderboard-item';
+                    const rank = i+1;
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                    div.innerHTML = `<span class="rank">${medal}</span><span class="player">${p.playerName||'Unknown'}</span><span class="wins">${p.gamesWon||0}</span><span class="earnings">${p.totalWinnings||0} Br</span>`;
+                    container.appendChild(div);
+                });
+            }).catch(() => container.innerHTML = '<p>Error loading</p>');
         }
 
         // ================================================================
         // ROOM STATUS
         // ================================================================
         function listenToRoomStatus() {
-            const rooms = ['room1', 'room2', 'room3'];
-            rooms.forEach(roomId => {
-                const playersEl = document.getElementById(roomId + '-players');
-                const statusEl = document.getElementById(roomId + '-status');
-                if (playersEl) {
-                    const count = state.roomPlayersCount[roomId] || 0;
-                    playersEl.textContent = '👥 ' + count + '/150';
-                }
-                if (statusEl) {
-                    statusEl.textContent = '🟢 Waiting';
-                    statusEl.style.color = '#4CAF50';
-                }
+            ['room1','room2','room3'].forEach(id => {
+                const p = document.getElementById(id + '-players');
+                const s = document.getElementById(id + '-status');
+                if (p) p.textContent = '👥 ' + (state.roomPlayersCount[id] || 0) + '/150';
+                if (s) { s.textContent = '🟢 Waiting'; s.style.color = '#4CAF50'; }
             });
         }
 
@@ -1959,29 +1607,22 @@
         // INIT
         // ================================================================
         async function init() {
-            const firebaseLoaded = initFirebase();
-            if (firebaseLoaded) {
-                await initAuth();
+            const fbOk = initFirebase();
+            if (fbOk) {
+                await initAuth(); // This sets playerId and loads data
             }
             loadLeaderboard();
             listenToRoomStatus();
-
-            setInterval(() => {
-                listenToRoomStatus();
-            }, 5000);
-
-            console.log('🎯 ZA Bingo V3 loaded!');
-            console.log('Player ID:', state.playerId);
-            console.log('Firebase:', firebaseLoaded ? '✅ Connected' : '❌ Not connected');
+            setInterval(listenToRoomStatus, 5000);
+            console.log('🎯 ZA Bingo V3 loaded. Player:', state.playerId);
         }
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
 
-    <!-- Firebase CDN Scripts -->
+    <!-- Firebase CDN -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
 </body>
 </html>
