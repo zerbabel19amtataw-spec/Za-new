@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ZA Bingo V3</title>
     <style>
+        /* ===== ALL STYLES (unchanged) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -888,34 +889,35 @@
         }
 
         // ================================================================
-        // AUTH – COMPLETE SETUP
+        // AUTH – FIXED: uses UID as stable player ID
         // ================================================================
         async function initAuth() {
             if (!state.db) return null;
 
             try {
-                // 1. Sign in anonymously (or use existing)
+                // 1. Sign in anonymously (or reuse existing)
                 let user = auth.currentUser;
                 if (!user) {
                     const result = await auth.signInAnonymously();
                     user = result.user;
                 }
-                console.log('Auth UID:', user.uid);
+                const uid = user.uid;
+                console.log('Auth UID:', uid);
 
-                // 2. Try to get playerId from telegram_lookup
+                // 2. Try to get playerId from telegram_lookup (if Telegram user exists)
                 let playerId = null;
                 if (telegramUser && telegramUser.id) {
                     const snap = await state.db.ref('telegram_lookup/' + telegramUser.id).once('value');
                     playerId = snap.val();
                 }
 
-                // 3. If no telegram lookup, use UID as playerId
+                // 3. If no telegram lookup, use the UID as playerId
                 if (!playerId) {
-                    playerId = user.uid;
+                    playerId = uid;
                     // Check if this player exists
                     const check = await state.db.ref('players/' + playerId).once('value');
                     if (!check.exists()) {
-                        // Create new player
+                        // Create new player with default values
                         const newPlayer = {
                             playerName: telegramUser?.first_name || 'Player',
                             username: telegramUser?.username || '',
@@ -928,7 +930,7 @@
                             createdAt: Date.now()
                         };
                         await state.db.ref('players/' + playerId).set(newPlayer);
-                        // If telegram user exists, create lookup
+                        // If we have a Telegram ID, create the lookup for future use
                         if (telegramUser && telegramUser.id) {
                             await state.db.ref('telegram_lookup/' + telegramUser.id).set(playerId);
                         }
