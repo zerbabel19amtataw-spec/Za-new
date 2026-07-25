@@ -1243,7 +1243,7 @@
         }
 
         // ================================================================
-        // 5. AUTH
+        // 5. AUTH - USING TELEGRAM LOOKUP
         // ================================================================
         async function initAuth() {
             if (!state.db) {
@@ -1253,11 +1253,58 @@
             }
 
             try {
+                // Try to authenticate with Telegram user ID
+                if (telegramUser && telegramUser.id) {
+                    console.log('Telegram user ID:', telegramUser.id);
+                    
+                    // Check telegram_lookup for this user
+                    const lookupRef = state.db.ref('telegram_lookup/' + telegramUser.id);
+                    const lookupSnapshot = await lookupRef.once('value');
+                    const playerId = lookupSnapshot.val();
+                    
+                    if (playerId) {
+                        // User exists - load player data
+                        state.playerId = playerId;
+                        console.log('Found player ID from telegram_lookup:', playerId);
+                        await loadPlayerData();
+                        return state.playerId;
+                    } else {
+                        // User not registered - create new player
+                        console.log('No player found for telegram ID, creating new player...');
+                        const newPlayer = {
+                            playerName: telegramUser.first_name || 'Player',
+                            username: telegramUser.username || '',
+                            phoneNumber: '',
+                            telegramId: telegramUser.id,
+                            balance: 0,
+                            gamesPlayed: 0,
+                            gamesWon: 0,
+                            totalWinnings: 0,
+                            createdAt: Date.now()
+                        };
+                        
+                        // Push new player
+                        const playerRef = state.db.ref('players').push();
+                        state.playerId = playerRef.key;
+                        await playerRef.set(newPlayer);
+                        
+                        // Create telegram lookup
+                        await state.db.ref('telegram_lookup/' + telegramUser.id).set(state.playerId);
+                        
+                        state.playerData = newPlayer;
+                        updateUIWithPlayerData();
+                        console.log('✅ New player created with ID:', state.playerId);
+                        return state.playerId;
+                    }
+                }
+                
+                // Fallback: anonymous auth
                 const result = await auth.signInAnonymously();
                 state.playerId = result.user.uid;
-                console.log('Authenticated with UID:', state.playerId);
+                console.log('Authenticated anonymously with UID:', state.playerId);
                 await loadPlayerData();
                 return state.playerId;
+                
             } catch (error) {
                 console.error('Auth error:', error);
                 state.playerId = 'local_' + Date.now();
@@ -1277,24 +1324,9 @@
                 if (snapshot.exists()) {
                     state.playerData = snapshot.val();
                     updateUIWithPlayerData();
+                    console.log('✅ Player data loaded:', state.playerData.playerName);
                 } else {
-                    const newPlayer = {
-                        playerName: telegramUser?.first_name || 'Player',
-                        username: telegramUser?.username || '',
-                        phoneNumber: '',
-                        balance: 0,
-                        gamesPlayed: 0,
-                        gamesWon: 0,
-                        totalWinnings: 0,
-                        createdAt: Date.now()
-                    };
-                    await state.db.ref('players/' + state.playerId).set(newPlayer);
-                    state.playerData = newPlayer;
-                    updateUIWithPlayerData();
-
-                    if (telegramUser?.id) {
-                        await state.db.ref('telegram_lookup/' + telegramUser.id).set(state.playerId);
-                    }
+                    console.warn('Player not found in database');
                 }
             } catch (error) {
                 console.error('Error loading player data:', error);
@@ -1311,6 +1343,7 @@
                     playerName: telegramUser?.first_name || 'Player',
                     username: telegramUser?.username || '',
                     phoneNumber: '',
+                    telegramId: telegramUser?.id || '',
                     balance: 100,
                     gamesPlayed: 0,
                     gamesWon: 0,
@@ -1329,7 +1362,7 @@
             document.getElementById('balance-amount').textContent = balance + ' Br';
             document.getElementById('profile-balance').textContent = balance + ' Br';
             document.getElementById('player-name').textContent = state.playerData.playerName || '-';
-            document.getElementById('telegram-id').textContent = telegramUser?.id || '-';
+            document.getElementById('telegram-id').textContent = state.playerData.telegramId || telegramUser?.id || '-';
             document.getElementById('username').textContent = state.playerData.username || '-';
             document.getElementById('phone-number').textContent = state.playerData.phoneNumber || '-';
             document.getElementById('games-played').textContent = state.playerData.gamesPlayed || 0;
@@ -1404,7 +1437,7 @@
                 return;
             }
 
-            if (state.db) {
+            if (state.db && state.playerId) {
                 try {
                     await state.db.ref('deposits').push({
                         playerId: state.playerId,
@@ -1464,7 +1497,7 @@
                 return;
             }
 
-            if (state.db) {
+            if (state.db && state.playerId) {
                 try {
                     await state.db.ref('withdrawals').push({
                         playerId: state.playerId,
