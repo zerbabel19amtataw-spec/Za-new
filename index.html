@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ZA Bingo V3</title>
     <style>
-        /* ===== RESET AND BASE ===== */
         * {
             margin: 0;
             padding: 0;
@@ -43,7 +42,6 @@
             position: relative;
         }
 
-        /* ===== SCREENS ===== */
         .screen {
             display: none;
             width: 100%;
@@ -61,7 +59,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== HEADERS ===== */
         .header {
             display: flex;
             justify-content: space-between;
@@ -143,7 +140,6 @@
             color: var(--dark);
         }
 
-        /* ===== BUTTONS ===== */
         .btn {
             padding: 14px 24px;
             border: none;
@@ -218,7 +214,6 @@
             transform: none !important;
         }
 
-        /* ===== HOME SCREEN ===== */
         .home-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -243,7 +238,6 @@
             font-size: 12px;
         }
 
-        /* ===== DEPOSIT & WITHDRAW ===== */
         .payment-methods {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -263,12 +257,6 @@
             align-items: center;
             gap: 8px;
             font-weight: 500;
-        }
-
-        .method-btn img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
         }
 
         .method-btn.active {
@@ -338,7 +326,6 @@
             color: #C62828;
         }
 
-        /* ===== PROFILE ===== */
         .profile-avatar {
             display: flex;
             justify-content: center;
@@ -385,7 +372,6 @@
             margin-top: 4px;
         }
 
-        /* ===== LEADERBOARD ===== */
         .leaderboard-filters {
             display: flex;
             gap: 8px;
@@ -444,7 +430,6 @@
             text-align: right;
         }
 
-        /* ===== ROOMS ===== */
         .rooms-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -486,11 +471,6 @@
         .room-status {
             font-size: 13px;
             margin-bottom: 12px;
-        }
-
-        /* ===== WAITING ROOM ===== */
-        .waiting-details {
-            display: none;
         }
 
         .cartela-grid {
@@ -552,7 +532,6 @@
             font-size: 14px;
         }
 
-        /* ===== GAME SCREEN ===== */
         .game-stats {
             display: flex;
             gap: 16px;
@@ -633,7 +612,6 @@
             max-width: 400px;
         }
 
-        /* ===== WINNER SCREEN ===== */
         .winner-content {
             display: flex;
             flex-direction: column;
@@ -649,7 +627,8 @@
         }
 
         @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
+            0%,
+            100% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
         }
 
@@ -673,35 +652,28 @@
             margin: 16px 0;
         }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .home-buttons {
                 grid-template-columns: 1fr 1fr;
             }
-            
             .home-buttons .btn {
                 height: 80px;
                 padding: 12px;
             }
-            
             .profile-info {
                 grid-template-columns: 1fr;
             }
-            
             .leaderboard-item {
                 grid-template-columns: 30px 1fr 50px 70px;
                 font-size: 13px;
             }
-            
             .game-board .cell {
                 font-size: 12px;
             }
-
             .cartela-grid {
                 grid-template-columns: repeat(8, 1fr);
                 gap: 3px;
             }
-
             .cartela-btn {
                 font-size: 10px;
                 padding: 4px 2px;
@@ -715,7 +687,6 @@
             }
         }
 
-        /* ===== TOASTS ===== */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -728,7 +699,7 @@
             z-index: 1000;
             max-width: 90%;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             animation: slideUp 0.3s ease;
         }
 
@@ -742,29 +713,25 @@
             to { transform: translateX(-50%) translateY(20px); opacity: 0; }
         }
 
-        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
             width: 4px;
         }
-
         ::-webkit-scrollbar-track {
             background: var(--light);
             border-radius: 4px;
         }
-
         ::-webkit-scrollbar-thumb {
             background: var(--primary);
             border-radius: 4px;
         }
 
-        /* ===== COUNTDOWN POPUP ===== */
         .countdown-popup {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0, 0, 0, 0.85);
             display: none;
             justify-content: center;
             align-items: center;
@@ -863,7 +830,7 @@
         <!-- SCREEN CONTAINER -->
         <div id="screen-container">
 
-            <!-- ===== HOME SCREEN ===== -->
+            <!-- HOME SCREEN -->
             <div id="home-screen" class="screen active">
                 <div class="header">
                     <div class="logo-container">
@@ -897,7 +864,7 @@
                 </div>
             </div>
 
-            <!-- ===== DEPOSIT SCREEN ===== -->
+            <!-- DEPOSIT SCREEN -->
             <div id="deposit-screen" class="screen">
                 <div class="screen-header">
                     <button class="back-btn" onclick="navigateTo('home')">←</button>
@@ -930,7 +897,7 @@
                 </div>
             </div>
 
-            <!-- ===== WITHDRAW SCREEN ===== -->
+            <!-- WITHDRAW SCREEN -->
             <div id="withdraw-screen" class="screen">
                 <div class="screen-header">
                     <button class="back-btn" onclick="navigateTo('home')">←</button>
@@ -958,7 +925,7 @@
                 </div>
             </div>
 
-            <!-- ===== PROFILE SCREEN ===== -->
+            <!-- PROFILE SCREEN -->
             <div id="profile-screen" class="screen">
                 <div class="screen-header">
                     <button class="back-btn" onclick="navigateTo('home')">←</button>
@@ -1009,7 +976,7 @@
                 </div>
             </div>
 
-            <!-- ===== LEADERBOARD SCREEN ===== -->
+            <!-- LEADERBOARD SCREEN -->
             <div id="leaderboard-screen" class="screen">
                 <div class="screen-header">
                     <button class="back-btn" onclick="navigateTo('home')">←</button>
@@ -1032,7 +999,7 @@
                 </div>
             </div>
 
-            <!-- ===== ROOMS SCREEN ===== -->
+            <!-- ROOMS SCREEN -->
             <div id="rooms-screen" class="screen">
                 <div class="screen-header">
                     <button class="back-btn" onclick="navigateTo('home')">←</button>
@@ -1065,7 +1032,7 @@
                 </div>
             </div>
 
-            <!-- ===== WAITING ROOM SCREEN ===== -->
+            <!-- WAITING ROOM SCREEN -->
             <div id="waiting-screen" class="screen">
                 <div class="screen-header">
                     <button class="back-btn" onclick="leaveRoom()">←</button>
@@ -1086,7 +1053,7 @@
                 </div>
             </div>
 
-            <!-- ===== GAME SCREEN ===== -->
+            <!-- GAME SCREEN -->
             <div id="game-screen" class="screen">
                 <div class="screen-header">
                     <h2 id="game-room-name">🎲 Room 1</h2>
@@ -1116,7 +1083,7 @@
                 </div>
             </div>
 
-            <!-- ===== WINNER SCREEN ===== -->
+            <!-- WINNER SCREEN -->
             <div id="winner-screen" class="screen">
                 <div class="screen-content winner-content">
                     <div class="winner-celebration">🎉🏆🎉</div>
@@ -1131,7 +1098,7 @@
         </div>
     </div>
 
-    <!-- ===== COUNTDOWN POPUP ===== -->
+    <!-- COUNTDOWN POPUP -->
     <div class="countdown-popup" id="countdownPopup">
         <div class="countdown-popup-content">
             <div class="big-number waiting" id="popupCountdown">⏳</div>
@@ -1154,9 +1121,6 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- ======================== JAVASCRIPT ======================== -->
-    <!-- ============================================================ -->
     <script>
         // ================================================================
         // 1. FIREBASE CONFIG
@@ -1180,23 +1144,19 @@
             currentRoom: null,
             playerId: null,
             playerData: null,
-            cartelas: [],
             selectedCartelas: [],
             calledNumbers: [],
-            markedNumbers: [],
             autoMark: false,
             gameInterval: null,
             countdownInterval: null,
-            isGameActive: false,
-            autoMarkInterval: null,
             db: null,
             auth: null,
-            roomPlayers: [],
             countdownStarted: false,
             cartelaTaken: {},
             countdownValue: 25,
             cancelled: false,
-            waitingInterval: null
+            waitingInterval: null,
+            roomPlayersCount: { room1: 0, room2: 0, room3: 0 }
         };
 
         // ================================================================
@@ -1243,7 +1203,7 @@
         }
 
         // ================================================================
-        // 5. AUTH - USING TELEGRAM LOOKUP ONLY
+        // 5. AUTH - TELEGRAM LOOKUP FIRST, THEN ANONYMOUS FALLBACK
         // ================================================================
         async function initAuth() {
             if (!state.db) {
@@ -1252,22 +1212,20 @@
             }
 
             try {
+                // 1. Try Telegram user
                 if (telegramUser && telegramUser.id) {
                     console.log('Telegram user ID:', telegramUser.id);
-                    
-                    // Check telegram_lookup for this user
                     const lookupRef = state.db.ref('telegram_lookup/' + telegramUser.id);
                     const lookupSnapshot = await lookupRef.once('value');
                     const playerId = lookupSnapshot.val();
-                    
+
                     if (playerId) {
-                        // User exists - load player data
                         state.playerId = playerId;
                         console.log('Found player ID from telegram_lookup:', playerId);
                         await loadPlayerData();
                         return state.playerId;
                     } else {
-                        // User not registered - create new player
+                        // Create new player for Telegram user
                         console.log('No player found for telegram ID, creating new player...');
                         const newPlayer = {
                             playerName: telegramUser.first_name || 'Player',
@@ -1280,35 +1238,58 @@
                             totalWinnings: 0,
                             createdAt: Date.now()
                         };
-                        
-                        // Push new player
                         const playerRef = state.db.ref('players').push();
                         state.playerId = playerRef.key;
                         await playerRef.set(newPlayer);
-                        
-                        // Create telegram lookup
                         await state.db.ref('telegram_lookup/' + telegramUser.id).set(state.playerId);
-                        
                         state.playerData = newPlayer;
                         updateUIWithPlayerData();
                         console.log('✅ New player created with ID:', state.playerId);
                         return state.playerId;
                     }
                 }
-                
-                // No Telegram user - error
-                showToast('❌ No Telegram user found. Please open from Telegram.', 'error');
-                return null;
-                
+
+                // 2. Fallback to anonymous auth (no Telegram)
+                console.log('No Telegram user, using anonymous auth fallback...');
+                const result = await auth.signInAnonymously();
+                state.playerId = result.user.uid;
+                console.log('Anonymous auth UID:', state.playerId);
+
+                // Try to load existing player data for this UID
+                const playerSnap = await state.db.ref('players/' + state.playerId).once('value');
+                if (playerSnap.exists()) {
+                    state.playerData = playerSnap.val();
+                    updateUIWithPlayerData();
+                    console.log('✅ Existing player loaded for anonymous UID');
+                } else {
+                    // Create new player for anonymous
+                    const newPlayer = {
+                        playerName: 'Player',
+                        username: '',
+                        phoneNumber: '',
+                        telegramId: null,
+                        balance: 0,
+                        gamesPlayed: 0,
+                        gamesWon: 0,
+                        totalWinnings: 0,
+                        createdAt: Date.now()
+                    };
+                    await state.db.ref('players/' + state.playerId).set(newPlayer);
+                    state.playerData = newPlayer;
+                    updateUIWithPlayerData();
+                    console.log('✅ New anonymous player created');
+                }
+                return state.playerId;
+
             } catch (error) {
                 console.error('Auth error:', error);
-                showToast('❌ Authentication failed. Please restart.', 'error');
+                showToast('❌ Authentication failed. Please refresh.', 'error');
                 return null;
             }
         }
 
         // ================================================================
-        // 6. PLAYER DATA - NO FALLBACK
+        // 6. PLAYER DATA - READS FROM FIREBASE ONLY
         // ================================================================
         async function loadPlayerData() {
             if (!state.playerId || !state.db) return;
@@ -1318,7 +1299,7 @@
                 if (snapshot.exists()) {
                     state.playerData = snapshot.val();
                     updateUIWithPlayerData();
-                    console.log('✅ Player data loaded:', state.playerData.playerName);
+                    console.log('✅ Player data loaded from Firebase:', state.playerData);
                 } else {
                     console.error('Player not found in database');
                     showToast('❌ Player data not found. Please restart.', 'error');
@@ -1329,8 +1310,14 @@
             }
         }
 
+        // ================================================================
+        // 7. UPDATE UI - DISPLAYS FIREBASE DATA
+        // ================================================================
         function updateUIWithPlayerData() {
-            if (!state.playerData) return;
+            if (!state.playerData) {
+                console.warn('No player data to display');
+                return;
+            }
 
             const balance = state.playerData.balance || 0;
             document.getElementById('balance-amount').textContent = balance + ' Br';
@@ -1342,15 +1329,17 @@
             document.getElementById('games-played').textContent = state.playerData.gamesPlayed || 0;
             document.getElementById('games-won').textContent = state.playerData.gamesWon || 0;
 
-            const winRate = state.playerData.gamesPlayed > 0
-                ? Math.round((state.playerData.gamesWon / state.playerData.gamesPlayed) * 100)
-                : 0;
+            const winRate = state.playerData.gamesPlayed > 0 ?
+                Math.round((state.playerData.gamesWon / state.playerData.gamesPlayed) * 100) :
+                0;
             document.getElementById('win-rate').textContent = winRate + '%';
             document.getElementById('total-winnings').textContent = (state.playerData.totalWinnings || 0) + ' Br';
+
+            console.log('✅ UI updated with player data');
         }
 
         // ================================================================
-        // 7. NAVIGATION
+        // 8. NAVIGATION
         // ================================================================
         function navigateTo(screen) {
             const screens = document.querySelectorAll('.screen');
@@ -1368,7 +1357,7 @@
         window.navigateTo = navigateTo;
 
         // ================================================================
-        // 8. DEPOSIT
+        // 9. DEPOSIT
         // ================================================================
         let selectedMethod = 'telebirr';
 
@@ -1436,7 +1425,7 @@
         window.submitDeposit = submitDeposit;
 
         // ================================================================
-        // 9. WITHDRAW
+        // 10. WITHDRAW
         // ================================================================
         let withdrawMethod = 'telebirr';
 
@@ -1490,7 +1479,7 @@
         window.submitWithdraw = submitWithdraw;
 
         // ================================================================
-        // 10. UTILITY
+        // 11. UTILITY
         // ================================================================
         function showStatus(elementId, message, type) {
             const el = document.getElementById(elementId);
@@ -1519,18 +1508,20 @@
         }
 
         // ================================================================
-        // 11. ROOMS
+        // 12. ROOMS
         // ================================================================
         function getStakeForRoom(roomId) {
             switch (roomId) {
-                case 'room1': return 5;
-                case 'room2': return 10;
-                case 'room3': return 20;
-                default: return 5;
+                case 'room1':
+                    return 5;
+                case 'room2':
+                    return 10;
+                case 'room3':
+                    return 20;
+                default:
+                    return 5;
             }
         }
-
-        let roomPlayersCount = { room1: 0, room2: 0, room3: 0 };
 
         async function joinRoom(roomId) {
             if (!state.playerId) {
@@ -1557,8 +1548,7 @@
             }
             updateUIWithPlayerData();
 
-            roomPlayersCount[roomId] = (roomPlayersCount[roomId] || 0) + 1;
-            state.roomPlayers = [state.playerId];
+            state.roomPlayersCount[roomId] = (state.roomPlayersCount[roomId] || 0) + 1;
             state.countdownStarted = false;
             state.cancelled = false;
             state.cartelaTaken = {};
@@ -1570,7 +1560,7 @@
 
         function leaveRoom() {
             if (state.currentRoom) {
-                roomPlayersCount[state.currentRoom] = Math.max(0, (roomPlayersCount[state.currentRoom] || 0) - 1);
+                state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) - 1);
             }
             if (state.countdownInterval) {
                 clearInterval(state.countdownInterval);
@@ -1588,7 +1578,7 @@
         window.leaveRoom = leaveRoom;
 
         // ================================================================
-        // 12. WAITING ROOM
+        // 13. WAITING ROOM
         // ================================================================
         function loadWaitingRoom(roomId) {
             const roomName = roomId.replace('room', 'Room ');
@@ -1646,7 +1636,7 @@
         }
 
         // ================================================================
-        // 13. CONFIRM CARTELAS -> SHOW POPUP (waiting)
+        // 14. CONFIRM CARTELAS -> SHOW POPUP (waiting)
         // ================================================================
         function confirmCartelas() {
             if (state.selectedCartelas.length === 0) {
@@ -1678,7 +1668,7 @@
         window.confirmCartelas = confirmCartelas;
 
         // ================================================================
-        // 14. SHOW WAITING POPUP
+        // 15. SHOW WAITING POPUP
         // ================================================================
         function showWaitingPopup() {
             const popup = document.getElementById('countdownPopup');
@@ -1695,7 +1685,7 @@
             popupSub.textContent = 'Need at least 2 players to start';
 
             // Update player count and prize
-            const currentCount = roomPlayersCount[state.currentRoom] || 1;
+            const currentCount = state.roomPlayersCount[state.currentRoom] || 1;
             const stake = getStakeForRoom(state.currentRoom);
             const prize = currentCount * stake;
             popupPlayers.textContent = currentCount;
@@ -1712,7 +1702,7 @@
 
             // Start checking for player count changes
             state.waitingInterval = setInterval(() => {
-                const count = roomPlayersCount[state.currentRoom] || 1;
+                const count = state.roomPlayersCount[state.currentRoom] || 1;
                 const prize = count * stake;
                 popupPlayers.textContent = count;
                 popupPrize.textContent = prize + ' Br';
@@ -1727,7 +1717,7 @@
         }
 
         // ================================================================
-        // 15. COUNTDOWN
+        // 16. COUNTDOWN
         // ================================================================
         function startCountdown() {
             if (state.cancelled) return;
@@ -1747,7 +1737,7 @@
             popupText.textContent = 'Game Starting in...';
             popupSub.textContent = 'Get ready!';
 
-            const playerCount = roomPlayersCount[state.currentRoom] || 2;
+            const playerCount = state.roomPlayersCount[state.currentRoom] || 2;
             const stake = getStakeForRoom(state.currentRoom);
             const prize = playerCount * stake;
             popupPlayers.textContent = playerCount;
@@ -1770,7 +1760,8 @@
                     popupCount.style.animation = 'pulse 0.3s ease';
                 }, 10);
 
-                document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue + 's...';
+                document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue +
+                's...';
 
                 if (state.countdownValue <= 0) {
                     clearInterval(state.countdownInterval);
@@ -1784,7 +1775,7 @@
         }
 
         // ================================================================
-        // 16. CANCEL / CHANGE
+        // 17. CANCEL / CHANGE
         // ================================================================
         function cancelGame() {
             state.cancelled = true;
@@ -1807,7 +1798,8 @@
                     state.db.ref('players/' + state.playerId + '/balance').set(state.playerData.balance);
                 }
                 updateUIWithPlayerData();
-                roomPlayersCount[state.currentRoom] = Math.max(0, (roomPlayersCount[state.currentRoom] || 0) - 1);
+                state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) -
+                    1);
             }
 
             showToast('Game cancelled - stake refunded', 'info');
@@ -1844,7 +1836,7 @@
         window.changeCartelas = changeCartelas;
 
         // ================================================================
-        // 17. GAME
+        // 18. GAME
         // ================================================================
         function loadGame(roomId) {
             const roomName = roomId.replace('room', 'Room ');
@@ -1855,7 +1847,7 @@
 
             generateBingoBoards();
 
-            const playerCount = roomPlayersCount[roomId] || 2;
+            const playerCount = state.roomPlayersCount[roomId] || 2;
             document.getElementById('game-players').textContent = '👥 ' + playerCount;
             document.getElementById('game-prize').textContent = '💰 ' + (playerCount * getStakeForRoom(roomId)) + ' Br';
 
@@ -1889,7 +1881,7 @@
             }
 
             const cartelaData = generateCartelaNumbers(selected[0]);
-            
+
             ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
                 const cell = document.createElement('div');
                 cell.className = 'cell header-cell';
@@ -1972,7 +1964,7 @@
         }
 
         // ================================================================
-        // 18. BINGO CHECK
+        // 19. BINGO CHECK
         // ================================================================
         function checkBingo() {
             const cells = document.querySelectorAll('#game-board .cell:not(.header-cell)');
@@ -2012,7 +2004,7 @@
         window.checkBingo = checkBingo;
 
         // ================================================================
-        // 19. AUTO MARK
+        // 20. AUTO MARK
         // ================================================================
         function toggleAutoMark() {
             state.autoMark = !state.autoMark;
@@ -2025,7 +2017,7 @@
         window.toggleAutoMark = toggleAutoMark;
 
         // ================================================================
-        // 20. WINNER
+        // 21. WINNER
         // ================================================================
         function showBingoWinner() {
             if (state.gameInterval) {
@@ -2035,8 +2027,8 @@
 
             navigateTo('winner');
             document.getElementById('winner-name').textContent = state.playerData?.playerName || 'Player';
-            
-            const playerCount = roomPlayersCount[state.currentRoom] || 2;
+
+            const playerCount = state.roomPlayersCount[state.currentRoom] || 2;
             const prize = playerCount * getStakeForRoom(state.currentRoom);
             document.getElementById('winner-prize').textContent = '💰 ' + prize + ' Br';
 
@@ -2056,7 +2048,7 @@
         }
 
         // ================================================================
-        // 21. RESET ROOM
+        // 22. RESET ROOM
         // ================================================================
         function resetRoom() {
             if (state.gameInterval) {
@@ -2079,18 +2071,19 @@
             state.cancelled = false;
             state.cartelaTaken = {};
             document.getElementById('auto-mark-text').textContent = '🔘 Auto Mark';
-            
+
             if (state.currentRoom) {
-                roomPlayersCount[state.currentRoom] = Math.max(0, (roomPlayersCount[state.currentRoom] || 0) - 1);
+                state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) -
+                    1);
             }
-            
+
             navigateTo('rooms');
             showToast('🔄 Room reset!', 'success');
         }
         window.resetRoom = resetRoom;
 
         // ================================================================
-        // 22. LEADERBOARD
+        // 23. LEADERBOARD
         // ================================================================
         let leaderboardFilter = 'all';
 
@@ -2105,7 +2098,6 @@
 
         function loadLeaderboard() {
             const container = document.getElementById('leaderboard-list');
-            // Read from Firebase if possible
             if (state.db) {
                 state.db.ref('players').once('value').then(snapshot => {
                     const players = [];
@@ -2139,17 +2131,17 @@
                 const rank = index + 1;
                 const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
                 item.innerHTML = `
-                    <span class="rank">${medal}</span>
-                    <span class="player">${player.playerName || 'Unknown'}</span>
-                    <span class="wins">${player.gamesWon || 0}</span>
-                    <span class="earnings">${player.totalWinnings || 0} Br</span>
-                `;
+                            <span class="rank">${medal}</span>
+                            <span class="player">${player.playerName || 'Unknown'}</span>
+                            <span class="wins">${player.gamesWon || 0}</span>
+                            <span class="earnings">${player.totalWinnings || 0} Br</span>
+                        `;
                 container.appendChild(item);
             });
         }
 
         // ================================================================
-        // 23. ROOM STATUS
+        // 24. ROOM STATUS
         // ================================================================
         function listenToRoomStatus() {
             const rooms = ['room1', 'room2', 'room3'];
@@ -2157,7 +2149,7 @@
                 const playersEl = document.getElementById(roomId + '-players');
                 const statusEl = document.getElementById(roomId + '-status');
                 if (playersEl) {
-                    const count = roomPlayersCount[roomId] || 0;
+                    const count = state.roomPlayersCount[roomId] || 0;
                     playersEl.textContent = '👥 ' + count + '/150';
                 }
                 if (statusEl) {
@@ -2168,7 +2160,7 @@
         }
 
         // ================================================================
-        // 24. INIT
+        // 25. INIT
         // ================================================================
         async function init() {
             const firebaseLoaded = initFirebase();
