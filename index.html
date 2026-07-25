@@ -1233,7 +1233,7 @@
                     console.log('✅ Firebase initialized');
                     return true;
                 } else {
-                    console.warn('Firebase not loaded, using localStorage fallback');
+                    console.warn('Firebase not loaded');
                     return false;
                 }
             } catch (e) {
@@ -1243,17 +1243,15 @@
         }
 
         // ================================================================
-        // 5. AUTH - USING TELEGRAM LOOKUP
+        // 5. AUTH - USING TELEGRAM LOOKUP ONLY
         // ================================================================
         async function initAuth() {
             if (!state.db) {
-                state.playerId = 'local_' + Date.now();
-                await loadPlayerDataFallback();
-                return state.playerId;
+                showToast('❌ Firebase not connected. Please try again.', 'error');
+                return null;
             }
 
             try {
-                // Try to authenticate with Telegram user ID
                 if (telegramUser && telegramUser.id) {
                     console.log('Telegram user ID:', telegramUser.id);
                     
@@ -1298,23 +1296,19 @@
                     }
                 }
                 
-                // Fallback: anonymous auth
-                const result = await auth.signInAnonymously();
-                state.playerId = result.user.uid;
-                console.log('Authenticated anonymously with UID:', state.playerId);
-                await loadPlayerData();
-                return state.playerId;
+                // No Telegram user - error
+                showToast('❌ No Telegram user found. Please open from Telegram.', 'error');
+                return null;
                 
             } catch (error) {
                 console.error('Auth error:', error);
-                state.playerId = 'local_' + Date.now();
-                await loadPlayerDataFallback();
-                return state.playerId;
+                showToast('❌ Authentication failed. Please restart.', 'error');
+                return null;
             }
         }
 
         // ================================================================
-        // 6. PLAYER DATA
+        // 6. PLAYER DATA - NO FALLBACK
         // ================================================================
         async function loadPlayerData() {
             if (!state.playerId || !state.db) return;
@@ -1326,33 +1320,13 @@
                     updateUIWithPlayerData();
                     console.log('✅ Player data loaded:', state.playerData.playerName);
                 } else {
-                    console.warn('Player not found in database');
+                    console.error('Player not found in database');
+                    showToast('❌ Player data not found. Please restart.', 'error');
                 }
             } catch (error) {
                 console.error('Error loading player data:', error);
-                await loadPlayerDataFallback();
+                showToast('❌ Failed to load profile. Please try again.', 'error');
             }
-        }
-
-        async function loadPlayerDataFallback() {
-            const saved = localStorage.getItem('za_bingo_player_' + state.playerId);
-            if (saved) {
-                state.playerData = JSON.parse(saved);
-            } else {
-                state.playerData = {
-                    playerName: telegramUser?.first_name || 'Player',
-                    username: telegramUser?.username || '',
-                    phoneNumber: '',
-                    telegramId: telegramUser?.id || '',
-                    balance: 100,
-                    gamesPlayed: 0,
-                    gamesWon: 0,
-                    totalWinnings: 0,
-                    createdAt: Date.now()
-                };
-                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
-            }
-            updateUIWithPlayerData();
         }
 
         function updateUIWithPlayerData() {
@@ -1456,13 +1430,7 @@
                     showStatus('deposit-status', '❌ Error submitting deposit.', 'error');
                 }
             } else {
-                const bal = (state.playerData.balance || 0) + parseFloat(amount);
-                state.playerData.balance = bal;
-                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
-                updateUIWithPlayerData();
-                showStatus('deposit-status', '✅ Deposit successful!', 'success');
-                document.getElementById('deposit-amount').value = '';
-                document.getElementById('transaction-id').value = '';
+                showStatus('deposit-status', '❌ Please connect to Firebase first.', 'error');
             }
         }
         window.submitDeposit = submitDeposit;
@@ -1516,13 +1484,7 @@
                     showStatus('withdraw-status', '❌ Error submitting withdrawal.', 'error');
                 }
             } else {
-                const bal = (state.playerData.balance || 0) - parseFloat(amount);
-                state.playerData.balance = bal;
-                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
-                updateUIWithPlayerData();
-                showStatus('withdraw-status', '✅ Withdrawal successful!', 'success');
-                document.getElementById('withdraw-amount').value = '';
-                document.getElementById('withdraw-account').value = '';
+                showStatus('withdraw-status', '❌ Please connect to Firebase first.', 'error');
             }
         }
         window.submitWithdraw = submitWithdraw;
@@ -1586,7 +1548,13 @@
             // Deduct stake
             const bal = (state.playerData.balance || 0) - stake;
             state.playerData.balance = bal;
-            localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+            if (state.db && state.playerId) {
+                try {
+                    await state.db.ref('players/' + state.playerId + '/balance').set(bal);
+                } catch (e) {
+                    console.error('Error updating balance:', e);
+                }
+            }
             updateUIWithPlayerData();
 
             roomPlayersCount[roomId] = (roomPlayersCount[roomId] || 0) + 1;
@@ -1835,7 +1803,9 @@
             if (state.currentRoom) {
                 const stake = getStakeForRoom(state.currentRoom);
                 state.playerData.balance = (state.playerData.balance || 0) + stake;
-                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+                if (state.db && state.playerId) {
+                    state.db.ref('players/' + state.playerId + '/balance').set(state.playerData.balance);
+                }
                 updateUIWithPlayerData();
                 roomPlayersCount[state.currentRoom] = Math.max(0, (roomPlayersCount[state.currentRoom] || 0) - 1);
             }
@@ -1861,7 +1831,9 @@
             if (state.currentRoom) {
                 const stake = getStakeForRoom(state.currentRoom);
                 state.playerData.balance = (state.playerData.balance || 0) + stake;
-                localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+                if (state.db && state.playerId) {
+                    state.db.ref('players/' + state.playerId + '/balance').set(state.playerData.balance);
+                }
                 updateUIWithPlayerData();
             }
 
@@ -2072,7 +2044,14 @@
             state.playerData.gamesWon = (state.playerData.gamesWon || 0) + 1;
             state.playerData.totalWinnings = (state.playerData.totalWinnings || 0) + prize;
             state.playerData.balance = (state.playerData.balance || 0) + prize;
-            localStorage.setItem('za_bingo_player_' + state.playerId, JSON.stringify(state.playerData));
+            if (state.db && state.playerId) {
+                state.db.ref('players/' + state.playerId).update({
+                    gamesPlayed: state.playerData.gamesPlayed,
+                    gamesWon: state.playerData.gamesWon,
+                    totalWinnings: state.playerData.totalWinnings,
+                    balance: state.playerData.balance
+                });
+            }
             updateUIWithPlayerData();
         }
 
@@ -2126,20 +2105,26 @@
 
         function loadLeaderboard() {
             const container = document.getElementById('leaderboard-list');
-            const players = [];
-
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('za_bingo_player_')) {
-                    try {
-                        const data = JSON.parse(localStorage.getItem(key));
-                        if (data && data.playerName && data.playerName !== 'Player') {
+            // Read from Firebase if possible
+            if (state.db) {
+                state.db.ref('players').once('value').then(snapshot => {
+                    const players = [];
+                    snapshot.forEach(child => {
+                        const data = child.val();
+                        if (data && data.playerName) {
                             players.push(data);
                         }
-                    } catch (e) {}
-                }
+                    });
+                    displayLeaderboard(players, container);
+                }).catch(() => {
+                    displayLeaderboard([], container);
+                });
+            } else {
+                displayLeaderboard([], container);
             }
+        }
 
+        function displayLeaderboard(players, container) {
             players.sort((a, b) => (b.totalWinnings || 0) - (a.totalWinnings || 0));
 
             container.innerHTML = '';
@@ -2187,7 +2172,9 @@
         // ================================================================
         async function init() {
             const firebaseLoaded = initFirebase();
-            await initAuth();
+            if (firebaseLoaded) {
+                await initAuth();
+            }
             loadLeaderboard();
             listenToRoomStatus();
 
@@ -2197,7 +2184,7 @@
 
             console.log('🎯 ZA Bingo V3 loaded!');
             console.log('Player ID:', state.playerId);
-            console.log('Firebase:', firebaseLoaded ? '✅ Connected' : '⚠️ Local mode');
+            console.log('Firebase:', firebaseLoaded ? '✅ Connected' : '❌ Not connected');
         }
 
         document.addEventListener('DOMContentLoaded', init);
