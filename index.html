@@ -1123,7 +1123,7 @@
 
     <script>
         // ================================================================
-        // 1. FIREBASE CONFIG
+        // FIREBASE CONFIG
         // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
@@ -1137,7 +1137,7 @@
         };
 
         // ================================================================
-        // 2. STATE
+        // STATE
         // ================================================================
         const state = {
             currentScreen: 'home',
@@ -1160,7 +1160,7 @@
         };
 
         // ================================================================
-        // 3. TELEGRAM
+        // TELEGRAM
         // ================================================================
         let telegramUser = null;
         try {
@@ -1176,7 +1176,7 @@
         }
 
         // ================================================================
-        // 4. FIREBASE INIT
+        // FIREBASE INIT
         // ================================================================
         let database, auth;
 
@@ -1203,16 +1203,15 @@
         }
 
         // ================================================================
-        // 5. AUTH - TELEGRAM LOOKUP FIRST, THEN ANONYMOUS FALLBACK
+        // AUTH – TELEGRAM LOOKUP FIRST, THEN ANONYMOUS
         // ================================================================
         async function initAuth() {
             if (!state.db) {
-                showToast('❌ Firebase not connected. Please try again.', 'error');
+                showToast('❌ Firebase not connected.', 'error');
                 return null;
             }
 
             try {
-                // 1. Try Telegram user
                 if (telegramUser && telegramUser.id) {
                     console.log('Telegram user ID:', telegramUser.id);
                     const lookupRef = state.db.ref('telegram_lookup/' + telegramUser.id);
@@ -1225,8 +1224,7 @@
                         await loadPlayerData();
                         return state.playerId;
                     } else {
-                        // Create new player for Telegram user
-                        console.log('No player found for telegram ID, creating new player...');
+                        console.log('No player found, creating new...');
                         const newPlayer = {
                             playerName: telegramUser.first_name || 'Player',
                             username: telegramUser.username || '',
@@ -1249,20 +1247,16 @@
                     }
                 }
 
-                // 2. Fallback to anonymous auth (no Telegram)
-                console.log('No Telegram user, using anonymous auth fallback...');
+                // Fallback to anonymous auth
+                console.log('No Telegram, using anonymous auth...');
                 const result = await auth.signInAnonymously();
                 state.playerId = result.user.uid;
-                console.log('Anonymous auth UID:', state.playerId);
-
-                // Try to load existing player data for this UID
                 const playerSnap = await state.db.ref('players/' + state.playerId).once('value');
                 if (playerSnap.exists()) {
                     state.playerData = playerSnap.val();
                     updateUIWithPlayerData();
-                    console.log('✅ Existing player loaded for anonymous UID');
+                    console.log('✅ Existing anonymous player loaded');
                 } else {
-                    // Create new player for anonymous
                     const newPlayer = {
                         playerName: 'Player',
                         username: '',
@@ -1283,13 +1277,13 @@
 
             } catch (error) {
                 console.error('Auth error:', error);
-                showToast('❌ Authentication failed. Please refresh.', 'error');
+                showToast('❌ Auth failed. Refresh.', 'error');
                 return null;
             }
         }
 
         // ================================================================
-        // 6. PLAYER DATA - READS FROM FIREBASE ONLY
+        // PLAYER DATA – READS FROM FIREBASE ONLY
         // ================================================================
         async function loadPlayerData() {
             if (!state.playerId || !state.db) return;
@@ -1299,25 +1293,20 @@
                 if (snapshot.exists()) {
                     state.playerData = snapshot.val();
                     updateUIWithPlayerData();
-                    console.log('✅ Player data loaded from Firebase:', state.playerData);
+                    console.log('✅ Player data loaded from Firebase');
                 } else {
-                    console.error('Player not found in database');
-                    showToast('❌ Player data not found. Please restart.', 'error');
+                    console.warn('Player not found in database');
                 }
             } catch (error) {
                 console.error('Error loading player data:', error);
-                showToast('❌ Failed to load profile. Please try again.', 'error');
             }
         }
 
         // ================================================================
-        // 7. UPDATE UI - DISPLAYS FIREBASE DATA
+        // UPDATE UI
         // ================================================================
         function updateUIWithPlayerData() {
-            if (!state.playerData) {
-                console.warn('No player data to display');
-                return;
-            }
+            if (!state.playerData) return;
 
             const balance = state.playerData.balance || 0;
             document.getElementById('balance-amount').textContent = balance + ' Br';
@@ -1334,12 +1323,10 @@
                 0;
             document.getElementById('win-rate').textContent = winRate + '%';
             document.getElementById('total-winnings').textContent = (state.playerData.totalWinnings || 0) + ' Br';
-
-            console.log('✅ UI updated with player data');
         }
 
         // ================================================================
-        // 8. NAVIGATION
+        // NAVIGATION – RELOADS PROFILE WHEN OPENED
         // ================================================================
         function navigateTo(screen) {
             const screens = document.querySelectorAll('.screen');
@@ -1353,11 +1340,12 @@
 
             if (screen === 'leaderboard') loadLeaderboard();
             if (screen === 'rooms') listenToRoomStatus();
+            if (screen === 'profile') loadPlayerData(); // <-- THIS FIXES PROFILE
         }
         window.navigateTo = navigateTo;
 
         // ================================================================
-        // 9. DEPOSIT
+        // DEPOSIT
         // ================================================================
         let selectedMethod = 'telebirr';
 
@@ -1425,7 +1413,7 @@
         window.submitDeposit = submitDeposit;
 
         // ================================================================
-        // 10. WITHDRAW
+        // WITHDRAW
         // ================================================================
         let withdrawMethod = 'telebirr';
 
@@ -1479,7 +1467,7 @@
         window.submitWithdraw = submitWithdraw;
 
         // ================================================================
-        // 11. UTILITY
+        // UTILITY
         // ================================================================
         function showStatus(elementId, message, type) {
             const el = document.getElementById(elementId);
@@ -1508,18 +1496,14 @@
         }
 
         // ================================================================
-        // 12. ROOMS
+        // ROOMS
         // ================================================================
         function getStakeForRoom(roomId) {
             switch (roomId) {
-                case 'room1':
-                    return 5;
-                case 'room2':
-                    return 10;
-                case 'room3':
-                    return 20;
-                default:
-                    return 5;
+                case 'room1': return 5;
+                case 'room2': return 10;
+                case 'room3': return 20;
+                default: return 5;
             }
         }
 
@@ -1536,15 +1520,12 @@
                 return;
             }
 
-            // Deduct stake
             const bal = (state.playerData.balance || 0) - stake;
             state.playerData.balance = bal;
             if (state.db && state.playerId) {
                 try {
                     await state.db.ref('players/' + state.playerId + '/balance').set(bal);
-                } catch (e) {
-                    console.error('Error updating balance:', e);
-                }
+                } catch (e) { console.error(e); }
             }
             updateUIWithPlayerData();
 
@@ -1562,14 +1543,8 @@
             if (state.currentRoom) {
                 state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) - 1);
             }
-            if (state.countdownInterval) {
-                clearInterval(state.countdownInterval);
-                state.countdownInterval = null;
-            }
-            if (state.waitingInterval) {
-                clearInterval(state.waitingInterval);
-                state.waitingInterval = null;
-            }
+            if (state.countdownInterval) clearInterval(state.countdownInterval);
+            if (state.waitingInterval) clearInterval(state.waitingInterval);
             document.getElementById('countdownPopup').classList.remove('active');
             state.countdownStarted = false;
             state.cancelled = false;
@@ -1578,7 +1553,7 @@
         window.leaveRoom = leaveRoom;
 
         // ================================================================
-        // 13. WAITING ROOM
+        // WAITING ROOM
         // ================================================================
         function loadWaitingRoom(roomId) {
             const roomName = roomId.replace('room', 'Room ');
@@ -1596,7 +1571,6 @@
         function loadCartelas() {
             const grid = document.getElementById('cartela-grid');
             grid.innerHTML = '';
-
             state.cartelaTaken = {};
 
             for (let i = 1; i <= 150; i++) {
@@ -1636,7 +1610,7 @@
         }
 
         // ================================================================
-        // 14. CONFIRM CARTELAS -> SHOW POPUP (waiting)
+        // CONFIRM CARTELAS -> SHOW POPUP (waiting)
         // ================================================================
         function confirmCartelas() {
             if (state.selectedCartelas.length === 0) {
@@ -1644,7 +1618,6 @@
                 return;
             }
 
-            // Mark cartelas as taken
             state.selectedCartelas.forEach(num => {
                 state.cartelaTaken[num] = true;
             });
@@ -1661,14 +1634,12 @@
             showToast('✅ Cartelas confirmed!', 'success');
             document.getElementById('confirm-cartelas').disabled = true;
             document.getElementById('confirm-cartelas').textContent = '✅ Confirmed';
-
-            // Show popup immediately
             showWaitingPopup();
         }
         window.confirmCartelas = confirmCartelas;
 
         // ================================================================
-        // 15. SHOW WAITING POPUP
+        // SHOW WAITING POPUP
         // ================================================================
         function showWaitingPopup() {
             const popup = document.getElementById('countdownPopup');
@@ -1678,36 +1649,27 @@
             const popupPlayers = document.getElementById('popupPlayers');
             const popupPrize = document.getElementById('popupPrize');
 
-            // Set waiting state
             popupCount.className = 'big-number waiting';
             popupCount.textContent = '⏳';
             popupText.textContent = 'Waiting for players...';
             popupSub.textContent = 'Need at least 2 players to start';
 
-            // Update player count and prize
             const currentCount = state.roomPlayersCount[state.currentRoom] || 1;
             const stake = getStakeForRoom(state.currentRoom);
             const prize = currentCount * stake;
             popupPlayers.textContent = currentCount;
             popupPrize.textContent = prize + ' Br';
 
-            // Show popup
             popup.classList.add('active');
 
-            // Clear any existing waiting interval
-            if (state.waitingInterval) {
-                clearInterval(state.waitingInterval);
-                state.waitingInterval = null;
-            }
+            if (state.waitingInterval) clearInterval(state.waitingInterval);
 
-            // Start checking for player count changes
             state.waitingInterval = setInterval(() => {
                 const count = state.roomPlayersCount[state.currentRoom] || 1;
                 const prize = count * stake;
                 popupPlayers.textContent = count;
                 popupPrize.textContent = prize + ' Br';
 
-                // If count >= 2 and countdown not started, start countdown
                 if (count >= 2 && !state.countdownStarted && !state.cancelled) {
                     clearInterval(state.waitingInterval);
                     state.waitingInterval = null;
@@ -1717,7 +1679,7 @@
         }
 
         // ================================================================
-        // 16. COUNTDOWN
+        // COUNTDOWN
         // ================================================================
         function startCountdown() {
             if (state.cancelled) return;
@@ -1730,7 +1692,6 @@
             const popupPlayers = document.getElementById('popupPlayers');
             const popupPrize = document.getElementById('popupPrize');
 
-            // Switch to countdown mode
             popupCount.className = 'big-number';
             state.countdownValue = 25;
             popupCount.textContent = state.countdownValue;
@@ -1745,23 +1706,18 @@
 
             document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue + 's...';
 
-            if (state.countdownInterval) {
-                clearInterval(state.countdownInterval);
-                state.countdownInterval = null;
-            }
+            if (state.countdownInterval) clearInterval(state.countdownInterval);
 
             state.countdownInterval = setInterval(() => {
                 state.countdownValue--;
                 popupCount.textContent = state.countdownValue;
 
-                // Animate the number
                 popupCount.style.animation = 'none';
                 setTimeout(() => {
                     popupCount.style.animation = 'pulse 0.3s ease';
                 }, 10);
 
-                document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue +
-                's...';
+                document.getElementById('waiting-status').textContent = '⏳ Game starting in ' + state.countdownValue + 's...';
 
                 if (state.countdownValue <= 0) {
                     clearInterval(state.countdownInterval);
@@ -1775,22 +1731,15 @@
         }
 
         // ================================================================
-        // 17. CANCEL / CHANGE
+        // CANCEL / CHANGE
         // ================================================================
         function cancelGame() {
             state.cancelled = true;
-            if (state.countdownInterval) {
-                clearInterval(state.countdownInterval);
-                state.countdownInterval = null;
-            }
-            if (state.waitingInterval) {
-                clearInterval(state.waitingInterval);
-                state.waitingInterval = null;
-            }
+            if (state.countdownInterval) clearInterval(state.countdownInterval);
+            if (state.waitingInterval) clearInterval(state.waitingInterval);
             document.getElementById('countdownPopup').classList.remove('active');
             state.countdownStarted = false;
 
-            // Refund stake (player can cancel before countdown ends)
             if (state.currentRoom) {
                 const stake = getStakeForRoom(state.currentRoom);
                 state.playerData.balance = (state.playerData.balance || 0) + stake;
@@ -1798,8 +1747,7 @@
                     state.db.ref('players/' + state.playerId + '/balance').set(state.playerData.balance);
                 }
                 updateUIWithPlayerData();
-                state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) -
-                    1);
+                state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) - 1);
             }
 
             showToast('Game cancelled - stake refunded', 'info');
@@ -1808,18 +1756,11 @@
         window.cancelGame = cancelGame;
 
         function changeCartelas() {
-            if (state.countdownInterval) {
-                clearInterval(state.countdownInterval);
-                state.countdownInterval = null;
-            }
-            if (state.waitingInterval) {
-                clearInterval(state.waitingInterval);
-                state.waitingInterval = null;
-            }
+            if (state.countdownInterval) clearInterval(state.countdownInterval);
+            if (state.waitingInterval) clearInterval(state.waitingInterval);
             document.getElementById('countdownPopup').classList.remove('active');
             state.countdownStarted = false;
 
-            // Refund stake so player can re-select
             if (state.currentRoom) {
                 const stake = getStakeForRoom(state.currentRoom);
                 state.playerData.balance = (state.playerData.balance || 0) + stake;
@@ -1836,7 +1777,7 @@
         window.changeCartelas = changeCartelas;
 
         // ================================================================
-        // 18. GAME
+        // GAME
         // ================================================================
         function loadGame(roomId) {
             const roomName = roomId.replace('room', 'Room ');
@@ -1964,7 +1905,7 @@
         }
 
         // ================================================================
-        // 19. BINGO CHECK
+        // BINGO CHECK
         // ================================================================
         function checkBingo() {
             const cells = document.querySelectorAll('#game-board .cell:not(.header-cell)');
@@ -2004,7 +1945,7 @@
         window.checkBingo = checkBingo;
 
         // ================================================================
-        // 20. AUTO MARK
+        // AUTO MARK
         // ================================================================
         function toggleAutoMark() {
             state.autoMark = !state.autoMark;
@@ -2017,7 +1958,7 @@
         window.toggleAutoMark = toggleAutoMark;
 
         // ================================================================
-        // 21. WINNER
+        // WINNER
         // ================================================================
         function showBingoWinner() {
             if (state.gameInterval) {
@@ -2048,21 +1989,12 @@
         }
 
         // ================================================================
-        // 22. RESET ROOM
+        // RESET ROOM
         // ================================================================
         function resetRoom() {
-            if (state.gameInterval) {
-                clearInterval(state.gameInterval);
-                state.gameInterval = null;
-            }
-            if (state.countdownInterval) {
-                clearInterval(state.countdownInterval);
-                state.countdownInterval = null;
-            }
-            if (state.waitingInterval) {
-                clearInterval(state.waitingInterval);
-                state.waitingInterval = null;
-            }
+            if (state.gameInterval) clearInterval(state.gameInterval);
+            if (state.countdownInterval) clearInterval(state.countdownInterval);
+            if (state.waitingInterval) clearInterval(state.waitingInterval);
             document.getElementById('countdownPopup').classList.remove('active');
             state.calledNumbers = [];
             state.selectedCartelas = [];
@@ -2073,8 +2005,7 @@
             document.getElementById('auto-mark-text').textContent = '🔘 Auto Mark';
 
             if (state.currentRoom) {
-                state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) -
-                    1);
+                state.roomPlayersCount[state.currentRoom] = Math.max(0, (state.roomPlayersCount[state.currentRoom] || 0) - 1);
             }
 
             navigateTo('rooms');
@@ -2083,7 +2014,7 @@
         window.resetRoom = resetRoom;
 
         // ================================================================
-        // 23. LEADERBOARD
+        // LEADERBOARD
         // ================================================================
         let leaderboardFilter = 'all';
 
@@ -2141,7 +2072,7 @@
         }
 
         // ================================================================
-        // 24. ROOM STATUS
+        // ROOM STATUS
         // ================================================================
         function listenToRoomStatus() {
             const rooms = ['room1', 'room2', 'room3'];
@@ -2160,7 +2091,7 @@
         }
 
         // ================================================================
-        // 25. INIT
+        // INIT
         // ================================================================
         async function init() {
             const firebaseLoaded = initFirebase();
