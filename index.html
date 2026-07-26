@@ -12,16 +12,12 @@
         .screen { display:none; animation:fadeIn 0.3s; }
         .screen.active { display:block; }
         @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-
-        /* Header */
         .header { display:flex; justify-content:space-between; align-items:center; padding:12px 0 16px; border-bottom:2px solid var(--light); margin-bottom:16px; }
         .logo { display:flex; align-items:center; gap:10px; }
         .logo h1 { font-size:22px; color:var(--primary); }
         .balance { background:var(--primary); color:white; padding:6px 18px; border-radius:40px; font-weight:600; font-size:16px; }
         .back { background:none; border:none; font-size:28px; cursor:pointer; padding:4px 10px; }
         h2 { font-size:20px; margin-bottom:16px; }
-
-        /* Buttons */
         .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 20px; border:none; border-radius:var(--radius); font-weight:600; font-size:16px; cursor:pointer; transition:var(--transition); width:100%; }
         .btn-primary { background:var(--primary); color:white; }
         .btn-primary:hover { background:var(--primary-dark); transform:translateY(-2px); }
@@ -31,31 +27,22 @@
         .btn-danger { background:#f44336; color:white; }
         .btn-sm { padding:10px 16px; font-size:14px; width:auto; }
         .btn:disabled { opacity:0.5; pointer-events:none; }
-
-        /* Grids */
         .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
         .grid-2 .btn { height:80px; flex-direction:column; font-size:15px; }
         .grid-2 .btn .icon { font-size:28px; }
-
-        /* Cards */
         .room-card { background:var(--light); border-radius:var(--radius); padding:16px 20px; margin-bottom:12px; cursor:pointer; transition:var(--transition); border:2px solid transparent; }
         .room-card:hover { border-color:var(--primary); transform:translateY(-2px); }
         .room-card .room-name { font-weight:700; font-size:18px; color:var(--primary); }
         .room-card .stake { font-size:14px; color:#666; }
         .room-card .players { font-size:14px; margin:4px 0; }
         .room-card .status { font-size:13px; }
-
-        /* Cartela grid */
         .cartela-grid { display:grid; grid-template-columns:repeat(10,1fr); gap:4px; margin:16px 0; max-height:280px; overflow-y:auto; padding:4px; }
         .cartela-btn { border:2px solid #ddd; border-radius:8px; background:white; padding:8px 0; font-weight:600; font-size:12px; cursor:pointer; transition:var(--transition); text-align:center; }
         .cartela-btn:hover:not(:disabled) { border-color:var(--primary); transform:scale(1.05); }
         .cartela-btn.selected { background:var(--primary); color:white; border-color:var(--primary); }
         .cartela-btn.taken { background:#f0f0f0; color:#999; cursor:not-allowed; opacity:0.5; }
         .cartela-btn:disabled { cursor:not-allowed; }
-
         .selected-cartelas { background:var(--light); padding:12px; border-radius:var(--radius); margin:12px 0; }
-
-        /* Game */
         .ball-display { text-align:center; margin:10px 0; }
         .ball { font-size:80px; transition:var(--transition); }
         .called { font-size:14px; color:#666; margin:4px 0; }
@@ -64,10 +51,7 @@
         .game-board .cell.marked { background:var(--success); color:white; border-color:var(--success); }
         .game-board .cell.free { background:var(--primary); color:white; border-color:var(--primary); }
         .game-board .header-cell { background:var(--primary); color:white; border-color:var(--primary); font-weight:700; }
-
         .game-controls { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
-
-        /* Popup */
         .popup { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:999; }
         .popup.active { display:flex; }
         .popup-content { background:white; padding:32px 24px; border-radius:24px; max-width:400px; width:90%; text-align:center; animation:popIn 0.3s; }
@@ -80,43 +64,28 @@
         .popup-content .details .label { font-size:12px; color:#888; }
         .popup-content .details .value { font-size:20px; font-weight:700; }
         .popup-content .buttons { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
-
-        /* Winner */
         .winner-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; text-align:center; }
         .winner-screen .emoji { font-size:72px; animation:bounce 1s infinite; }
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
         .winner-screen .title { font-size:28px; font-weight:700; color:var(--secondary); margin:12px 0; }
         .winner-screen .name { font-size:24px; color:var(--primary); font-weight:600; }
         .winner-screen .prize { font-size:32px; font-weight:700; color:var(--success); margin:12px 0; }
-
-        /* Profile */
         .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
         .profile-item { background:var(--light); padding:12px 16px; border-radius:var(--radius); }
         .profile-item .label { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px; }
         .profile-item .value { font-size:18px; font-weight:600; margin-top:4px; }
-
-        /* Toast */
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:12px 24px; border-radius:12px; color:white; font-weight:500; z-index:1000; max-width:90%; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); animation:slideUp 0.3s; }
         @keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-
-        /* Misc */
         .status-msg { text-align:center; padding:12px; color:#666; font-size:14px; }
         .hidden { display:none; }
-
-        /* Responsive */
-        @media (max-width:480px) {
-            .cartela-grid { grid-template-columns:repeat(8,1fr); }
-            .profile-grid { grid-template-columns:1fr; }
-        }
-        @media (max-width:380px) {
-            .cartela-grid { grid-template-columns:repeat(6,1fr); }
-        }
+        @media (max-width:480px) { .cartela-grid { grid-template-columns:repeat(8,1fr); } .profile-grid { grid-template-columns:1fr; } }
+        @media (max-width:380px) { .cartela-grid { grid-template-columns:repeat(6,1fr); } }
     </style>
 </head>
 <body>
 <div id="app">
 
-    <!-- ========== HOME SCREEN ========== -->
+    <!-- HOME SCREEN -->
     <div id="home-screen" class="screen active">
         <div class="header">
             <div class="logo"><span style="font-size:28px;">🎯</span><h1>ZA Bingo</h1></div>
@@ -132,7 +101,7 @@
         <div style="margin-top:32px;text-align:center;color:#999;font-size:12px;">Version 3.0 • Live Multiplayer</div>
     </div>
 
-    <!-- ========== DEPOSIT SCREEN ========== -->
+    <!-- DEPOSIT SCREEN -->
     <div id="deposit-screen" class="screen">
         <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>💰 Deposit</h2></div>
         <div class="payment-methods" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
@@ -156,7 +125,7 @@
         <div id="deposit-status" class="status-msg" style="margin-top:12px;"></div>
     </div>
 
-    <!-- ========== WITHDRAW SCREEN ========== -->
+    <!-- WITHDRAW SCREEN -->
     <div id="withdraw-screen" class="screen">
         <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>💸 Withdraw</h2></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
@@ -175,7 +144,7 @@
         <div id="withdraw-status" class="status-msg" style="margin-top:12px;"></div>
     </div>
 
-    <!-- ========== PROFILE SCREEN ========== -->
+    <!-- PROFILE SCREEN -->
     <div id="profile-screen" class="screen">
         <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>👤 Profile</h2></div>
         <div style="text-align:center;margin-bottom:20px;"><div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;font-size:40px;display:flex;align-items:center;justify-content:center;margin:0 auto;">👤</div></div>
@@ -192,19 +161,19 @@
         </div>
     </div>
 
-    <!-- ========== LEADERBOARD SCREEN ========== -->
+    <!-- LEADERBOARD SCREEN -->
     <div id="leaderboard-screen" class="screen">
         <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>🏆 Leaderboard</h2></div>
         <div id="leaderboard-list" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
 
-    <!-- ========== ROOMS SCREEN ========== -->
+    <!-- ROOMS SCREEN -->
     <div id="rooms-screen" class="screen">
         <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>🎮 Game Rooms</h2></div>
         <div id="rooms-container"></div>
     </div>
 
-    <!-- ========== WAITING ROOM SCREEN ========== -->
+    <!-- WAITING ROOM SCREEN -->
     <div id="waiting-screen" class="screen">
         <div class="header"><button class="back" onclick="leaveRoom()">←</button><h2 id="waiting-room-title">⏳ Room 1</h2></div>
         <div style="text-align:center;margin:8px 0;"><span id="waiting-players">0</span> players • Prize: <span id="waiting-prize">0</span> Br</div>
@@ -218,7 +187,7 @@
         <div id="waiting-status" class="status-msg">Select your cartelas and confirm...</div>
     </div>
 
-    <!-- ========== GAME SCREEN ========== -->
+    <!-- GAME SCREEN -->
     <div id="game-screen" class="screen">
         <div class="header">
             <button class="back" onclick="leaveGame()">←</button>
@@ -237,7 +206,7 @@
         <div id="game-status" class="status-msg"></div>
     </div>
 
-    <!-- ========== WINNER SCREEN ========== -->
+    <!-- WINNER SCREEN -->
     <div id="winner-screen" class="screen">
         <div class="winner-screen">
             <div class="emoji">🎉🏆🎉</div>
@@ -248,7 +217,7 @@
         </div>
     </div>
 
-    <!-- ========== POPUP ========== -->
+    <!-- POPUP -->
     <div class="popup" id="countdownPopup">
         <div class="popup-content">
             <div class="big waiting" id="popup-countdown">⏳</div>
@@ -266,7 +235,7 @@
     </div>
 </div>
 
-<!-- ========== FIREBASE + JAVASCRIPT ========== -->
+<!-- FIREBASE + JAVASCRIPT -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -330,7 +299,7 @@ function initFirebase() {
 }
 
 // ================================================================
-// AUTH – READ ONLY, NEVER CREATE – FIXED
+// AUTH – FIXED: reads playerId correctly
 // ================================================================
 async function initAuth() {
     if (!state.db) return null;
@@ -382,7 +351,7 @@ async function loadPlayerData() {
 }
 
 // ================================================================
-// UPDATE UI – FIXED profile name to use 'firstname'
+// UPDATE UI – FIXED: uses firstname for profile name
 // ================================================================
 function updateUI() {
     if (!state.playerData) return;
@@ -566,18 +535,15 @@ async function joinRoom(roomId) {
     const stake = roomId === 'room1' ? 5 : roomId === 'room2' ? 10 : 20;
     if ((state.playerData?.balance || 0) < stake) { showToast('Insufficient balance.', 'error'); return; }
 
-    // Deduct stake using transaction
     const playerRef = state.db.ref('players/' + state.playerId + '/balance');
     try {
         await playerRef.transaction(current => {
             if (current === null || current < stake) return;
             return current - stake;
         });
-        // Refresh balance
         await loadPlayerData();
     } catch(e) { showToast('Failed to deduct stake.', 'error'); return; }
 
-    // Add player to room
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId + '/players/' + state.playerId);
     await roomRef.set({
         playerName: state.playerData.firstname || 'Player',
@@ -606,14 +572,12 @@ function loadWaitingRoom(roomId) {
     document.getElementById('selected-cartelas-display').textContent = 'None';
     document.getElementById('waiting-status').textContent = 'Select your cartelas and confirm...';
     loadCartelas();
-    // Listen to room changes for player count
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId);
     roomRef.child('players').on('value', snap => {
         const count = snap.exists() ? Object.keys(snap.val()).length : 0;
         document.getElementById('waiting-players').textContent = count;
         const stake = roomId === 'room1' ? 5 : roomId === 'room2' ? 10 : 20;
         document.getElementById('waiting-prize').textContent = count * stake;
-        // Also update popup if open
         document.getElementById('popup-players').textContent = count;
         document.getElementById('popup-prize').textContent = (count * stake) + ' Br';
     });
@@ -631,7 +595,6 @@ function loadCartelas() {
         btn.onclick = () => toggleCartela(i);
         grid.appendChild(btn);
     }
-    // Check taken cartelas from room
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/takenCartelas');
     roomRef.on('value', snap => {
         if (snap.exists()) {
@@ -683,7 +646,6 @@ window.toggleCartela = toggleCartela;
 async function confirmCartelas() {
     if (state.selectedCartelas.length === 0) { showToast('Select at least one cartela', 'error'); return; }
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom);
-    // Mark cartelas as taken
     const updates = {};
     state.selectedCartelas.forEach(num => {
         updates['takenCartelas/' + num] = state.playerId;
@@ -693,7 +655,6 @@ async function confirmCartelas() {
     document.getElementById('confirm-cartelas-btn').disabled = true;
     document.getElementById('confirm-cartelas-btn').textContent = '✅ Confirmed';
     showToast('✅ Cartelas confirmed!', 'success');
-    // Show waiting popup
     showWaitingPopup();
 }
 window.confirmCartelas = confirmCartelas;
@@ -708,7 +669,6 @@ function showWaitingPopup() {
     document.getElementById('popup-players').textContent = count;
     document.getElementById('popup-prize').textContent = (count * stake) + ' Br';
     if (count >= 2) {
-        // Start countdown immediately
         document.getElementById('popup-countdown').className = 'big';
         document.getElementById('popup-countdown').textContent = '25';
         document.getElementById('popup-title').textContent = 'Game Starting in...';
@@ -719,7 +679,6 @@ function showWaitingPopup() {
         document.getElementById('popup-countdown').textContent = '⏳';
         document.getElementById('popup-title').textContent = 'Waiting for players...';
         document.getElementById('popup-sub').textContent = 'Need at least 2 players';
-        // Listen for player count changes
         if (state.waitingInterval) clearInterval(state.waitingInterval);
         state.waitingInterval = setInterval(() => {
             const c = state.roomPlayersCount[state.currentRoom] || 1;
@@ -770,11 +729,9 @@ function cancelGame() {
     if (state.waitingInterval) clearInterval(state.waitingInterval);
     document.getElementById('countdownPopup').classList.remove('active');
     state.countdownStarted = false;
-    // Refund stake
     const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
     const playerRef = state.db.ref('players/' + state.playerId + '/balance');
     playerRef.transaction(current => (current || 0) + stake);
-    // Remove player from room
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId);
     roomRef.remove();
     showToast('Game cancelled - stake refunded', 'info');
@@ -788,11 +745,9 @@ function changeCartelas() {
     if (state.waitingInterval) clearInterval(state.waitingInterval);
     document.getElementById('countdownPopup').classList.remove('active');
     state.countdownStarted = false;
-    // Refund stake
     const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
     const playerRef = state.db.ref('players/' + state.playerId + '/balance');
     playerRef.transaction(current => (current || 0) + stake);
-    // Remove player from room
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId);
     roomRef.remove();
     showToast('Select new cartelas', 'info');
@@ -806,9 +761,7 @@ window.changeCartelas = changeCartelas;
 // ================================================================
 function leaveRoom() {
     if (state.currentRoom) {
-        // Remove player from room
         state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId).remove();
-        // Refund stake if game hasn't started
         if (!state.countdownStarted) {
             const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
             state.db.ref('players/' + state.playerId + '/balance').transaction(current => (current || 0) + stake);
@@ -827,13 +780,10 @@ window.leaveRoom = leaveRoom;
 function startGame(roomId) {
     document.getElementById('game-room-title').textContent = '🎲 ' + roomId.toUpperCase();
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId);
-    // Set status to playing
     roomRef.child('status').set('playing');
     state.calledNumbers = [];
     if (state.gameInterval) clearInterval(state.gameInterval);
-    // Generate boards
     generateBingoBoards();
-    // Listen to called numbers
     roomRef.child('calledNumbers').on('value', snap => {
         if (snap.exists()) {
             state.calledNumbers = snap.val() || [];
@@ -846,7 +796,6 @@ function startGame(roomId) {
             }
         }
     });
-    // Listen to winner
     roomRef.child('winner').on('value', snap => {
         if (snap.exists()) {
             const winner = snap.val();
@@ -858,7 +807,6 @@ function startGame(roomId) {
             }
         }
     });
-    // Update player count
     roomRef.child('players').on('value', snap => {
         const count = snap.exists() ? Object.keys(snap.val()).length : 0;
         document.getElementById('game-players-count').textContent = '👥 ' + count;
@@ -929,7 +877,6 @@ function markNumberOnBoards(num) {
 function checkBingo() {
     const cells = document.querySelectorAll('#game-board .cell:not(.header-cell)');
     const marked = Array.from(cells).map(c => c.classList.contains('marked') || c.classList.contains('free'));
-    // Check rows (10 rows – two cartelas)
     for (let r=0; r<10; r++) {
         let all = true;
         for (let c=0; c<5; c++) {
@@ -941,7 +888,6 @@ function checkBingo() {
             return;
         }
     }
-    // Check columns for each cartela
     for (let cart=0; cart<2; cart++) {
         const off = cart*25;
         for (let c=0; c<5; c++) {
@@ -966,10 +912,8 @@ window.checkBingo = checkBingo;
 async function claimBingo() {
     if (!state.currentRoom) return;
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom);
-    // Check if winner already exists
     const winnerSnap = await roomRef.child('winner').once('value');
     if (winnerSnap.exists()) { showToast('Winner already claimed.', 'info'); return; }
-    // Claim winner
     const playerCount = state.roomPlayersCount[state.currentRoom] || 2;
     const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
     const prize = playerCount * stake;
@@ -979,7 +923,6 @@ async function claimBingo() {
         claimedAt: Date.now(),
         prize: prize
     });
-    // Update player stats
     const playerRef = state.db.ref('players/' + state.playerId);
     await playerRef.transaction(current => {
         if (!current) return { balance: prize, gamesPlayed: 1, gamesWon: 1, totalWinnings: prize };
@@ -1019,11 +962,9 @@ function resetRoom() {
     state.countdownStarted = false;
     state.cancelled = false;
     document.getElementById('auto-mark-text').textContent = '🔘 Auto Mark';
-    // Remove player from room
     if (state.currentRoom) {
         state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId).remove();
     }
-    // Reset room status if winner was set
     if (state.currentRoom) {
         state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/status').set('waiting');
         state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/winner').remove();
