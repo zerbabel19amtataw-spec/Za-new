@@ -1,241 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>ZA Bingo V3 – Live Multiplayer</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:system-ui, -apple-system, sans-serif; }
-        :root { --primary:#6C63FF; --primary-dark:#5A52D5; --secondary:#FF6B6B; --success:#4CAF50; --warning:#FFC107; --info:#2196F3; --dark:#1E1E2E; --light:#F5F5FA; --white:#FFFFFF; --shadow:0 8px 32px rgba(0,0,0,0.12); --radius:20px; --transition:0.3s ease; }
-        body { background:var(--light); color:var(--dark); min-height:100vh; display:flex; justify-content:center; align-items:center; }
-        #app { max-width:480px; width:100%; min-height:100vh; background:var(--white); padding:16px 20px; box-shadow:0 0 40px rgba(0,0,0,0.05); position:relative; }
-        .screen { display:none; animation:fadeIn 0.3s; }
-        .screen.active { display:block; }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-        .header { display:flex; justify-content:space-between; align-items:center; padding:12px 0 16px; border-bottom:2px solid var(--light); margin-bottom:16px; }
-        .logo { display:flex; align-items:center; gap:10px; }
-        .logo h1 { font-size:22px; color:var(--primary); }
-        .balance { background:var(--primary); color:white; padding:6px 18px; border-radius:40px; font-weight:600; font-size:16px; }
-        .back { background:none; border:none; font-size:28px; cursor:pointer; padding:4px 10px; }
-        h2 { font-size:20px; margin-bottom:16px; }
-        .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 20px; border:none; border-radius:var(--radius); font-weight:600; font-size:16px; cursor:pointer; transition:var(--transition); width:100%; }
-        .btn-primary { background:var(--primary); color:white; }
-        .btn-primary:hover { background:var(--primary-dark); transform:translateY(-2px); }
-        .btn-secondary { background:var(--secondary); color:white; }
-        .btn-success { background:var(--success); color:white; }
-        .btn-warning { background:var(--warning); color:var(--dark); }
-        .btn-danger { background:#f44336; color:white; }
-        .btn-sm { padding:10px 16px; font-size:14px; width:auto; }
-        .btn:disabled { opacity:0.5; pointer-events:none; }
-        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
-        .grid-2 .btn { height:80px; flex-direction:column; font-size:15px; }
-        .grid-2 .btn .icon { font-size:28px; }
-        .room-card { background:var(--light); border-radius:var(--radius); padding:16px 20px; margin-bottom:12px; cursor:pointer; transition:var(--transition); border:2px solid transparent; }
-        .room-card:hover { border-color:var(--primary); transform:translateY(-2px); }
-        .room-card .room-name { font-weight:700; font-size:18px; color:var(--primary); }
-        .room-card .stake { font-size:14px; color:#666; }
-        .room-card .players { font-size:14px; margin:4px 0; }
-        .room-card .status { font-size:13px; }
-        .cartela-grid { display:grid; grid-template-columns:repeat(10,1fr); gap:4px; margin:16px 0; max-height:280px; overflow-y:auto; padding:4px; }
-        .cartela-btn { border:2px solid #ddd; border-radius:8px; background:white; padding:8px 0; font-weight:600; font-size:12px; cursor:pointer; transition:var(--transition); text-align:center; }
-        .cartela-btn:hover:not(:disabled) { border-color:var(--primary); transform:scale(1.05); }
-        .cartela-btn.selected { background:var(--primary); color:white; border-color:var(--primary); }
-        .cartela-btn.taken { background:#f0f0f0; color:#999; cursor:not-allowed; opacity:0.5; }
-        .cartela-btn:disabled { cursor:not-allowed; }
-        .selected-cartelas { background:var(--light); padding:12px; border-radius:var(--radius); margin:12px 0; }
-        .ball-display { text-align:center; margin:10px 0; }
-        .ball { font-size:80px; transition:var(--transition); }
-        .called { font-size:14px; color:#666; margin:4px 0; }
-        .game-board { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; max-width:400px; margin:0 auto; }
-        .game-board .cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; background:white; border:2px solid #ddd; border-radius:10px; font-weight:600; font-size:14px; transition:var(--transition); }
-        .game-board .cell.marked { background:var(--success); color:white; border-color:var(--success); }
-        .game-board .cell.free { background:var(--primary); color:white; border-color:var(--primary); }
-        .game-board .header-cell { background:var(--primary); color:white; border-color:var(--primary); font-weight:700; }
-        .game-controls { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
-        .popup { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:999; }
-        .popup.active { display:flex; }
-        .popup-content { background:white; padding:32px 24px; border-radius:24px; max-width:400px; width:90%; text-align:center; animation:popIn 0.3s; }
-        @keyframes popIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
-        .popup-content .big { font-size:80px; font-weight:700; color:var(--primary); line-height:1; }
-        .popup-content .big.waiting { font-size:60px; color:var(--warning); }
-        .popup-content .title { font-size:18px; margin:8px 0; }
-        .popup-content .sub { font-size:14px; color:#888; }
-        .popup-content .details { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0; padding:12px; background:var(--light); border-radius:12px; }
-        .popup-content .details .label { font-size:12px; color:#888; }
-        .popup-content .details .value { font-size:20px; font-weight:700; }
-        .popup-content .buttons { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
-        .winner-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; text-align:center; }
-        .winner-screen .emoji { font-size:72px; animation:bounce 1s infinite; }
-        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
-        .winner-screen .title { font-size:28px; font-weight:700; color:var(--secondary); margin:12px 0; }
-        .winner-screen .name { font-size:24px; color:var(--primary); font-weight:600; }
-        .winner-screen .prize { font-size:32px; font-weight:700; color:var(--success); margin:12px 0; }
-        .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-        .profile-item { background:var(--light); padding:12px 16px; border-radius:var(--radius); }
-        .profile-item .label { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px; }
-        .profile-item .value { font-size:18px; font-weight:600; margin-top:4px; }
-        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:12px 24px; border-radius:12px; color:white; font-weight:500; z-index:1000; max-width:90%; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); animation:slideUp 0.3s; }
-        @keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-        .status-msg { text-align:center; padding:12px; color:#666; font-size:14px; }
-        .hidden { display:none; }
-        @media (max-width:480px) { .cartela-grid { grid-template-columns:repeat(8,1fr); } .profile-grid { grid-template-columns:1fr; } }
-        @media (max-width:380px) { .cartela-grid { grid-template-columns:repeat(6,1fr); } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ZA Bingo V3</title>
+  <style>
+    /* ===== YOUR EXISTING CSS – KEEP UNCHANGED ===== */
+    * { margin:0; padding:0; box-sizing:border-box; font-family:system-ui, -apple-system, sans-serif; }
+    :root { --primary:#6C63FF; --primary-dark:#5A52D5; --secondary:#FF6B6B; --success:#4CAF50; --warning:#FFC107; --info:#2196F3; --dark:#1E1E2E; --light:#F5F5FA; --white:#FFFFFF; --shadow:0 8px 32px rgba(0,0,0,0.12); --radius:20px; --transition:0.3s ease; }
+    body { background:var(--light); color:var(--dark); min-height:100vh; display:flex; justify-content:center; align-items:center; }
+    #app { max-width:480px; width:100%; min-height:100vh; background:var(--white); padding:16px 20px; box-shadow:0 0 40px rgba(0,0,0,0.05); position:relative; }
+    .screen { display:none; animation:fadeIn 0.3s; }
+    .screen.active { display:block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .header { display:flex; justify-content:space-between; align-items:center; padding:12px 0 16px; border-bottom:2px solid var(--light); margin-bottom:16px; }
+    .logo { display:flex; align-items:center; gap:10px; }
+    .logo h1 { font-size:22px; color:var(--primary); }
+    .balance { background:var(--primary); color:white; padding:6px 18px; border-radius:40px; font-weight:600; font-size:16px; }
+    .back { background:none; border:none; font-size:28px; cursor:pointer; padding:4px 10px; }
+    h2 { font-size:20px; margin-bottom:16px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 20px; border:none; border-radius:var(--radius); font-weight:600; font-size:16px; cursor:pointer; transition:var(--transition); width:100%; }
+    .btn-primary { background:var(--primary); color:white; }
+    .btn-primary:hover { background:var(--primary-dark); transform:translateY(-2px); }
+    .btn-secondary { background:var(--secondary); color:white; }
+    .btn-success { background:var(--success); color:white; }
+    .btn-warning { background:var(--warning); color:var(--dark); }
+    .btn-danger { background:#f44336; color:white; }
+    .btn-sm { padding:10px 16px; font-size:14px; width:auto; }
+    .btn:disabled { opacity:0.5; pointer-events:none; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+    .grid-2 .btn { height:80px; flex-direction:column; font-size:15px; }
+    .grid-2 .btn .icon { font-size:28px; }
+    .room-card { background:var(--light); border-radius:var(--radius); padding:16px 20px; margin-bottom:12px; cursor:pointer; transition:var(--transition); border:2px solid transparent; }
+    .room-card:hover { border-color:var(--primary); transform:translateY(-2px); }
+    .room-card .room-name { font-weight:700; font-size:18px; color:var(--primary); }
+    .room-card .stake { font-size:14px; color:#666; }
+    .room-card .players { font-size:14px; margin:4px 0; }
+    .room-card .status { font-size:13px; }
+    .cartela-grid { display:grid; grid-template-columns:repeat(10,1fr); gap:4px; margin:16px 0; max-height:280px; overflow-y:auto; padding:4px; }
+    .cartela-btn { border:2px solid #ddd; border-radius:8px; background:white; padding:8px 0; font-weight:600; font-size:12px; cursor:pointer; transition:var(--transition); text-align:center; }
+    .cartela-btn:hover:not(:disabled) { border-color:var(--primary); transform:scale(1.05); }
+    .cartela-btn.selected { background:var(--primary); color:white; border-color:var(--primary); }
+    .cartela-btn.taken { background:#f0f0f0; color:#999; cursor:not-allowed; opacity:0.5; }
+    .cartela-btn:disabled { cursor:not-allowed; }
+    .selected-cartelas { background:var(--light); padding:12px; border-radius:var(--radius); margin:12px 0; }
+    .ball-display { text-align:center; margin:10px 0; }
+    .ball { font-size:80px; transition:var(--transition); }
+    .called { font-size:14px; color:#666; margin:4px 0; }
+    .game-board { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; max-width:400px; margin:0 auto; }
+    .game-board .cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; background:white; border:2px solid #ddd; border-radius:10px; font-weight:600; font-size:14px; transition:var(--transition); }
+    .game-board .cell.marked { background:var(--success); color:white; border-color:var(--success); }
+    .game-board .cell.free { background:var(--primary); color:white; border-color:var(--primary); }
+    .game-board .header-cell { background:var(--primary); color:white; border-color:var(--primary); font-weight:700; }
+    .game-controls { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+    .popup { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:999; }
+    .popup.active { display:flex; }
+    .popup-content { background:white; padding:32px 24px; border-radius:24px; max-width:400px; width:90%; text-align:center; animation:popIn 0.3s; }
+    @keyframes popIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
+    .popup-content .big { font-size:80px; font-weight:700; color:var(--primary); line-height:1; }
+    .popup-content .big.waiting { font-size:60px; color:var(--warning); }
+    .popup-content .title { font-size:18px; margin:8px 0; }
+    .popup-content .sub { font-size:14px; color:#888; }
+    .popup-content .details { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0; padding:12px; background:var(--light); border-radius:12px; }
+    .popup-content .details .label { font-size:12px; color:#888; }
+    .popup-content .details .value { font-size:20px; font-weight:700; }
+    .popup-content .buttons { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+    .winner-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; text-align:center; }
+    .winner-screen .emoji { font-size:72px; animation:bounce 1s infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+    .winner-screen .title { font-size:28px; font-weight:700; color:var(--secondary); margin:12px 0; }
+    .winner-screen .name { font-size:24px; color:var(--primary); font-weight:600; }
+    .winner-screen .prize { font-size:32px; font-weight:700; color:var(--success); margin:12px 0; }
+    .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .profile-item { background:var(--light); padding:12px 16px; border-radius:var(--radius); }
+    .profile-item .label { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px; }
+    .profile-item .value { font-size:18px; font-weight:600; margin-top:4px; }
+    .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:12px 24px; border-radius:12px; color:white; font-weight:500; z-index:1000; max-width:90%; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); animation:slideUp 0.3s; }
+    @keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+    .status-msg { text-align:center; padding:12px; color:#666; font-size:14px; }
+    .hidden { display:none; }
+    @media (max-width:480px) { .cartela-grid { grid-template-columns:repeat(8,1fr); } .profile-grid { grid-template-columns:1fr; } }
+    @media (max-width:380px) { .cartela-grid { grid-template-columns:repeat(6,1fr); } }
+  </style>
 </head>
 <body>
 <div id="app">
 
-    <!-- HOME SCREEN -->
-    <div id="home-screen" class="screen active">
-        <div class="header">
-            <div class="logo"><span style="font-size:28px;">🎯</span><h1>ZA Bingo</h1></div>
-            <div class="balance" id="home-balance">0 Br</div>
-        </div>
-        <div class="grid-2">
-            <button class="btn btn-primary" onclick="navigateTo('deposit')"><span class="icon">💰</span> Deposit</button>
-            <button class="btn btn-secondary" onclick="navigateTo('withdraw')"><span class="icon">💸</span> Withdraw</button>
-            <button class="btn btn-info" onclick="navigateTo('profile')"><span class="icon">👤</span> Profile</button>
-            <button class="btn btn-warning" onclick="navigateTo('leaderboard')"><span class="icon">🏆</span> Leaderboard</button>
-            <button class="btn btn-success" style="grid-column:span 2" onclick="navigateTo('rooms')"><span class="icon">🎮</span> Game Rooms</button>
-        </div>
-        <div style="margin-top:32px;text-align:center;color:#999;font-size:12px;">Version 3.0 • Live Multiplayer</div>
+  <!-- ========== HOME SCREEN ========== -->
+  <div id="home-screen" class="screen active">
+    <div class="header">
+      <div class="logo"><span style="font-size:28px;">🎯</span><h1>ZA Bingo</h1></div>
+      <div class="balance" id="home-balance">0 Br</div>
     </div>
+    <div class="grid-2">
+      <button class="btn btn-primary" onclick="navigateTo('deposit')"><span class="icon">💰</span> Deposit</button>
+      <button class="btn btn-secondary" onclick="navigateTo('withdraw')"><span class="icon">💸</span> Withdraw</button>
+      <button class="btn btn-info" onclick="navigateTo('profile')"><span class="icon">👤</span> Profile</button>
+      <button class="btn btn-warning" onclick="navigateTo('leaderboard')"><span class="icon">🏆</span> Leaderboard</button>
+      <button class="btn btn-success" style="grid-column:span 2" onclick="navigateTo('rooms')"><span class="icon">🎮</span> Game Rooms</button>
+    </div>
+    <div style="margin-top:32px;text-align:center;color:#999;font-size:12px;">Version 3.0 • Live Multiplayer</div>
+  </div>
 
-    <!-- DEPOSIT SCREEN -->
-    <div id="deposit-screen" class="screen">
-        <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>💰 Deposit</h2></div>
-        <div class="payment-methods" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-            <button class="btn btn-sm" id="dep-method-telebirr" onclick="selectDepositMethod('telebirr')" style="background:var(--primary);color:white;">📱 Telebirr</button>
-            <button class="btn btn-sm" id="dep-method-cbe" onclick="selectDepositMethod('cbe')" style="background:#ddd;">🏦 CBE</button>
-        </div>
-        <div style="background:var(--light);padding:12px 16px;border-radius:var(--radius);display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <span>Payment Number</span>
-            <span id="payment-number" style="font-weight:700;color:var(--primary);">09XXXXXXXX</span>
-            <button class="btn btn-sm btn-primary" onclick="copyPaymentNumber()">Copy</button>
-        </div>
-        <div class="input-group" style="margin-bottom:12px;">
-            <label style="display:block;font-weight:500;margin-bottom:4px;">Amount (Br)</label>
-            <input type="number" id="deposit-amount" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:var(--radius);font-size:16px;" placeholder="Enter amount" min="1" />
-        </div>
-        <div class="input-group" style="margin-bottom:16px;">
-            <label style="display:block;font-weight:500;margin-bottom:4px;">Transaction ID</label>
-            <input type="text" id="deposit-txn" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:var(--radius);font-size:16px;" placeholder="Enter TXN ID" />
-        </div>
-        <button class="btn btn-primary" onclick="submitDeposit()">Submit Deposit</button>
-        <div id="deposit-status" class="status-msg" style="margin-top:12px;"></div>
+  <!-- ========== DEPOSIT SCREEN ========== -->
+  <div id="deposit-screen" class="screen">
+    <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>💰 Deposit</h2></div>
+    <div class="payment-methods" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <button class="btn btn-sm" id="dep-method-telebirr" onclick="selectDepositMethod('telebirr')" style="background:var(--primary);color:white;">📱 Telebirr</button>
+      <button class="btn btn-sm" id="dep-method-cbe" onclick="selectDepositMethod('cbe')" style="background:#ddd;">🏦 CBE</button>
     </div>
+    <div style="background:var(--light);padding:12px 16px;border-radius:var(--radius);display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span>Payment Number</span>
+      <span id="payment-number" style="font-weight:700;color:var(--primary);">09XXXXXXXX</span>
+      <button class="btn btn-sm btn-primary" onclick="copyPaymentNumber()">Copy</button>
+    </div>
+    <div class="input-group" style="margin-bottom:12px;">
+      <label style="display:block;font-weight:500;margin-bottom:4px;">Amount (Br)</label>
+      <input type="number" id="deposit-amount" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:var(--radius);font-size:16px;" placeholder="Enter amount" min="1" />
+    </div>
+    <div class="input-group" style="margin-bottom:16px;">
+      <label style="display:block;font-weight:500;margin-bottom:4px;">Transaction ID</label>
+      <input type="text" id="deposit-txn" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:var(--radius);font-size:16px;" placeholder="Enter TXN ID" />
+    </div>
+    <button class="btn btn-primary" onclick="submitDeposit()">Submit Deposit</button>
+    <div id="deposit-status" class="status-msg" style="margin-top:12px;"></div>
+  </div>
 
-    <!-- WITHDRAW SCREEN -->
-    <div id="withdraw-screen" class="screen">
-        <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>💸 Withdraw</h2></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-            <button class="btn btn-sm" id="wd-method-telebirr" onclick="selectWithdrawMethod('telebirr')" style="background:var(--primary);color:white;">📱 Telebirr</button>
-            <button class="btn btn-sm" id="wd-method-cbe" onclick="selectWithdrawMethod('cbe')" style="background:#ddd;">🏦 CBE</button>
-        </div>
-        <div class="input-group" style="margin-bottom:12px;">
-            <label style="display:block;font-weight:500;margin-bottom:4px;">Amount (Br)</label>
-            <input type="number" id="withdraw-amount" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:var(--radius);font-size:16px;" placeholder="Enter amount" min="1" />
-        </div>
-        <div class="input-group" style="margin-bottom:16px;">
-            <label style="display:block;font-weight:500;margin-bottom:4px;">Account Number</label>
-            <input type="text" id="withdraw-account" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:var(--radius);font-size:16px;" placeholder="Enter account" />
-        </div>
-        <button class="btn btn-secondary" onclick="submitWithdraw()">Submit Withdrawal</button>
-        <div id="withdraw-status" class="status-msg" style="margin-top:12px;"></div>
+  <!-- ========== WITHDRAW SCREEN ========== -->
+  <div id="withdraw-screen" class="screen">
+    <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>💸 Withdraw</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <button class="btn btn-sm" id="wd-method-telebirr" onclick="selectWithdrawMethod('telebirr')" style="background:var(--primary);color:white;">📱 Telebirr</button>
+      <button class="btn btn-sm" id="wd-method-cbe" onclick="selectWithdrawMethod('cbe')" style="background:#ddd;">🏦 CBE</button>
     </div>
+    <div class="input-group" style="margin-bottom:12px;">
+      <label style="display:block;font-weight:500;margin-bottom:4px;">Amount (Br)</label>
+      <input type="number" id="withdraw-amount" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:var(--radius);font-size:16px;" placeholder="Enter amount" min="1" />
+    </div>
+    <div class="input-group" style="margin-bottom:16px;">
+      <label style="display:block;font-weight:500;margin-bottom:4px;">Account Number</label>
+      <input type="text" id="withdraw-account" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:var(--radius);font-size:16px;" placeholder="Enter account" />
+    </div>
+    <button class="btn btn-secondary" onclick="submitWithdraw()">Submit Withdrawal</button>
+    <div id="withdraw-status" class="status-msg" style="margin-top:12px;"></div>
+  </div>
 
-    <!-- PROFILE SCREEN -->
-    <div id="profile-screen" class="screen">
-        <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>👤 Profile</h2></div>
-        <div style="text-align:center;margin-bottom:20px;"><div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;font-size:40px;display:flex;align-items:center;justify-content:center;margin:0 auto;">👤</div></div>
-        <div class="profile-grid">
-            <div class="profile-item"><div class="label">Player Name</div><div class="value" id="profile-name">-</div></div>
-            <div class="profile-item"><div class="label">Telegram ID</div><div class="value" id="profile-tgid">-</div></div>
-            <div class="profile-item"><div class="label">Username</div><div class="value" id="profile-username">-</div></div>
-            <div class="profile-item"><div class="label">Phone</div><div class="value" id="profile-phone">-</div></div>
-            <div class="profile-item"><div class="label">Balance</div><div class="value" id="profile-balance">0 Br</div></div>
-            <div class="profile-item"><div class="label">Games Played</div><div class="value" id="profile-games">0</div></div>
-            <div class="profile-item"><div class="label">Games Won</div><div class="value" id="profile-wins">0</div></div>
-            <div class="profile-item"><div class="label">Win Rate</div><div class="value" id="profile-winrate">0%</div></div>
-            <div class="profile-item" style="grid-column:span 2;"><div class="label">Total Winnings</div><div class="value" id="profile-total">0 Br</div></div>
-        </div>
+  <!-- ========== PROFILE SCREEN ========== -->
+  <div id="profile-screen" class="screen">
+    <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>👤 Profile</h2></div>
+    <div style="text-align:center;margin-bottom:20px;"><div style="width:80px;height:80px;border-radius:50%;background:var(--primary);color:white;font-size:40px;display:flex;align-items:center;justify-content:center;margin:0 auto;">👤</div></div>
+    <div class="profile-grid">
+      <div class="profile-item"><div class="label">Player Name</div><div class="value" id="profile-name">-</div></div>
+      <div class="profile-item"><div class="label">Telegram ID</div><div class="value" id="profile-tgid">-</div></div>
+      <div class="profile-item"><div class="label">Username</div><div class="value" id="profile-username">-</div></div>
+      <div class="profile-item"><div class="label">Phone</div><div class="value" id="profile-phone">-</div></div>
+      <div class="profile-item"><div class="label">Balance</div><div class="value" id="profile-balance">0 Br</div></div>
+      <div class="profile-item"><div class="label">Games Played</div><div class="value" id="profile-games">0</div></div>
+      <div class="profile-item"><div class="label">Games Won</div><div class="value" id="profile-wins">0</div></div>
+      <div class="profile-item"><div class="label">Win Rate</div><div class="value" id="profile-winrate">0%</div></div>
+      <div class="profile-item" style="grid-column:span 2;"><div class="label">Total Winnings</div><div class="value" id="profile-total">0 Br</div></div>
     </div>
+  </div>
 
-    <!-- LEADERBOARD SCREEN -->
-    <div id="leaderboard-screen" class="screen">
-        <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>🏆 Leaderboard</h2></div>
-        <div id="leaderboard-list" style="display:flex;flex-direction:column;gap:8px;"></div>
-    </div>
+  <!-- ========== LEADERBOARD SCREEN ========== -->
+  <div id="leaderboard-screen" class="screen">
+    <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>🏆 Leaderboard</h2></div>
+    <div id="leaderboard-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
 
-    <!-- ROOMS SCREEN -->
-    <div id="rooms-screen" class="screen">
-        <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>🎮 Game Rooms</h2></div>
-        <div id="rooms-container"></div>
-    </div>
+  <!-- ========== ROOMS SCREEN ========== -->
+  <div id="rooms-screen" class="screen">
+    <div class="header"><button class="back" onclick="navigateTo('home')">←</button><h2>🎮 Game Rooms</h2></div>
+    <div id="rooms-container"></div>
+  </div>
 
-    <!-- WAITING ROOM SCREEN -->
-    <div id="waiting-screen" class="screen">
-        <div class="header"><button class="back" onclick="leaveRoom()">←</button><h2 id="waiting-room-title">⏳ Room 1</h2></div>
-        <div style="text-align:center;margin:8px 0;"><span id="waiting-players">0</span> players • Prize: <span id="waiting-prize">0</span> Br</div>
-        <div class="cartela-selection">
-            <h3>Select Your Cartelas</h3>
-            <p style="font-size:14px;color:#666;">Max 2 cartelas per player</p>
-            <div class="cartela-grid" id="cartela-grid"></div>
-            <div class="selected-cartelas"><strong>Selected:</strong> <span id="selected-cartelas-display">None</span></div>
-            <button class="btn btn-primary" id="confirm-cartelas-btn" onclick="confirmCartelas()">Confirm Cartelas</button>
-        </div>
-        <div id="waiting-status" class="status-msg">Select your cartelas and confirm...</div>
+  <!-- ========== WAITING ROOM SCREEN ========== -->
+  <div id="waiting-screen" class="screen">
+    <div class="header"><button class="back" onclick="leaveRoom()">←</button><h2 id="waiting-room-title">⏳ Room 1</h2></div>
+    <div style="text-align:center;margin:8px 0;"><span id="waiting-players">0</span> players • Prize: <span id="waiting-prize">0</span> Br</div>
+    <div class="cartela-selection">
+      <h3>Select Your Cartelas</h3>
+      <p style="font-size:14px;color:#666;">Max 2 cartelas per player</p>
+      <div class="cartela-grid" id="cartela-grid"></div>
+      <div class="selected-cartelas"><strong>Selected:</strong> <span id="selected-cartelas-display">None</span></div>
+      <button class="btn btn-primary" id="confirm-cartelas-btn" onclick="confirmCartelas()">Confirm Cartelas</button>
     </div>
+    <div id="waiting-status" class="status-msg">Select your cartelas and confirm...</div>
+  </div>
 
-    <!-- GAME SCREEN -->
-    <div id="game-screen" class="screen">
-        <div class="header">
-            <button class="back" onclick="leaveGame()">←</button>
-            <h2 id="game-room-title">🎲 Room 1</h2>
-            <span id="game-players-count">👥 0</span>
-        </div>
-        <div class="ball-display">
-            <div class="ball" id="current-ball">🎱</div>
-            <div class="called">Called: <span id="called-numbers-display">-</span></div>
-        </div>
-        <div class="game-board" id="game-board"></div>
-        <div class="game-controls">
-            <button class="btn btn-info" onclick="toggleAutoMark()"><span id="auto-mark-text">🔘 Auto Mark</span></button>
-            <button class="btn btn-success" onclick="checkBingo()">🎯 BINGO!</button>
-        </div>
-        <div id="game-status" class="status-msg"></div>
+  <!-- ========== GAME SCREEN ========== -->
+  <div id="game-screen" class="screen">
+    <div class="header">
+      <button class="back" onclick="leaveGame()">←</button>
+      <h2 id="game-room-title">🎲 Room 1</h2>
+      <span id="game-players-count">👥 0</span>
     </div>
+    <div class="ball-display">
+      <div class="ball" id="current-ball">🎱</div>
+      <div class="called">Called: <span id="called-numbers-display">-</span></div>
+    </div>
+    <div class="game-board" id="game-board"></div>
+    <div class="game-controls">
+      <button class="btn btn-info" onclick="toggleAutoMark()"><span id="auto-mark-text">🔘 Auto Mark</span></button>
+      <button class="btn btn-success" onclick="checkBingo()">🎯 BINGO!</button>
+    </div>
+    <div id="game-status" class="status-msg"></div>
+  </div>
 
-    <!-- WINNER SCREEN -->
-    <div id="winner-screen" class="screen">
-        <div class="winner-screen">
-            <div class="emoji">🎉🏆🎉</div>
-            <div class="title">WE HAVE A WINNER!</div>
-            <div class="name" id="winner-name">Player</div>
-            <div class="prize" id="winner-prize">💰 0 Br</div>
-            <button class="btn btn-primary" onclick="resetRoom()">Play Again</button>
-        </div>
+  <!-- ========== WINNER SCREEN ========== -->
+  <div id="winner-screen" class="screen">
+    <div class="winner-screen">
+      <div class="emoji">🎉🏆🎉</div>
+      <div class="title">WE HAVE A WINNER!</div>
+      <div class="name" id="winner-name">Player</div>
+      <div class="prize" id="winner-prize">💰 0 Br</div>
+      <button class="btn btn-primary" onclick="resetRoom()">Play Again</button>
     </div>
+  </div>
 
-    <!-- POPUP -->
-    <div class="popup" id="countdownPopup">
-        <div class="popup-content">
-            <div class="big waiting" id="popup-countdown">⏳</div>
-            <div class="title" id="popup-title">Waiting for players...</div>
-            <div class="sub" id="popup-sub">Need at least 2 players</div>
-            <div class="details">
-                <div><div class="label">👥 Players</div><div class="value" id="popup-players">0</div></div>
-                <div><div class="label">💰 Prize Pool</div><div class="value" id="popup-prize">0 Br</div></div>
-            </div>
-            <div class="buttons">
-                <button class="btn btn-danger" onclick="cancelGame()">✕ Cancel</button>
-                <button class="btn btn-secondary" onclick="changeCartelas()">🔄 Change</button>
-            </div>
-        </div>
+  <!-- ========== POPUP (Countdown & Waiting) ========== -->
+  <div class="popup" id="countdownPopup">
+    <div class="popup-content">
+      <div class="big waiting" id="popup-countdown">⏳</div>
+      <div class="title" id="popup-title">Waiting for players...</div>
+      <div class="sub" id="popup-sub">Need at least 2 players</div>
+      <div class="details">
+        <div><div class="label">👥 Players</div><div class="value" id="popup-players">0</div></div>
+        <div><div class="label">💰 Prize Pool</div><div class="value" id="popup-prize">0 Br</div></div>
+      </div>
+      <div class="buttons">
+        <button class="btn btn-danger" onclick="cancelGame()">✕ Cancel</button>
+        <button class="btn btn-secondary" onclick="changeCartelas()">🔄 Change</button>
+      </div>
     </div>
+  </div>
 </div>
 
-<!-- FIREBASE + JAVASCRIPT -->
+<!-- ============================================================ -->
+<!-- FIREBASE + JAVASCRIPT – SECURE CLIENT -->
+<!-- ============================================================ -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -245,43 +248,44 @@
 // FIREBASE CONFIG
 // ================================================================
 const firebaseConfig = {
-    apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
-    authDomain: "za-bingo-7ad31.firebaseapp.com",
-    databaseURL: "https://za-bingo-7ad31-default-rtdb.firebaseio.com/",
-    projectId: "za-bingo-7ad31",
-    storageBucket: "za-bingo-7ad31.firebasestorage.app",
-    messagingSenderId: "713392974772",
-    appId: "1:713392974772:web:0e14359197fd522c06a0e1"
+  apiKey: "AIzaSyAV2-bOqQUsSk45RqmeeazxxLuqyEGpV1w",
+  authDomain: "za-bingo-7ad31.firebaseapp.com",
+  databaseURL: "https://za-bingo-7ad31-default-rtdb.firebaseio.com/",
+  projectId: "za-bingo-7ad31",
+  storageBucket: "za-bingo-7ad31.firebasestorage.app",
+  messagingSenderId: "713392974772",
+  appId: "1:713392974772:web:0e14359197fd522c06a0e1"
 };
 
 // ================================================================
 // STATE
 // ================================================================
 const state = {
-    playerId: null,
-    playerData: null,
-    currentRoom: null,
-    selectedCartelas: [],
-    cartelaTaken: {},
-    calledNumbers: [],
-    autoMark: false,
-    gameInterval: null,
-    countdownInterval: null,
-    waitingInterval: null,
-    countdownStarted: false,
-    cancelled: false,
-    roomPlayersCount: { room1:0, room2:0, room3:0 },
-    isRegistered: false,
-    db: null,
-    auth: null
+  playerId: null,
+  playerData: null,
+  currentRoom: null,
+  selectedCartelas: [],
+  cartelaTaken: {},
+  calledNumbers: [],
+  autoMark: false,
+  gameInterval: null,
+  countdownInterval: null,
+  waitingInterval: null,
+  countdownStarted: false,
+  cancelled: false,
+  roomPlayersCount: { room1:0, room2:0, room3:0 },
+  isRegistered: false,
+  db: null,
+  auth: null,
+  listeners: [] // for cleanup
 };
 
 let telegramUser = null;
 try {
-    if (window.Telegram && window.Telegram.WebApp) {
-        telegramUser = window.Telegram.WebApp.initDataUnsafe?.user;
-        if (telegramUser) window.Telegram.WebApp.ready();
-    }
+  if (window.Telegram && window.Telegram.WebApp) {
+    telegramUser = window.Telegram.WebApp.initDataUnsafe?.user;
+    if (telegramUser) window.Telegram.WebApp.ready();
+  }
 } catch(e) {}
 
 // ================================================================
@@ -290,738 +294,654 @@ try {
 let database, auth;
 
 function initFirebase() {
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    database = firebase.database();
-    auth = firebase.auth();
-    state.db = database;
-    state.auth = auth;
-    console.log('✅ Firebase initialized');
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  database = firebase.database();
+  auth = firebase.auth();
+  state.db = database;
+  state.auth = auth;
+  console.log('✅ Firebase initialized');
 }
 
 // ================================================================
-// AUTH – FIXED: reads playerId correctly
+// AUTH – read only
 // ================================================================
 async function initAuth() {
-    if (!state.db) return null;
-    try {
-        let user = auth.currentUser;
-        if (!user) {
-            const result = await auth.signInAnonymously();
-            user = result.user;
-        }
-        if (!telegramUser || !telegramUser.id) {
-            showToast('📢 Please open from Telegram bot.', 'info');
-            return null;
-        }
-        const lookupRef = state.db.ref('telegram_lookup/' + telegramUser.id);
-        const snap = await lookupRef.once('value');
-        const val = snap.val();
-        if (!val || !val.playerId) {
-            showToast('📢 Please register via the Telegram bot first.', 'info');
-            return null;
-        }
-        state.playerId = val.playerId;   // ✅ FIXED: reads the string value
-        state.isRegistered = true;
-        await loadPlayerData();
-        return state.playerId;
-    } catch (e) {
-        console.error('Auth error:', e);
-        showToast('❌ Authentication failed. Please refresh.', 'error');
-        return null;
+  if (!state.db) return null;
+  try {
+    let user = auth.currentUser;
+    if (!user) {
+      const result = await auth.signInAnonymously();
+      user = result.user;
     }
+    if (!telegramUser || !telegramUser.id) {
+      return null; // silent
+    }
+    const lookupRef = state.db.ref('telegram_lookup/' + telegramUser.id);
+    const snap = await lookupRef.once('value');
+    const val = snap.val();
+    if (!val) return null;
+    // support string or object
+    let playerId = typeof val === 'string' ? val : (val.playerId || null);
+    if (!playerId) return null;
+    state.playerId = playerId;
+    state.isRegistered = true;
+    await loadPlayerData();
+    return state.playerId;
+  } catch (e) {
+    console.error('Auth error:', e);
+    return null;
+  }
 }
 
 // ================================================================
-// PLAYER DATA – ONLY READ
+// PLAYER DATA – read only
 // ================================================================
 async function loadPlayerData() {
-    if (!state.db || !state.playerId) return;
-    try {
-        const snap = await state.db.ref('players/' + state.playerId).once('value');
-        if (snap.exists()) {
-            state.playerData = snap.val();
-            updateUI();
-        } else {
-            showToast('⚠️ Player data missing. Please contact support.', 'error');
-        }
-    } catch (e) {
-        console.error('loadPlayerData error:', e);
-        showToast('❌ Failed to load profile.', 'error');
+  if (!state.db || !state.playerId) return;
+  try {
+    const snap = await state.db.ref('players/' + state.playerId).once('value');
+    if (snap.exists()) {
+      state.playerData = snap.val();
+      updateUI();
     }
+  } catch (e) {
+    console.error('loadPlayerData error:', e);
+  }
 }
 
 // ================================================================
-// UPDATE UI – FIXED: uses firstname for profile name
+// UPDATE UI – supports firstName, firstname, playerName
 // ================================================================
 function updateUI() {
-    if (!state.playerData) return;
-    const d = state.playerData;
-    const bal = d.balance || 0;
-    document.getElementById('home-balance').textContent = bal + ' Br';
-    document.getElementById('profile-name').textContent = d.firstname || '-';   // ✅ FIXED
-    document.getElementById('profile-tgid').textContent = d.telegramId || '-';
-    document.getElementById('profile-username').textContent = d.username || '-';
-    document.getElementById('profile-phone').textContent = d.phoneNumber || '-';
-    document.getElementById('profile-balance').textContent = bal + ' Br';
-    document.getElementById('profile-games').textContent = d.gamesPlayed || 0;
-    document.getElementById('profile-wins').textContent = d.gamesWon || 0;
-    const wr = (d.gamesPlayed && d.gamesPlayed > 0) ? Math.round((d.gamesWon/d.gamesPlayed)*100) : 0;
-    document.getElementById('profile-winrate').textContent = wr + '%';
-    document.getElementById('profile-total').textContent = (d.totalWinnings || 0) + ' Br';
+  if (!state.playerData) return;
+  const d = state.playerData;
+  const bal = d.balance || 0;
+  document.getElementById('home-balance').textContent = bal + ' Br';
+  document.getElementById('profile-balance').textContent = bal + ' Br';
+  document.getElementById('profile-name').textContent = d.firstName || d.firstname || d.playerName || '-';
+  document.getElementById('profile-tgid').textContent = d.telegramId || '-';
+  document.getElementById('profile-username').textContent = d.username || '-';
+  document.getElementById('profile-phone').textContent = d.phoneNumber || '-';
+  document.getElementById('profile-games').textContent = d.gamesPlayed || 0;
+  document.getElementById('profile-wins').textContent = d.gamesWon || 0;
+  const wr = (d.gamesPlayed > 0) ? Math.round((d.gamesWon / d.gamesPlayed) * 100) : 0;
+  document.getElementById('profile-winrate').textContent = wr + '%';
+  document.getElementById('profile-total').textContent = (d.totalWinnings || 0) + ' Br';
 }
 
 // ================================================================
-// NAVIGATION
+// NAVIGATION – with listener cleanup
 // ================================================================
 function navigateTo(screen) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const target = document.getElementById(screen + '-screen');
-    if (target) target.classList.add('active');
-    if (screen === 'profile') loadPlayerData();
-    if (screen === 'leaderboard') loadLeaderboard();
-    if (screen === 'rooms') renderRooms();
+  cleanupListeners(); // remove all Firebase listeners
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screen + '-screen');
+  if (target) target.classList.add('active');
+
+  if (screen === 'profile') loadPlayerData();
+  if (screen === 'leaderboard') loadLeaderboard();
+  if (screen === 'rooms') renderRooms();
+  if (screen === 'game') loadGame(state.currentRoom);
+  if (screen === 'waiting') loadWaitingRoom(state.currentRoom);
 }
 window.navigateTo = navigateTo;
 
 // ================================================================
-// DEPOSIT
+// CLEANUP LISTENERS
+// ================================================================
+function cleanupListeners() {
+  state.listeners.forEach(({ ref, listener }) => {
+    if (ref && listener) ref.off('value', listener);
+  });
+  state.listeners = [];
+}
+
+// ================================================================
+// DEPOSIT (unchanged)
 // ================================================================
 let depMethod = 'telebirr';
 function selectDepositMethod(m) {
-    depMethod = m;
-    document.getElementById('dep-method-telebirr').style.background = m === 'telebirr' ? 'var(--primary)' : '#ddd';
-    document.getElementById('dep-method-telebirr').style.color = m === 'telebirr' ? 'white' : 'black';
-    document.getElementById('dep-method-cbe').style.background = m === 'cbe' ? 'var(--primary)' : '#ddd';
-    document.getElementById('dep-method-cbe').style.color = m === 'cbe' ? 'white' : 'black';
-    document.getElementById('payment-number').textContent = m === 'telebirr' ? '09XXXXXXXX' : '10XXXXXXXX';
+  depMethod = m;
+  document.getElementById('dep-method-telebirr').style.background = m === 'telebirr' ? 'var(--primary)' : '#ddd';
+  document.getElementById('dep-method-telebirr').style.color = m === 'telebirr' ? 'white' : 'black';
+  document.getElementById('dep-method-cbe').style.background = m === 'cbe' ? 'var(--primary)' : '#ddd';
+  document.getElementById('dep-method-cbe').style.color = m === 'cbe' ? 'white' : 'black';
+  document.getElementById('payment-number').textContent = m === 'telebirr' ? '09XXXXXXXX' : '10XXXXXXXX';
 }
 window.selectDepositMethod = selectDepositMethod;
 
 function copyPaymentNumber() {
-    const n = document.getElementById('payment-number').textContent;
-    if (navigator.clipboard) navigator.clipboard.writeText(n);
-    else { const i = document.createElement('input'); i.value=n; document.body.appendChild(i); i.select(); document.execCommand('copy'); i.remove(); }
-    showToast('Copied!', 'success');
+  const n = document.getElementById('payment-number').textContent;
+  if (navigator.clipboard) navigator.clipboard.writeText(n);
+  else { const i = document.createElement('input'); i.value=n; document.body.appendChild(i); i.select(); document.execCommand('copy'); i.remove(); }
 }
 window.copyPaymentNumber = copyPaymentNumber;
 
 async function submitDeposit() {
-    if (!state.isRegistered) { showToast('Please register via bot first.', 'error'); return; }
-    const amount = document.getElementById('deposit-amount').value;
-    const txn = document.getElementById('deposit-txn').value;
-    if (!amount || amount <= 0) return showToast('Enter valid amount.', 'error');
-    if (!txn) return showToast('Enter transaction ID.', 'error');
-    try {
-        await state.db.ref('deposits').push({
-            playerId: state.playerId,
-            playerName: state.playerData?.firstname || 'Unknown',
-            method: depMethod,
-            amount: parseFloat(amount),
-            transactionId: txn,
-            status: 'pending',
-            createdAt: Date.now()
-        });
-        showToast('✅ Deposit submitted! Pending approval.', 'success');
-        document.getElementById('deposit-amount').value = '';
-        document.getElementById('deposit-txn').value = '';
-    } catch(e) { showToast('❌ Error submitting.', 'error'); }
+  if (!state.isRegistered) return;
+  const amount = document.getElementById('deposit-amount').value;
+  const txn = document.getElementById('deposit-txn').value;
+  if (!amount || amount <= 0 || !txn) return;
+  try {
+    await state.db.ref('deposits').push({
+      playerId: state.playerId,
+      playerName: state.playerData?.firstName || state.playerData?.playerName || 'Unknown',
+      method: depMethod,
+      amount: parseFloat(amount),
+      transactionId: txn,
+      status: 'pending',
+      createdAt: Date.now()
+    });
+    document.getElementById('deposit-amount').value = '';
+    document.getElementById('deposit-txn').value = '';
+    document.getElementById('deposit-status').textContent = '✅ Deposit submitted!';
+  } catch(e) {
+    document.getElementById('deposit-status').textContent = '❌ Error';
+  }
 }
 window.submitDeposit = submitDeposit;
 
 // ================================================================
-// WITHDRAW
+// WITHDRAW (unchanged)
 // ================================================================
 let wdMethod = 'telebirr';
 function selectWithdrawMethod(m) {
-    wdMethod = m;
-    document.getElementById('wd-method-telebirr').style.background = m === 'telebirr' ? 'var(--primary)' : '#ddd';
-    document.getElementById('wd-method-telebirr').style.color = m === 'telebirr' ? 'white' : 'black';
-    document.getElementById('wd-method-cbe').style.background = m === 'cbe' ? 'var(--primary)' : '#ddd';
-    document.getElementById('wd-method-cbe').style.color = m === 'cbe' ? 'white' : 'black';
+  wdMethod = m;
+  document.getElementById('wd-method-telebirr').style.background = m === 'telebirr' ? 'var(--primary)' : '#ddd';
+  document.getElementById('wd-method-telebirr').style.color = m === 'telebirr' ? 'white' : 'black';
+  document.getElementById('wd-method-cbe').style.background = m === 'cbe' ? 'var(--primary)' : '#ddd';
+  document.getElementById('wd-method-cbe').style.color = m === 'cbe' ? 'white' : 'black';
 }
 window.selectWithdrawMethod = selectWithdrawMethod;
 
 async function submitWithdraw() {
-    if (!state.isRegistered) { showToast('Please register via bot first.', 'error'); return; }
-    const amount = document.getElementById('withdraw-amount').value;
-    const acc = document.getElementById('withdraw-account').value;
-    if (!amount || amount <= 0) return showToast('Enter valid amount.', 'error');
-    if (!acc) return showToast('Enter account number.', 'error');
-    if (parseFloat(amount) > (state.playerData?.balance || 0)) return showToast('Insufficient balance.', 'error');
-    try {
-        await state.db.ref('withdrawals').push({
-            playerId: state.playerId,
-            playerName: state.playerData?.firstname || 'Unknown',
-            method: wdMethod,
-            amount: parseFloat(amount),
-            accountNumber: acc,
-            status: 'pending',
-            createdAt: Date.now()
-        });
-        showToast('✅ Withdrawal submitted! Pending approval.', 'success');
-        document.getElementById('withdraw-amount').value = '';
-        document.getElementById('withdraw-account').value = '';
-    } catch(e) { showToast('❌ Error submitting.', 'error'); }
+  if (!state.isRegistered) return;
+  const amount = document.getElementById('withdraw-amount').value;
+  const acc = document.getElementById('withdraw-account').value;
+  if (!amount || amount <= 0 || !acc) return;
+  if (parseFloat(amount) > (state.playerData?.balance || 0)) {
+    document.getElementById('withdraw-status').textContent = '❌ Insufficient balance';
+    return;
+  }
+  try {
+    await state.db.ref('withdrawals').push({
+      playerId: state.playerId,
+      playerName: state.playerData?.firstName || state.playerData?.playerName || 'Unknown',
+      method: wdMethod,
+      amount: parseFloat(amount),
+      accountNumber: acc,
+      status: 'pending',
+      createdAt: Date.now()
+    });
+    document.getElementById('withdraw-amount').value = '';
+    document.getElementById('withdraw-account').value = '';
+    document.getElementById('withdraw-status').textContent = '✅ Withdrawal submitted!';
+  } catch(e) {
+    document.getElementById('withdraw-status').textContent = '❌ Error';
+  }
 }
 window.submitWithdraw = submitWithdraw;
 
 // ================================================================
-// LEADERBOARD
+// LEADERBOARD – optimised (limit 50)
 // ================================================================
 async function loadLeaderboard() {
-    const container = document.getElementById('leaderboard-list');
-    if (!state.db) { container.innerHTML = '<p>Not connected</p>'; return; }
-    try {
-        const snap = await state.db.ref('players').once('value');
-        const players = [];
-        snap.forEach(child => {
-            const d = child.val();
-            if (d && d.firstname) players.push(d);
-        });
-        players.sort((a,b) => (b.totalWinnings||0) - (a.totalWinnings||0));
-        container.innerHTML = '';
-        if (!players.length) { container.innerHTML = '<p style="text-align:center;color:#888;">No players yet</p>'; return; }
-        players.slice(0,50).forEach((p,i) => {
-            const div = document.createElement('div');
-            div.style.cssText = 'display:grid;grid-template-columns:40px 1fr 60px 80px;background:var(--light);padding:10px 16px;border-radius:var(--radius);align-items:center;';
-            const rank = i+1;
-            const medal = rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : rank;
-            div.innerHTML = `<span style="font-weight:700;color:var(--primary);">${medal}</span><span>${p.firstname||'Unknown'}</span><span style="color:var(--secondary);font-weight:600;">${p.gamesWon||0}</span><span style="color:var(--success);font-weight:600;text-align:right;">${p.totalWinnings||0} Br</span>`;
-            container.appendChild(div);
-        });
-    } catch(e) { container.innerHTML = '<p>Error loading</p>'; }
+  const container = document.getElementById('leaderboard-list');
+  if (!state.db) { container.innerHTML = '<p>Not connected</p>'; return; }
+  try {
+    const snap = await state.db.ref('players').orderByChild('totalWinnings').limitToLast(50).once('value');
+    const players = [];
+    snap.forEach(child => {
+      const d = child.val();
+      if (d && (d.firstName || d.playerName)) players.push(d);
+    });
+    players.sort((a,b) => (b.totalWinnings||0) - (a.totalWinnings||0));
+    container.innerHTML = '';
+    if (!players.length) { container.innerHTML = '<p style="text-align:center;color:#888;">No players yet</p>'; return; }
+    players.forEach((p,i) => {
+      const div = document.createElement('div');
+      div.style.cssText = 'display:grid;grid-template-columns:40px 1fr 60px 80px;background:var(--light);padding:10px 16px;border-radius:var(--radius);align-items:center;';
+      const rank = i+1;
+      const medal = rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : rank;
+      const name = p.firstName || p.firstname || p.playerName || 'Unknown';
+      div.innerHTML = `<span style="font-weight:700;color:var(--primary);">${medal}</span><span>${name}</span><span style="color:var(--secondary);font-weight:600;">${p.gamesWon||0}</span><span style="color:var(--success);font-weight:600;text-align:right;">${p.totalWinnings||0} Br</span>`;
+      container.appendChild(div);
+    });
+  } catch(e) { container.innerHTML = '<p>Error loading</p>'; }
 }
 window.loadLeaderboard = loadLeaderboard;
 
 // ================================================================
-// ROOMS
+// ROOMS – real-time player count
 // ================================================================
 function renderRooms() {
-    const container = document.getElementById('rooms-container');
-    container.innerHTML = '';
-    ['room1','room2','room3'].forEach(id => {
-        const stake = id === 'room1' ? 5 : id === 'room2' ? 10 : 20;
-        const div = document.createElement('div');
-        div.className = 'room-card';
-        div.onclick = () => joinRoom(id);
-        div.innerHTML = `
-            <div class="room-name">${id.toUpperCase()}</div>
-            <div class="stake">Stake: ${stake} Br</div>
-            <div class="players" id="room-${id}-players">👥 0/150</div>
-            <div class="status" id="room-${id}-status">🟢 Waiting</div>
-        `;
-        container.appendChild(div);
-    });
-    listenRoomStatus();
+  const container = document.getElementById('rooms-container');
+  container.innerHTML = '';
+  ['room1','room2','room3'].forEach(id => {
+    const stake = id === 'room1' ? 5 : id === 'room2' ? 10 : 20;
+    const div = document.createElement('div');
+    div.className = 'room-card';
+    div.onclick = () => joinRoom(id);
+    div.innerHTML = `
+      <div class="room-name">${id.toUpperCase()}</div>
+      <div class="stake">Stake: ${stake} Br</div>
+      <div class="players" id="room-${id}-players">👥 0/150</div>
+      <div class="status" id="room-${id}-status">🟢 Waiting</div>
+    `;
+    container.appendChild(div);
+  });
+  listenRoomStatus();
 }
 
 function listenRoomStatus() {
-    ['room1','room2','room3'].forEach(id => {
-        const ref = state.db.ref('ZA_Bingo_V3/rooms/' + id + '/players');
-        ref.on('value', snap => {
-            const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-            state.roomPlayersCount[id] = count;
-            const el = document.getElementById('room-'+id+'-players');
-            if (el) el.textContent = '👥 ' + count + '/150';
-        });
+  ['room1','room2','room3'].forEach(id => {
+    const ref = state.db.ref('ZA_Bingo_V3/rooms/' + id + '/players');
+    const listener = ref.on('value', snap => {
+      const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+      state.roomPlayersCount[id] = count;
+      const el = document.getElementById('room-'+id+'-players');
+      if (el) el.textContent = '👥 ' + count + '/150';
     });
+    state.listeners.push({ ref, listener });
+  });
 }
 
 // ================================================================
-// JOIN ROOM
+// JOIN ROOM – with balance transaction
 // ================================================================
 async function joinRoom(roomId) {
-    if (!state.isRegistered) { showToast('Please register via bot first.', 'error'); return; }
-    const stake = roomId === 'room1' ? 5 : roomId === 'room2' ? 10 : 20;
-    if ((state.playerData?.balance || 0) < stake) { showToast('Insufficient balance.', 'error'); return; }
+  if (!state.isRegistered) return;
+  const stake = roomId === 'room1' ? 5 : roomId === 'room2' ? 10 : 20;
+  if ((state.playerData?.balance || 0) < stake) return;
 
-    const playerRef = state.db.ref('players/' + state.playerId + '/balance');
-    try {
-        await playerRef.transaction(current => {
-            if (current === null || current < stake) return;
-            return current - stake;
-        });
-        await loadPlayerData();
-    } catch(e) { showToast('Failed to deduct stake.', 'error'); return; }
-
-    const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId + '/players/' + state.playerId);
-    await roomRef.set({
-        playerName: state.playerData.firstname || 'Player',
-        joinedAt: Date.now(),
-        cartelas: {}
+  const playerRef = state.db.ref('players/' + state.playerId + '/balance');
+  try {
+    await playerRef.transaction(current => {
+      if (current === null || current < stake) return;
+      return current - stake;
     });
+    await loadPlayerData();
+  } catch(e) { return; }
 
-    state.currentRoom = roomId;
-    state.selectedCartelas = [];
-    state.cartelaTaken = {};
-    state.countdownStarted = false;
-    state.cancelled = false;
+  const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId + '/players/' + state.playerId);
+  await roomRef.set({
+    playerName: state.playerData?.firstName || state.playerData?.playerName || 'Player',
+    joinedAt: Date.now(),
+    cartelas: {}
+  });
 
-    navigateTo('waiting');
-    loadWaitingRoom(roomId);
+  state.currentRoom = roomId;
+  state.selectedCartelas = [];
+  state.cartelaTaken = {};
+  state.countdownStarted = false;
+  state.cancelled = false;
+
+  navigateTo('waiting');
+  // The waiting screen will load via navigateTo -> loadWaitingRoom
 }
 window.joinRoom = joinRoom;
 
 // ================================================================
-// WAITING ROOM
+// WAITING ROOM – cartela selection with locking
 // ================================================================
 function loadWaitingRoom(roomId) {
-    document.getElementById('waiting-room-title').textContent = '⏳ ' + roomId.toUpperCase();
-    document.getElementById('confirm-cartelas-btn').disabled = false;
-    document.getElementById('confirm-cartelas-btn').textContent = 'Confirm Cartelas';
-    document.getElementById('selected-cartelas-display').textContent = 'None';
-    document.getElementById('waiting-status').textContent = 'Select your cartelas and confirm...';
-    loadCartelas();
-    const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId);
-    roomRef.child('players').on('value', snap => {
-        const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-        document.getElementById('waiting-players').textContent = count;
-        const stake = roomId === 'room1' ? 5 : roomId === 'room2' ? 10 : 20;
-        document.getElementById('waiting-prize').textContent = count * stake;
-        document.getElementById('popup-players').textContent = count;
-        document.getElementById('popup-prize').textContent = (count * stake) + ' Br';
-    });
+  document.getElementById('waiting-room-title').textContent = '⏳ ' + roomId.toUpperCase();
+  document.getElementById('confirm-cartelas-btn').disabled = false;
+  document.getElementById('confirm-cartelas-btn').textContent = 'Confirm Cartelas';
+  document.getElementById('selected-cartelas-display').textContent = 'None';
+  document.getElementById('waiting-status').textContent = 'Select your cartelas and confirm...';
+  loadCartelas();
+  // Listen to room players and countdown
+  const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId);
+  const playerListener = roomRef.child('players').on('value', snap => {
+    const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('waiting-players').textContent = count;
+    const stake = roomId === 'room1' ? 5 : roomId === 'room2' ? 10 : 20;
+    document.getElementById('waiting-prize').textContent = count * stake;
+    document.getElementById('popup-players').textContent = count;
+    document.getElementById('popup-prize').textContent = (count * stake) + ' Br';
+  });
+  state.listeners.push({ ref: roomRef.child('players'), listener: playerListener });
+
+  // Countdown listener – bot writes countdown
+  const countdownListener = roomRef.child('countdown').on('value', snap => {
+    const val = snap.val();
+    if (val !== null && val !== undefined) {
+      document.getElementById('popup-countdown').className = 'big';
+      document.getElementById('popup-countdown').textContent = val;
+      document.getElementById('popup-title').textContent = 'Game Starting in...';
+      document.getElementById('popup-sub').textContent = 'Get ready!';
+      // If countdown reached 0, hide popup and go to game
+      if (val <= 0) {
+        document.getElementById('countdownPopup').classList.remove('active');
+        navigateTo('game');
+      }
+    } else {
+      // No countdown – waiting for players
+      document.getElementById('popup-countdown').className = 'big waiting';
+      document.getElementById('popup-countdown').textContent = '⏳';
+      document.getElementById('popup-title').textContent = 'Waiting for players...';
+      document.getElementById('popup-sub').textContent = 'Need at least 2 players';
+    }
+  });
+  state.listeners.push({ ref: roomRef.child('countdown'), listener: countdownListener });
 }
 
 function loadCartelas() {
-    const grid = document.getElementById('cartela-grid');
-    grid.innerHTML = '';
-    state.cartelaTaken = {};
-    for (let i=1; i<=150; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'cartela-btn';
-        btn.textContent = i;
-        btn.dataset.num = i;
-        btn.onclick = () => toggleCartela(i);
-        grid.appendChild(btn);
-    }
-    const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/takenCartelas');
-    roomRef.on('value', snap => {
-        if (snap.exists()) {
-            const taken = snap.val();
-            document.querySelectorAll('.cartela-btn').forEach(b => {
-                const num = parseInt(b.dataset.num);
-                if (taken[num] && !state.selectedCartelas.includes(num)) {
-                    b.classList.add('taken');
-                    b.disabled = true;
-                } else {
-                    b.classList.remove('taken');
-                    b.disabled = false;
-                }
-            });
-        } else {
-            document.querySelectorAll('.cartela-btn').forEach(b => {
-                if (!state.selectedCartelas.includes(parseInt(b.dataset.num))) {
-                    b.classList.remove('taken');
-                    b.disabled = false;
-                }
-            });
-        }
+  const grid = document.getElementById('cartela-grid');
+  grid.innerHTML = '';
+  state.cartelaTaken = {};
+  for (let i=1; i<=150; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'cartela-btn';
+    btn.textContent = i;
+    btn.dataset.num = i;
+    btn.onclick = () => toggleCartela(i);
+    grid.appendChild(btn);
+  }
+  // Listen to taken cartelas from Firebase
+  const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/takenCartelas');
+  const listener = roomRef.on('value', snap => {
+    const taken = snap.val() || {};
+    document.querySelectorAll('.cartela-btn').forEach(b => {
+      const num = parseInt(b.dataset.num);
+      if (taken[num] && !state.selectedCartelas.includes(num)) {
+        b.classList.add('taken');
+        b.disabled = true;
+      } else {
+        b.classList.remove('taken');
+        b.disabled = false;
+      }
     });
+  });
+  state.listeners.push({ ref: roomRef, listener });
 }
 
 function toggleCartela(num) {
-    if (state.cartelaTaken[num]) return showToast('Cartela taken', 'error');
-    const idx = state.selectedCartelas.indexOf(num);
-    if (idx > -1) {
-        state.selectedCartelas.splice(idx, 1);
-    } else if (state.selectedCartelas.length < 2) {
-        state.selectedCartelas.push(num);
-    } else {
-        showToast('Max 2 cartelas', 'error');
-        return;
-    }
-    document.querySelectorAll('.cartela-btn').forEach(b => {
-        const n = parseInt(b.dataset.num);
-        b.classList.toggle('selected', state.selectedCartelas.includes(n));
-    });
-    document.getElementById('selected-cartelas-display').textContent =
-        state.selectedCartelas.length ? state.selectedCartelas.join(', ') : 'None';
+  if (state.cartelaTaken[num]) return;
+  const idx = state.selectedCartelas.indexOf(num);
+  if (idx > -1) {
+    state.selectedCartelas.splice(idx, 1);
+  } else if (state.selectedCartelas.length < 2) {
+    state.selectedCartelas.push(num);
+  } else {
+    return;
+  }
+  document.querySelectorAll('.cartela-btn').forEach(b => {
+    const n = parseInt(b.dataset.num);
+    b.classList.toggle('selected', state.selectedCartelas.includes(n));
+  });
+  document.getElementById('selected-cartelas-display').textContent =
+    state.selectedCartelas.length ? state.selectedCartelas.join(', ') : 'None';
 }
 window.toggleCartela = toggleCartela;
 
 // ================================================================
-// CONFIRM CARTELAS
+// CONFIRM CARTELAS – lock via Firebase
 // ================================================================
 async function confirmCartelas() {
-    if (state.selectedCartelas.length === 0) { showToast('Select at least one cartela', 'error'); return; }
-    const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom);
-    const updates = {};
-    state.selectedCartelas.forEach(num => {
-        updates['takenCartelas/' + num] = state.playerId;
-        updates['players/' + state.playerId + '/cartelas/' + num] = true;
-    });
-    await roomRef.update(updates);
-    document.getElementById('confirm-cartelas-btn').disabled = true;
-    document.getElementById('confirm-cartelas-btn').textContent = '✅ Confirmed';
-    showToast('✅ Cartelas confirmed!', 'success');
-    showWaitingPopup();
+  if (state.selectedCartelas.length === 0) return;
+  const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom);
+  const updates = {};
+  state.selectedCartelas.forEach(num => {
+    updates['takenCartelas/' + num] = state.playerId;
+    updates['players/' + state.playerId + '/cartelas/' + num] = true;
+  });
+  await roomRef.update(updates);
+  document.getElementById('confirm-cartelas-btn').disabled = true;
+  document.getElementById('confirm-cartelas-btn').textContent = '✅ Confirmed';
+  // Popup will show countdown automatically via listener
 }
 window.confirmCartelas = confirmCartelas;
 
 // ================================================================
-// WAITING POPUP (with countdown)
+// GAME SCREEN – real-time called numbers & winner
 // ================================================================
-function showWaitingPopup() {
-    const popup = document.getElementById('countdownPopup');
-    const count = state.roomPlayersCount[state.currentRoom] || 1;
-    const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
-    document.getElementById('popup-players').textContent = count;
-    document.getElementById('popup-prize').textContent = (count * stake) + ' Br';
-    if (count >= 2) {
-        document.getElementById('popup-countdown').className = 'big';
-        document.getElementById('popup-countdown').textContent = '25';
-        document.getElementById('popup-title').textContent = 'Game Starting in...';
-        document.getElementById('popup-sub').textContent = 'Get ready!';
-        startCountdown();
-    } else {
-        document.getElementById('popup-countdown').className = 'big waiting';
-        document.getElementById('popup-countdown').textContent = '⏳';
-        document.getElementById('popup-title').textContent = 'Waiting for players...';
-        document.getElementById('popup-sub').textContent = 'Need at least 2 players';
-        if (state.waitingInterval) clearInterval(state.waitingInterval);
-        state.waitingInterval = setInterval(() => {
-            const c = state.roomPlayersCount[state.currentRoom] || 1;
-            document.getElementById('popup-players').textContent = c;
-            document.getElementById('popup-prize').textContent = (c * stake) + ' Br';
-            if (c >= 2 && !state.countdownStarted && !state.cancelled) {
-                clearInterval(state.waitingInterval);
-                state.waitingInterval = null;
-                document.getElementById('popup-countdown').className = 'big';
-                document.getElementById('popup-countdown').textContent = '25';
-                document.getElementById('popup-title').textContent = 'Game Starting in...';
-                document.getElementById('popup-sub').textContent = 'Get ready!';
-                startCountdown();
-            }
-        }, 1000);
+function loadGame(roomId) {
+  document.getElementById('game-room-title').textContent = '🎲 ' + roomId.toUpperCase();
+  const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId);
+
+  // Called numbers
+  const calledListener = roomRef.child('calledNumbers').on('value', snap => {
+    const nums = snap.val() || [];
+    state.calledNumbers = nums;
+    document.getElementById('called-numbers-display').textContent = nums.join(', ');
+    if (nums.length > 0) {
+      document.getElementById('current-ball').textContent = '🎱 ' + nums[nums.length-1];
     }
-    popup.classList.add('active');
-}
+    if (state.autoMark) nums.forEach(n => markNumberOnBoards(n));
+  });
+  state.listeners.push({ ref: roomRef.child('calledNumbers'), listener: calledListener });
 
-// ================================================================
-// COUNTDOWN
-// ================================================================
-function startCountdown() {
-    if (state.cancelled) return;
-    state.countdownStarted = true;
-    let count = 25;
-    const popupCount = document.getElementById('popup-countdown');
-    if (state.countdownInterval) clearInterval(state.countdownInterval);
-    state.countdownInterval = setInterval(() => {
-        count--;
-        popupCount.textContent = count;
-        if (count <= 0) {
-            clearInterval(state.countdownInterval);
-            state.countdownInterval = null;
-            document.getElementById('countdownPopup').classList.remove('active');
-            navigateTo('game');
-            startGame(state.currentRoom);
-        }
-    }, 1000);
-}
-
-// ================================================================
-// CANCEL / CHANGE
-// ================================================================
-function cancelGame() {
-    state.cancelled = true;
-    if (state.countdownInterval) clearInterval(state.countdownInterval);
-    if (state.waitingInterval) clearInterval(state.waitingInterval);
-    document.getElementById('countdownPopup').classList.remove('active');
-    state.countdownStarted = false;
-    const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
-    const playerRef = state.db.ref('players/' + state.playerId + '/balance');
-    playerRef.transaction(current => (current || 0) + stake);
-    const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId);
-    roomRef.remove();
-    showToast('Game cancelled - stake refunded', 'info');
-    navigateTo('rooms');
-}
-window.cancelGame = cancelGame;
-
-function changeCartelas() {
-    state.cancelled = true;
-    if (state.countdownInterval) clearInterval(state.countdownInterval);
-    if (state.waitingInterval) clearInterval(state.waitingInterval);
-    document.getElementById('countdownPopup').classList.remove('active');
-    state.countdownStarted = false;
-    const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
-    const playerRef = state.db.ref('players/' + state.playerId + '/balance');
-    playerRef.transaction(current => (current || 0) + stake);
-    const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId);
-    roomRef.remove();
-    showToast('Select new cartelas', 'info');
-    navigateTo('waiting');
-    loadWaitingRoom(state.currentRoom);
-}
-window.changeCartelas = changeCartelas;
-
-// ================================================================
-// LEAVE ROOM
-// ================================================================
-function leaveRoom() {
-    if (state.currentRoom) {
-        state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId).remove();
-        if (!state.countdownStarted) {
-            const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
-            state.db.ref('players/' + state.playerId + '/balance').transaction(current => (current || 0) + stake);
-        }
+  // Winner
+  const winnerListener = roomRef.child('winner').on('value', snap => {
+    if (snap.exists()) {
+      const w = snap.val();
+      showBingoWinner(w);
     }
-    if (state.countdownInterval) clearInterval(state.countdownInterval);
-    if (state.waitingInterval) clearInterval(state.waitingInterval);
-    document.getElementById('countdownPopup').classList.remove('active');
-    navigateTo('rooms');
-}
-window.leaveRoom = leaveRoom;
+  });
+  state.listeners.push({ ref: roomRef.child('winner'), listener: winnerListener });
 
-// ================================================================
-// START GAME
-// ================================================================
-function startGame(roomId) {
-    document.getElementById('game-room-title').textContent = '🎲 ' + roomId.toUpperCase();
-    const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId);
-    roomRef.child('status').set('playing');
-    state.calledNumbers = [];
-    if (state.gameInterval) clearInterval(state.gameInterval);
-    generateBingoBoards();
-    roomRef.child('calledNumbers').on('value', snap => {
-        if (snap.exists()) {
-            state.calledNumbers = snap.val() || [];
-            document.getElementById('called-numbers-display').textContent = state.calledNumbers.join(', ');
-            if (state.calledNumbers.length > 0) {
-                document.getElementById('current-ball').textContent = '🎱 ' + state.calledNumbers[state.calledNumbers.length-1];
-            }
-            if (state.autoMark) {
-                state.calledNumbers.forEach(n => markNumberOnBoards(n));
-            }
-        }
-    });
-    roomRef.child('winner').on('value', snap => {
-        if (snap.exists()) {
-            const winner = snap.val();
-            if (winner && winner.playerId === state.playerId) {
-                showBingoWinner(winner);
-            } else if (winner) {
-                showToast('🏆 ' + winner.playerName + ' won!', 'info');
-                resetRoom();
-            }
-        }
-    });
-    roomRef.child('players').on('value', snap => {
-        const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-        document.getElementById('game-players-count').textContent = '👥 ' + count;
-    });
+  // Player count
+  const playerListener = roomRef.child('players').on('value', snap => {
+    const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('game-players-count').textContent = '👥 ' + count;
+  });
+  state.listeners.push({ ref: roomRef.child('players'), listener: playerListener });
 }
 
 // ================================================================
-// GENERATE BINGO BOARDS
+// GENERATE BINGO BOARDS (client-side only for display)
 // ================================================================
 function generateBingoBoards() {
-    const board = document.getElementById('game-board');
-    board.innerHTML = '';
-    const selected = state.selectedCartelas;
-    if (!selected.length) { board.innerHTML = '<p style="grid-column:1/-1;text-align:center;">No cartela</p>'; return; }
-    const renderCartela = (num) => {
-        const matrix = generateCartelaNumbers(num);
-        ['B','I','N','G','O'].forEach(l => {
-            const cell = document.createElement('div');
-            cell.className = 'cell header-cell';
-            cell.textContent = l;
-            board.appendChild(cell);
-        });
-        matrix.forEach(row => {
-            row.forEach(n => {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                if (n === 0) { cell.textContent = '☆'; cell.classList.add('free'); }
-                else { cell.textContent = n; cell.dataset.num = n; }
-                board.appendChild(cell);
-            });
-        });
-    };
-    renderCartela(selected[0]);
-    if (selected.length > 1) {
-        const sep = document.createElement('div');
-        sep.style.cssText = 'grid-column:1/-1;height:2px;background:var(--primary);margin:8px 0;';
-        board.appendChild(sep);
-        renderCartela(selected[1]);
-    }
+  const board = document.getElementById('game-board');
+  board.innerHTML = '';
+  const selected = state.selectedCartelas;
+  if (!selected.length) { board.innerHTML = '<p style="grid-column:1/-1;text-align:center;">No cartela</p>'; return; }
+  const renderCartela = (num) => {
+    const matrix = generateCartelaNumbers(num);
+    ['B','I','N','G','O'].forEach(l => {
+      const cell = document.createElement('div');
+      cell.className = 'cell header-cell';
+      cell.textContent = l;
+      board.appendChild(cell);
+    });
+    matrix.forEach(row => {
+      row.forEach(n => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        if (n === 0) { cell.textContent = '☆'; cell.classList.add('free'); }
+        else { cell.textContent = n; cell.dataset.num = n; }
+        board.appendChild(cell);
+      });
+    });
+  };
+  renderCartela(selected[0]);
+  if (selected.length > 1) {
+    const sep = document.createElement('div');
+    sep.style.cssText = 'grid-column:1/-1;height:2px;background:var(--primary);margin:8px 0;';
+    board.appendChild(sep);
+    renderCartela(selected[1]);
+  }
 }
 
 function generateCartelaNumbers(num) {
-    const seed = num;
-    const matrix = [];
-    for (let r=0; r<5; r++) {
-        const row = [];
-        for (let c=0; c<5; c++) {
-            if (r===2 && c===2) { row.push(0); continue; }
-            const min = c*15 + 1;
-            const max = (c+1)*15;
-            const v = ((seed*7 + r*13 + c*17 + seed*3) % (max - min)) + min;
-            row.push(v);
-        }
-        matrix.push(row);
+  const seed = num;
+  const matrix = [];
+  for (let r=0; r<5; r++) {
+    const row = [];
+    for (let c=0; c<5; c++) {
+      if (r===2 && c===2) { row.push(0); continue; }
+      const min = c*15 + 1;
+      const max = (c+1)*15;
+      const v = ((seed*7 + r*13 + c*17 + seed*3) % (max - min)) + min;
+      row.push(v);
     }
-    return matrix;
+    matrix.push(row);
+  }
+  return matrix;
 }
 
 function markNumberOnBoards(num) {
-    document.querySelectorAll('#game-board .cell:not(.header-cell):not(.free)').forEach(cell => {
-        if (parseInt(cell.dataset.num) === num) cell.classList.add('marked');
-    });
+  document.querySelectorAll('#game-board .cell:not(.header-cell):not(.free)').forEach(cell => {
+    if (parseInt(cell.dataset.num) === num) cell.classList.add('marked');
+  });
 }
 
 // ================================================================
-// BINGO CHECK
+// BINGO CLAIM – send claim to Firebase, bot validates
 // ================================================================
 function checkBingo() {
-    const cells = document.querySelectorAll('#game-board .cell:not(.header-cell)');
-    const marked = Array.from(cells).map(c => c.classList.contains('marked') || c.classList.contains('free'));
-    for (let r=0; r<10; r++) {
-        let all = true;
-        for (let c=0; c<5; c++) {
-            const idx = r*5 + c;
-            if (idx < marked.length && !marked[idx]) { all = false; break; }
-        }
-        if (all && r*5+4 < marked.length) {
-            claimBingo();
-            return;
-        }
+  if (!state.currentRoom) return;
+  // Quick client-side check to avoid spam
+  const cells = document.querySelectorAll('#game-board .cell:not(.header-cell)');
+  const marked = Array.from(cells).map(c => c.classList.contains('marked') || c.classList.contains('free'));
+  let hasBingo = false;
+  for (let r=0; r<10; r++) {
+    let all = true;
+    for (let c=0; c<5; c++) {
+      const idx = r*5 + c;
+      if (idx < marked.length && !marked[idx]) { all = false; break; }
     }
+    if (all && r*5+4 < marked.length) { hasBingo = true; break; }
+  }
+  if (!hasBingo) {
     for (let cart=0; cart<2; cart++) {
-        const off = cart*25;
-        for (let c=0; c<5; c++) {
-            let all = true;
-            for (let r=0; r<5; r++) {
-                const idx = off + r*5 + c;
-                if (idx < marked.length && !marked[idx]) { all = false; break; }
-            }
-            if (all && off+24 < marked.length) {
-                claimBingo();
-                return;
-            }
+      const off = cart*25;
+      for (let c=0; c<5; c++) {
+        let all = true;
+        for (let r=0; r<5; r++) {
+          const idx = off + r*5 + c;
+          if (idx < marked.length && !marked[idx]) { all = false; break; }
         }
+        if (all && off+24 < marked.length) { hasBingo = true; break; }
+      }
+      if (hasBingo) break;
     }
-    showToast('No BINGO yet.', 'info');
+  }
+  if (!hasBingo) {
+    document.getElementById('game-status').textContent = '❌ No valid BINGO pattern.';
+    return;
+  }
+
+  // Submit claim to Firebase
+  const claimRef = state.db.ref('claims/' + state.currentRoom).push();
+  claimRef.set({
+    playerId: state.playerId,
+    playerName: state.playerData?.firstName || state.playerData?.playerName || 'Player',
+    claimedAt: Date.now()
+  }).then(() => {
+    document.getElementById('game-status').textContent = '✅ BINGO claimed! Waiting for verification...';
+  }).catch(e => {
+    document.getElementById('game-status').textContent = '❌ Error claiming.';
+  });
 }
 window.checkBingo = checkBingo;
 
 // ================================================================
-// CLAIM BINGO
-// ================================================================
-async function claimBingo() {
-    if (!state.currentRoom) return;
-    const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom);
-    const winnerSnap = await roomRef.child('winner').once('value');
-    if (winnerSnap.exists()) { showToast('Winner already claimed.', 'info'); return; }
-    const playerCount = state.roomPlayersCount[state.currentRoom] || 2;
-    const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
-    const prize = playerCount * stake;
-    await roomRef.child('winner').set({
-        playerId: state.playerId,
-        playerName: state.playerData.firstname || 'Player',
-        claimedAt: Date.now(),
-        prize: prize
-    });
-    const playerRef = state.db.ref('players/' + state.playerId);
-    await playerRef.transaction(current => {
-        if (!current) return { balance: prize, gamesPlayed: 1, gamesWon: 1, totalWinnings: prize };
-        current.balance = (current.balance || 0) + prize;
-        current.gamesPlayed = (current.gamesPlayed || 0) + 1;
-        current.gamesWon = (current.gamesWon || 0) + 1;
-        current.totalWinnings = (current.totalWinnings || 0) + prize;
-        return current;
-    });
-    showBingoWinner({ playerName: state.playerData.firstname || 'Player', prize: prize });
-}
-
-// ================================================================
-// SHOW WINNER
+// WINNER SCREEN
 // ================================================================
 function showBingoWinner(winner) {
-    if (state.gameInterval) clearInterval(state.gameInterval);
-    navigateTo('winner');
-    document.getElementById('winner-name').textContent = winner.playerName || state.playerData?.firstname || 'Player';
-    document.getElementById('winner-prize').textContent = '💰 ' + (winner.prize || 0) + ' Br';
-    setTimeout(() => {
-        resetRoom();
-    }, 8000);
+  if (state.gameInterval) clearInterval(state.gameInterval);
+  navigateTo('winner');
+  document.getElementById('winner-name').textContent = winner.playerName || 'Player';
+  document.getElementById('winner-prize').textContent = '💰 ' + (winner.prize || 0) + ' Br';
+  setTimeout(() => {
+    resetRoom();
+  }, 8000);
 }
-
-// ================================================================
-// RESET ROOM
-// ================================================================
-function resetRoom() {
-    if (state.gameInterval) clearInterval(state.gameInterval);
-    if (state.countdownInterval) clearInterval(state.countdownInterval);
-    if (state.waitingInterval) clearInterval(state.waitingInterval);
-    document.getElementById('countdownPopup').classList.remove('active');
-    state.calledNumbers = [];
-    state.selectedCartelas = [];
-    state.autoMark = false;
-    state.countdownStarted = false;
-    state.cancelled = false;
-    document.getElementById('auto-mark-text').textContent = '🔘 Auto Mark';
-    if (state.currentRoom) {
-        state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId).remove();
-    }
-    if (state.currentRoom) {
-        state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/status').set('waiting');
-        state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/winner').remove();
-        state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/calledNumbers').remove();
-        state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/takenCartelas').remove();
-    }
-    navigateTo('rooms');
-    showToast('🔄 Room reset', 'success');
-}
-window.resetRoom = resetRoom;
 
 // ================================================================
 // TOGGLE AUTO MARK
 // ================================================================
 function toggleAutoMark() {
-    state.autoMark = !state.autoMark;
-    document.getElementById('auto-mark-text').textContent = state.autoMark ? '⏹️ Stop Mark' : '🔘 Auto Mark';
-    if (state.autoMark) state.calledNumbers.forEach(n => markNumberOnBoards(n));
+  state.autoMark = !state.autoMark;
+  document.getElementById('auto-mark-text').textContent = state.autoMark ? '⏹️ Stop Mark' : '🔘 Auto Mark';
+  if (state.autoMark) state.calledNumbers.forEach(n => markNumberOnBoards(n));
 }
 window.toggleAutoMark = toggleAutoMark;
 
 // ================================================================
-// LEAVE GAME
+// LEAVE ROOM / GAME – clean up and refund stake if not started
 // ================================================================
+function leaveRoom() {
+  if (state.currentRoom) {
+    state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId).remove();
+    // Refund if countdown not started
+    if (!state.countdownStarted) {
+      const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
+      state.db.ref('players/' + state.playerId + '/balance').transaction(current => (current || 0) + stake);
+    }
+  }
+  cleanupListeners();
+  document.getElementById('countdownPopup').classList.remove('active');
+  navigateTo('rooms');
+}
+window.leaveRoom = leaveRoom;
+
 function leaveGame() {
-    if (state.gameInterval) clearInterval(state.gameInterval);
-    resetRoom();
+  if (state.gameInterval) clearInterval(state.gameInterval);
+  resetRoom();
 }
 window.leaveGame = leaveGame;
 
-// ================================================================
-// TOAST
-// ================================================================
-function showToast(msg, type='info') {
-    const colors = { success:'#4CAF50', error:'#f44336', info:'#2196F3' };
-    const t = document.createElement('div');
-    t.className = 'toast';
-    t.style.background = colors[type] || '#333';
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => {
-        t.style.animation = 'slideDown 0.3s ease';
-        setTimeout(() => t.remove(), 300);
-    }, 3000);
+function cancelGame() {
+  state.cancelled = true;
+  if (state.countdownInterval) clearInterval(state.countdownInterval);
+  if (state.waitingInterval) clearInterval(state.waitingInterval);
+  document.getElementById('countdownPopup').classList.remove('active');
+  state.countdownStarted = false;
+  const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
+  state.db.ref('players/' + state.playerId + '/balance').transaction(current => (current || 0) + stake);
+  state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId).remove();
+  navigateTo('rooms');
 }
-window.showToast = showToast;
+window.cancelGame = cancelGame;
+
+function changeCartelas() {
+  state.cancelled = true;
+  if (state.countdownInterval) clearInterval(state.countdownInterval);
+  if (state.waitingInterval) clearInterval(state.waitingInterval);
+  document.getElementById('countdownPopup').classList.remove('active');
+  state.countdownStarted = false;
+  const stake = state.currentRoom === 'room1' ? 5 : state.currentRoom === 'room2' ? 10 : 20;
+  state.db.ref('players/' + state.playerId + '/balance').transaction(current => (current || 0) + stake);
+  state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId).remove();
+  navigateTo('waiting');
+  loadWaitingRoom(state.currentRoom);
+}
+window.changeCartelas = changeCartelas;
+
+function resetRoom() {
+  cleanupListeners();
+  document.getElementById('countdownPopup').classList.remove('active');
+  state.calledNumbers = [];
+  state.selectedCartelas = [];
+  state.autoMark = false;
+  state.countdownStarted = false;
+  state.cancelled = false;
+  document.getElementById('auto-mark-text').textContent = '🔘 Auto Mark';
+  if (state.currentRoom) {
+    state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/players/' + state.playerId).remove();
+    state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/status').set('waiting');
+    state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/winner').remove();
+    state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/calledNumbers').remove();
+    state.db.ref('ZA_Bingo_V3/rooms/' + state.currentRoom + '/takenCartelas').remove();
+  }
+  navigateTo('rooms');
+}
+window.resetRoom = resetRoom;
 
 // ================================================================
 // INIT
 // ================================================================
 async function init() {
-    initFirebase();
-    await initAuth();
-    loadLeaderboard();
-    renderRooms();
-    setInterval(loadLeaderboard, 30000);
-    console.log('🎯 ZA Bingo V3 loaded');
+  initFirebase();
+  await initAuth();
+  loadLeaderboard();
+  renderRooms();
+  setInterval(loadLeaderboard, 30000);
+  console.log('🎯 ZA Bingo V3 loaded');
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
