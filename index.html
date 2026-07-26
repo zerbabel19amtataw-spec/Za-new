@@ -330,7 +330,7 @@ function initFirebase() {
 }
 
 // ================================================================
-// AUTH – READ ONLY, NEVER CREATE
+// AUTH – READ ONLY, NEVER CREATE – FIXED
 // ================================================================
 async function initAuth() {
     if (!state.db) return null;
@@ -346,15 +346,15 @@ async function initAuth() {
         }
         const lookupRef = state.db.ref('telegram_lookup/' + telegramUser.id);
         const snap = await lookupRef.once('value');
-        const playerId = snap.val();
-        if (!playerId) {
+        const val = snap.val();
+        if (!val || !val.playerId) {
             showToast('📢 Please register via the Telegram bot first.', 'info');
             return null;
         }
-        state.playerId = playerId;
+        state.playerId = val.playerId;   // ✅ FIXED: reads the string value
         state.isRegistered = true;
         await loadPlayerData();
-        return playerId;
+        return state.playerId;
     } catch (e) {
         console.error('Auth error:', e);
         showToast('❌ Authentication failed. Please refresh.', 'error');
@@ -382,14 +382,14 @@ async function loadPlayerData() {
 }
 
 // ================================================================
-// UPDATE UI
+// UPDATE UI – FIXED profile name to use 'firstname'
 // ================================================================
 function updateUI() {
     if (!state.playerData) return;
     const d = state.playerData;
     const bal = d.balance || 0;
     document.getElementById('home-balance').textContent = bal + ' Br';
-    document.getElementById('profile-name').textContent = d.playerName || '-';
+    document.getElementById('profile-name').textContent = d.firstname || '-';   // ✅ FIXED
     document.getElementById('profile-tgid').textContent = d.telegramId || '-';
     document.getElementById('profile-username').textContent = d.username || '-';
     document.getElementById('profile-phone').textContent = d.phoneNumber || '-';
@@ -445,7 +445,7 @@ async function submitDeposit() {
     try {
         await state.db.ref('deposits').push({
             playerId: state.playerId,
-            playerName: state.playerData?.playerName || 'Unknown',
+            playerName: state.playerData?.firstname || 'Unknown',
             method: depMethod,
             amount: parseFloat(amount),
             transactionId: txn,
@@ -482,7 +482,7 @@ async function submitWithdraw() {
     try {
         await state.db.ref('withdrawals').push({
             playerId: state.playerId,
-            playerName: state.playerData?.playerName || 'Unknown',
+            playerName: state.playerData?.firstname || 'Unknown',
             method: wdMethod,
             amount: parseFloat(amount),
             accountNumber: acc,
@@ -507,7 +507,7 @@ async function loadLeaderboard() {
         const players = [];
         snap.forEach(child => {
             const d = child.val();
-            if (d && d.playerName) players.push(d);
+            if (d && d.firstname) players.push(d);
         });
         players.sort((a,b) => (b.totalWinnings||0) - (a.totalWinnings||0));
         container.innerHTML = '';
@@ -517,7 +517,7 @@ async function loadLeaderboard() {
             div.style.cssText = 'display:grid;grid-template-columns:40px 1fr 60px 80px;background:var(--light);padding:10px 16px;border-radius:var(--radius);align-items:center;';
             const rank = i+1;
             const medal = rank===1 ? '🥇' : rank===2 ? '🥈' : rank===3 ? '🥉' : rank;
-            div.innerHTML = `<span style="font-weight:700;color:var(--primary);">${medal}</span><span>${p.playerName||'Unknown'}</span><span style="color:var(--secondary);font-weight:600;">${p.gamesWon||0}</span><span style="color:var(--success);font-weight:600;text-align:right;">${p.totalWinnings||0} Br</span>`;
+            div.innerHTML = `<span style="font-weight:700;color:var(--primary);">${medal}</span><span>${p.firstname||'Unknown'}</span><span style="color:var(--secondary);font-weight:600;">${p.gamesWon||0}</span><span style="color:var(--success);font-weight:600;text-align:right;">${p.totalWinnings||0} Br</span>`;
             container.appendChild(div);
         });
     } catch(e) { container.innerHTML = '<p>Error loading</p>'; }
@@ -580,7 +580,7 @@ async function joinRoom(roomId) {
     // Add player to room
     const roomRef = state.db.ref('ZA_Bingo_V3/rooms/' + roomId + '/players/' + state.playerId);
     await roomRef.set({
-        playerName: state.playerData.playerName,
+        playerName: state.playerData.firstname || 'Player',
         joinedAt: Date.now(),
         cartelas: {}
     });
@@ -975,7 +975,7 @@ async function claimBingo() {
     const prize = playerCount * stake;
     await roomRef.child('winner').set({
         playerId: state.playerId,
-        playerName: state.playerData.playerName,
+        playerName: state.playerData.firstname || 'Player',
         claimedAt: Date.now(),
         prize: prize
     });
@@ -989,7 +989,7 @@ async function claimBingo() {
         current.totalWinnings = (current.totalWinnings || 0) + prize;
         return current;
     });
-    showBingoWinner({ playerName: state.playerData.playerName, prize: prize });
+    showBingoWinner({ playerName: state.playerData.firstname || 'Player', prize: prize });
 }
 
 // ================================================================
@@ -998,7 +998,7 @@ async function claimBingo() {
 function showBingoWinner(winner) {
     if (state.gameInterval) clearInterval(state.gameInterval);
     navigateTo('winner');
-    document.getElementById('winner-name').textContent = winner.playerName || state.playerData.playerName;
+    document.getElementById('winner-name').textContent = winner.playerName || state.playerData?.firstname || 'Player';
     document.getElementById('winner-prize').textContent = '💰 ' + (winner.prize || 0) + ' Br';
     setTimeout(() => {
         resetRoom();
